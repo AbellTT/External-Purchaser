@@ -24,7 +24,7 @@ export function FAQSection() {
   const [open, setOpen] = useState<number | null>(null)
 
   return (
-    <section className="section-pad bg-background py-24">
+    <section id="faq" className="section-pad bg-background py-24">
       <div className="container-base">
         <div className="max-w-3xl mx-auto">
           {/* Header */}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { ShoppingBasket, Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -52,9 +53,9 @@ export function Footer() {
 
             <div className="pt-4 border-t border-white/10">
               <p className="text-xs font-semibold uppercase tracking-wider text-primary-foreground/40 mb-3">Platform Access</p>
-              <a href="/login" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors underline underline-offset-4">
+              <Link to="/login" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors underline underline-offset-4">
                 Institutional Member Login →
-              </a>
+              </Link>
             </div>
           </div>
 

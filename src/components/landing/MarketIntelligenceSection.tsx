@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { TrendingDown, TrendingUp, Calendar, ShieldCheck } from 'lucide-react'
 
 const insights = [
@@ -58,12 +59,12 @@ export function MarketIntelligenceSection() {
               and procurement timing recommendations.
             </p>
           </div>
-          <a
-            href="/login"
-            className="shrink-0 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-hover transition-colors"
+          <Link
+            to="/signup"
+            className="shrink-0 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-hover transition-colors shadow-xs"
           >
             Register Free
-          </a>
+          </Link>
         </div>
 
         {/* Insight Cards */}

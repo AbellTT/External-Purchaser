@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import BlurText from '@/components/ui/blur-text'
@@ -148,25 +149,17 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.6, ease: 'easeOut' }}
-            className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center w-full max-w-md sm:max-w-lg mx-auto"
+            className="flex justify-center w-full max-w-sm sm:max-w-md mx-auto"
           >
             <Button
+              asChild
               size="lg"
-              className="w-full sm:flex-1 h-13 sm:h-14 text-base font-bold gap-2 shadow-lg sm:min-w-[180px]"
+              className="w-full h-13 sm:h-14 text-base sm:text-lg font-bold gap-2 shadow-lg rounded-xl px-8"
             >
-              Get Started
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full sm:flex-1 h-13 sm:h-14 text-base font-bold border-border text-foreground hover:bg-muted sm:min-w-[180px]"
-              onClick={() => {
-                const el = document.getElementById('how-it-works')
-                el?.scrollIntoView({ behavior: 'smooth' })
-              }}
-            >
-              See How It Works
+              <Link to="/signup">
+                Get Started
+                <ArrowRight className="w-5 h-5" />
+              </Link>
             </Button>
           </motion.div>
 

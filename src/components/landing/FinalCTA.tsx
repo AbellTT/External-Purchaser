@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 
@@ -65,19 +66,22 @@ export function FinalCTA() {
           </div>
 
           {/* Centre content */}
-          <div className="text-center max-w-lg w-full">
-            <h2 className="text-h1 text-foreground leading-tight px-2">
+          <div className="text-center max-w-3xl w-full">
+            <h2 className="text-h2 text-foreground leading-tight px-2">
               Ready to reduce your{' '}
               <em className="not-italic text-primary">procurement costs?</em>
             </h2>
 
             <div className="mt-8 flex justify-center">
               <Button
+                asChild
                 size="lg"
                 className="w-full sm:w-auto px-8 sm:px-10 h-13 text-sm sm:text-base font-semibold gap-2 rounded-full shadow-sm"
               >
-                Register your organisation
-                <ArrowRight className="w-4 h-4" />
+                <Link to="/signup">
+                  Register your organisation
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
               </Button>
             </div>
 

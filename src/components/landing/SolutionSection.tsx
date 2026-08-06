@@ -1,4 +1,4 @@
-import { Clock, TrendingDown, Layers } from 'lucide-react'
+import { Clock, Layers } from 'lucide-react'
 
 const baskets = [
   {
