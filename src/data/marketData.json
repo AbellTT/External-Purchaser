@@ -1,0 +1,94 @@
+[
+  {
+    "id": "a4paper",
+    "name": "Sinar Line A4 Paper",
+    "unit": "ream",
+    "currentMarketPrice": 985,
+    "platformPrice": 820,
+    "data": [
+      { "month": "Jul-24", "market": 870, "platform": 720 },
+      { "month": "Aug-24", "market": 890, "platform": 735 },
+      { "month": "Sep-24", "market": 950, "platform": 790 },
+      { "month": "Oct-24", "market": 920, "platform": 765 },
+      { "month": "Nov-24", "market": 880, "platform": 730 },
+      { "month": "Dec-24", "market": 900, "platform": 745 },
+      { "month": "Jan-25", "market": 960, "platform": 800 },
+      { "month": "Feb-25", "market": 970, "platform": 808 },
+      { "month": "Mar-25", "market": 940, "platform": 783 },
+      { "month": "Apr-25", "market": 910, "platform": 758 },
+      { "month": "May-25", "market": 930, "platform": 775 },
+      { "month": "Jun-25", "market": 950, "platform": 792 },
+      { "month": "Jul-25", "market": 980, "platform": 818 },
+      { "month": "Aug-25", "market": 985, "platform": 820 }
+    ]
+  },
+  {
+    "id": "hptoner",
+    "name": "05A HP Toner Ink",
+    "unit": "cartridge",
+    "currentMarketPrice": 2450,
+    "platformPrice": 2050,
+    "data": [
+      { "month": "Jul-24", "market": 2100, "platform": 1750 },
+      { "month": "Aug-24", "market": 2150, "platform": 1800 },
+      { "month": "Sep-24", "market": 2300, "platform": 1920 },
+      { "month": "Oct-24", "market": 2280, "platform": 1900 },
+      { "month": "Nov-24", "market": 2200, "platform": 1840 },
+      { "month": "Dec-24", "market": 2250, "platform": 1880 },
+      { "month": "Jan-25", "market": 2350, "platform": 1970 },
+      { "month": "Feb-25", "market": 2380, "platform": 1990 },
+      { "month": "Mar-25", "market": 2320, "platform": 1940 },
+      { "month": "Apr-25", "market": 2270, "platform": 1900 },
+      { "month": "May-25", "market": 2360, "platform": 1975 },
+      { "month": "Jun-25", "market": 2400, "platform": 2010 },
+      { "month": "Jul-25", "market": 2430, "platform": 2030 },
+      { "month": "Aug-25", "market": 2450, "platform": 2050 }
+    ]
+  },
+  {
+    "id": "boxfile",
+    "name": "Box File Kent",
+    "unit": "piece",
+    "currentMarketPrice": 145,
+    "platformPrice": 118,
+    "data": [
+      { "month": "Jul-24", "market": 115, "platform": 92 },
+      { "month": "Aug-24", "market": 118, "platform": 94 },
+      { "month": "Sep-24", "market": 130, "platform": 104 },
+      { "month": "Oct-24", "market": 128, "platform": 102 },
+      { "month": "Nov-24", "market": 120, "platform": 96 },
+      { "month": "Dec-24", "market": 122, "platform": 98 },
+      { "month": "Jan-25", "market": 135, "platform": 108 },
+      { "month": "Feb-25", "market": 138, "platform": 110 },
+      { "month": "Mar-25", "market": 133, "platform": 106 },
+      { "month": "Apr-25", "market": 128, "platform": 102 },
+      { "month": "May-25", "market": 136, "platform": 109 },
+      { "month": "Jun-25", "market": 140, "platform": 112 },
+      { "month": "Jul-25", "market": 143, "platform": 115 },
+      { "month": "Aug-25", "market": 145, "platform": 118 }
+    ]
+  },
+  {
+    "id": "ledger",
+    "name": "Ledger Book",
+    "unit": "piece",
+    "currentMarketPrice": 420,
+    "platformPrice": 348,
+    "data": [
+      { "month": "Jul-24", "market": 350, "platform": 285 },
+      { "month": "Aug-24", "market": 358, "platform": 290 },
+      { "month": "Sep-24", "market": 395, "platform": 325 },
+      { "month": "Oct-24", "market": 385, "platform": 315 },
+      { "month": "Nov-24", "market": 365, "platform": 298 },
+      { "month": "Dec-24", "market": 372, "platform": 305 },
+      { "month": "Jan-25", "market": 400, "platform": 330 },
+      { "month": "Feb-25", "market": 405, "platform": 335 },
+      { "month": "Mar-25", "market": 390, "platform": 320 },
+      { "month": "Apr-25", "market": 375, "platform": 308 },
+      { "month": "May-25", "market": 398, "platform": 328 },
+      { "month": "Jun-25", "market": 408, "platform": 336 },
+      { "month": "Jul-25", "market": 416, "platform": 344 },
+      { "month": "Aug-25", "market": 420, "platform": 348 }
+    ]
+  }
+]

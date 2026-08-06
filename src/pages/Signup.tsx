@@ -634,26 +634,26 @@ export function Signup() {
                       <button
                         type="button"
                         onClick={() => setAddressMode('auto')}
-                        className={`flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-md transition-colors ${
+                        className={`flex items-center justify-center gap-1 sm:gap-2 px-1.5 sm:px-3 py-2 text-[11px] sm:text-xs font-semibold rounded-md transition-colors ${
                           addressMode === 'auto'
                             ? 'bg-card text-foreground border border-border shadow-xs'
                             : 'text-muted-foreground hover:text-foreground'
                         }`}
                       >
-                        <Sparkles className="w-3.5 h-3.5 text-accent" />
-                        Geoapify Autocomplete
+                        <Sparkles className="w-3.5 h-3.5 text-accent shrink-0" />
+                        <span className="truncate">Address Autocomplete</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setAddressMode('manual')}
-                        className={`flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-md transition-colors ${
+                        className={`flex items-center justify-center gap-1 sm:gap-2 px-1.5 sm:px-3 py-2 text-[11px] sm:text-xs font-semibold rounded-md transition-colors ${
                           addressMode === 'manual'
                             ? 'bg-card text-foreground border border-border shadow-xs'
                             : 'text-muted-foreground hover:text-foreground'
                         }`}
                       >
-                        <PenLine className="w-3.5 h-3.5" />
-                        Manual Address Entry
+                        <PenLine className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Manual Entry</span>
                       </button>
                     </div>
 
@@ -685,7 +685,7 @@ export function Signup() {
                           </p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3 pt-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                           <div className="space-y-1.5">
                             <Label htmlFor="subCity" className="font-mono text-xs font-semibold text-foreground">
                               Sub-city (Kifle Ketema)
@@ -728,7 +728,7 @@ export function Signup() {
                           {errors.street && <p className="text-xs text-error">{errors.street}</p>}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div className="space-y-1.5">
                             <Label htmlFor="subCityM" className="font-mono text-xs font-semibold text-foreground">
                               Sub-city (Kifle Ketema) *
@@ -763,12 +763,12 @@ export function Signup() {
                       </div>
                     )}
 
-                    <div className="pt-4 flex items-center justify-between border-t border-border">
-                      <Button type="button" variant="outline" onClick={handleBack} className="h-10 px-6 font-semibold gap-2 rounded-md">
+                    <div className="pt-4 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-4 border-t border-border">
+                      <Button type="button" variant="outline" onClick={handleBack} className="h-10 px-6 font-semibold gap-2 rounded-md w-full sm:w-auto">
                         <ChevronLeft className="w-4 h-4" />
                         Back
                       </Button>
-                      <Button type="button" onClick={handleNext} className="h-10 px-7 font-semibold gap-2 rounded-md shadow-xs">
+                      <Button type="button" onClick={handleNext} className="h-10 px-7 font-semibold gap-2 rounded-md shadow-xs w-full sm:w-auto">
                         Continue to Account
                         <ChevronRight className="w-4 h-4" />
                       </Button>
@@ -893,12 +893,12 @@ export function Signup() {
                       </div>
                     </div>
 
-                    <div className="pt-4 flex items-center justify-between border-t border-border">
-                      <Button type="button" variant="outline" onClick={handleBack} className="h-10 px-6 font-semibold gap-2 rounded-md">
+                    <div className="pt-4 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-4 border-t border-border">
+                      <Button type="button" variant="outline" onClick={handleBack} className="h-10 px-6 font-semibold gap-2 rounded-md w-full sm:w-auto">
                         <ChevronLeft className="w-4 h-4" />
                         Back
                       </Button>
-                      <Button type="submit" disabled={isSubmitting} className="h-10 px-8 font-semibold gap-2 rounded-md shadow-xs">
+                      <Button type="submit" disabled={isSubmitting} className="h-10 px-8 font-semibold gap-2 rounded-md shadow-xs w-full sm:w-auto">
                         {isSubmitting ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
