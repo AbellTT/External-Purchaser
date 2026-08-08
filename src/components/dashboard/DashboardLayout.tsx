@@ -13,6 +13,8 @@ import {
   X,
   ChevronRight,
   Building2,
+  User,
+  Archive,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -23,8 +25,10 @@ const NAV_ITEMS = [
   { label: 'Basket System',         icon: ShoppingBag,     to: '/dashboard/baskets' },
   { label: 'Market Intelligence',   icon: TrendingUp,      to: '/dashboard/market-intelligence' },
   { label: 'Order History',         icon: History,         to: '/dashboard/orders' },
+  { label: 'Basket History',        icon: Archive,         to: '/dashboard/basket-history' },
   { label: 'Procurement Calendar',  icon: CalendarDays,    to: '/dashboard/calendar' },
   { label: 'Notifications',         icon: Bell,            to: '/dashboard/notifications', badge: 3 },
+  { label: 'Profile',               icon: User,            to: '/dashboard/profile' },
 ]
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
@@ -62,9 +66,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           <div className="w-7 h-7 rounded bg-sidebar-primary/20 flex items-center justify-center shrink-0">
             <Building2 className="w-4 h-4 text-sidebar-foreground/80" />
           </div>
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-sidebar-foreground truncate">Addis Ababa University</p>
-            <p className="text-[10px] text-sidebar-foreground/60 font-mono">Verified Member</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-sidebar-foreground truncate">Addis Ababa University</p>
           </div>
         </div>
       </div>

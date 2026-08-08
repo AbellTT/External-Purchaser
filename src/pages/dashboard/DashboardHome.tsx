@@ -47,7 +47,7 @@ const STAT_CARDS = [
   {
     label: 'Avg. Discount Rate',
     value: '16.2%',
-    sub: 'vs Merkato retail',
+    sub: 'vs Merkato Retailers',
     trend: 'up',
     icon: TrendingUp,
     color: 'text-accent',
@@ -68,8 +68,7 @@ const ACTIVE_BASKETS = [
     product: 'Sinar Line A4 Paper',
     filled: 68,
     participants: 9,
-    platformPrice: 820,
-    currentSaving: '16.7%',
+    status: 'Active',
   },
   {
     type: 'Monthly Basket',
@@ -77,8 +76,7 @@ const ACTIVE_BASKETS = [
     product: 'Box File Kent',
     filled: 45,
     participants: 6,
-    platformPrice: 118,
-    currentSaving: '18.6%',
+    status: 'Active',
   },
 ]
 
@@ -170,7 +168,7 @@ export function DashboardHome() {
                   {/* Progress */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">{b.participants} orgs joined</span>
+                      <span className="text-muted-foreground">{b.participants} organizations joined</span>
                       <span className="font-semibold text-primary">{b.filled}% filled</span>
                     </div>
                     <div className="w-full h-2 bg-border rounded-full overflow-hidden">
@@ -180,8 +178,8 @@ export function DashboardHome() {
                       />
                     </div>
                     <p className="text-[11px] text-muted-foreground">
-                      Platform price: <span className="font-semibold text-foreground font-mono">ETB {b.platformPrice}</span>
-                      <span className="ml-2 text-success font-semibold">{b.currentSaving} savings</span>
+                      Status: <span className="font-semibold text-foreground">{b.status}</span>
+                      <span className="ml-2 text-info">• Basket is filling</span>
                     </p>
                   </div>
                 </div>

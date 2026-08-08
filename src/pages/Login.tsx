@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 export function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [form, setForm] = useState({ email: '', password: '' })
+  const [form, setForm] = useState({ email: '', password: '', rememberMe: false })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const navigate = useNavigate()
 
@@ -137,6 +137,23 @@ export function Login() {
               </button>
             </div>
             {errors.password && <p className="text-xs text-error">{errors.password}</p>}
+          </div>
+
+          {/* Remember Me */}
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              checked={form.rememberMe}
+              onChange={(e) => setForm((f) => ({ ...f, rememberMe: e.target.checked }))}
+              className="w-4 h-4 rounded border-border text-primary focus:ring-primary/40 focus:ring-offset-0"
+            />
+            <Label
+              htmlFor="rememberMe"
+              className="text-sm text-muted-foreground font-normal cursor-pointer select-none"
+            >
+              Keep me signed in for 30 days
+            </Label>
           </div>
 
           {/* Submit */}
