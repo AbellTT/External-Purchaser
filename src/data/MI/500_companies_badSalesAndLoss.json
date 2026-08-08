@@ -1,0 +1,72 @@
+{
+  "financial_loss_analysis": [
+    {
+      "product": "Siner Line A4 Paper",
+      "product_amharic": "Siner Line A4 ወረቀት",
+      "file_reference": "11.pdf",
+      "source_citation": "[cite: 5]",
+      "price_fluctuation_example_etb": {
+        "base_price": 650,
+        "peak_surge_price": 720,
+        "discounted_optimal_price": 690,
+        "citation": "[cite: 5]"
+      },
+      "estimated_annual_loss_etb": {
+        "single_company_loss": 20000,
+        "aggregate_500_companies_loss": 10000000,
+        "citation": "[cite: 5]"
+      }
+    },
+    {
+      "product": "OSA HP Toner",
+      "product_amharic": "OSA HP ቶነር",
+      "file_reference": "22.pdf",
+      "source_citation": "[cite: 4]",
+      "price_fluctuation_example_etb": {
+        "base_price": 700,
+        "peak_surge_price": 780,
+        "discounted_optimal_price": 730,
+        "citation": "[cite: 4]"
+      },
+      "estimated_annual_loss_etb": {
+        "single_company_loss": 20000,
+        "aggregate_500_companies_loss": 15000000,
+        "citation": "[cite: 4]"
+      }
+    },
+    {
+      "product": "Box File KENT",
+      "product_amharic": "KENT ቦክስ ፋይል",
+      "file_reference": "33.pdf",
+      "source_citation": "[cite: 1]",
+      "price_fluctuation_example_etb": {
+        "base_price": 105,
+        "peak_surge_price": 160,
+        "discounted_optimal_price": 140,
+        "citation": "[cite: 1]"
+      },
+      "estimated_annual_loss_etb": {
+        "single_company_loss": 10000,
+        "aggregate_500_companies_loss": 5000000,
+        "citation": "[cite: 1]"
+      }
+    },
+    {
+      "product": "Marker",
+      "product_amharic": "ማርከር",
+      "file_reference": "44.pdf",
+      "source_citation": "[cite: 3]",
+      "price_fluctuation_example_etb": {
+        "base_price": 175,
+        "peak_surge_price": 220,
+        "discounted_optimal_price": 210,
+        "citation": "[cite: 3]"
+      },
+      "estimated_annual_loss_etb": {
+        "single_company_loss": 6000,
+        "aggregate_500_companies_loss": 3000000,
+        "citation": "[cite: 3]"
+      }
+    }
+  ]
+}

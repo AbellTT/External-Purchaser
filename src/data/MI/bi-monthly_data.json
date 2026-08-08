@@ -1,0 +1,180 @@
+{
+  "market_data": [
+    {
+      "product": "Siner Line A4 Paper",
+      "product_amharic": "Siner Line A4 ወረቀት",
+      "file_reference": "11.pdf",
+      "source_citation": "[cite: 5]",
+      "bi_monthly_metrics": [
+        {
+          "period": "Sept - Oct",
+          "average_price_etb": { "min": 480, "max": 545, "citation": "[cite: 5]" },
+          "weekly_increase_etb": { "min": 5, "max": 65, "citation": "[cite: 5]" },
+          "weekly_discount_etb": { "min": 5, "max": 45, "citation": "[cite: 5]" }
+        },
+        {
+          "period": "Nov - Dec",
+          "average_price_etb": { "min": 505, "max": 630, "citation": "[cite: 5]" },
+          "weekly_increase_etb": { "min": 5, "max": 125, "citation": "[cite: 5]" },
+          "weekly_discount_etb": { "min": 5, "max": 95, "citation": "[cite: 5]" }
+        },
+        {
+          "period": "Jan - Feb",
+          "average_price_etb": { "min": 630, "max": 660, "citation": "[cite: 5]" },
+          "weekly_increase_etb": { "min": 10, "max": 30, "citation": "[cite: 5]" },
+          "weekly_discount_etb": { "min": 10, "max": 30, "citation": "[cite: 5]" }
+        },
+        {
+          "period": "Mar - Apr",
+          "average_price_etb": { "min": 570, "max": 650, "citation": "[cite: 5]" },
+          "weekly_increase_etb": { "min": 5, "max": 80, "citation": "[cite: 5]" },
+          "weekly_discount_etb": { "min": 5, "max": 80, "citation": "[cite: 5]" }
+        },
+        {
+          "period": "May - Jun",
+          "average_price_etb": { "min": 570, "max": 650, "citation": "[cite: 5]" },
+          "weekly_increase_etb": { "min": 5, "max": 80, "citation": "[cite: 5]" },
+          "weekly_discount_etb": { "min": 5, "max": 80, "citation": "[cite: 5]" }
+        },
+        {
+          "period": "Jul - Aug",
+          "average_price_etb": { "min": 580, "max": 700, "citation": "[cite: 5]" },
+          "weekly_increase_etb": { "min": 5, "max": 125, "citation": "[cite: 5]" },
+          "weekly_discount_etb": { "min": 5, "max": 120, "citation": "[cite: 5]" }
+        }
+      ]
+    },
+    {
+      "product": "OSA HP Toner",
+      "product_amharic": "OSA HP ቶነር",
+      "file_reference": "22.pdf",
+      "source_citation": "[cite: 4]",
+      "bi_monthly_metrics": [
+        {
+          "period": "Sept - Oct",
+          "average_price_etb": { "min": 700, "max": 780, "citation": "[cite: 4]" },
+          "weekly_increase_etb": { "min": 10, "max": 70, "citation": "[cite: 4]" },
+          "weekly_discount_etb": { "min": 10, "max": 50, "citation": "[cite: 4]" }
+        },
+        {
+          "period": "Nov - Dec",
+          "average_price_etb": { "min": 810, "max": 900, "citation": "[cite: 4]" },
+          "weekly_increase_etb": { "min": 10, "max": 90, "citation": "[cite: 4]" },
+          "weekly_discount_etb": { "min": 10, "max": 70, "citation": "[cite: 4]" }
+        },
+        {
+          "period": "Jan - Feb",
+          "average_price_etb": { "min": 850, "max": 950, "citation": "[cite: 4]" },
+          "weekly_increase_etb": { "min": 10, "max": 100, "citation": "[cite: 4]" },
+          "weekly_discount_etb": { "min": 10, "max": 90, "citation": "[cite: 4]" }
+        },
+        {
+          "period": "Mar - Apr",
+          "average_price_etb": { "min": 900, "max": 950, "citation": "[cite: 4]" },
+          "weekly_increase_etb": { "min": 10, "max": 50, "citation": "[cite: 4]" },
+          "weekly_discount_etb": { "min": 10, "max": 40, "citation": "[cite: 4]" }
+        },
+        {
+          "period": "May - Jun",
+          "average_price_etb": { "min": 850, "max": 900, "citation": "[cite: 4]" },
+          "weekly_increase_etb": { "min": 10, "max": 50, "citation": "[cite: 4]" },
+          "weekly_discount_etb": { "min": 10, "max": 25, "citation": "[cite: 4]" }
+        },
+        {
+          "period": "Jul - Aug",
+          "average_price_etb": { "min": 820, "max": 900, "citation": "[cite: 4]" },
+          "weekly_increase_etb": { "min": 10, "max": 80, "citation": "[cite: 4]" },
+          "weekly_discount_etb": { "min": 10, "max": 50, "citation": "[cite: 4]" }
+        }
+      ]
+    },
+    {
+      "product": "Box File KENT",
+      "product_amharic": "KENT ቦክስ ፋይል",
+      "file_reference": "33.pdf",
+      "source_citation": "[cite: 1]",
+      "bi_monthly_metrics": [
+        {
+          "period": "Sept - Oct",
+          "average_price_etb": { "min": 105, "max": 160, "citation": "[cite: 1]" },
+          "weekly_increase_etb": { "min": 10, "max": 25, "citation": "[cite: 1]" },
+          "weekly_discount_etb": { "min": 10, "max": 15, "citation": "[cite: 1]" }
+        },
+        {
+          "period": "Nov - Dec",
+          "average_price_etb": { "min": 170, "max": 195, "citation": "[cite: 1]" },
+          "weekly_increase_etb": { "min": 10, "max": 14, "citation": "[cite: 1]" },
+          "weekly_discount_etb": { "min": 10, "max": 15, "citation": "[cite: 1]" }
+        },
+        {
+          "period": "Jan - Feb",
+          "average_price_etb": { "min": 170, "max": 195, "citation": "[cite: 1]" },
+          "weekly_increase_etb": { "min": 5, "max": 10, "citation": "[cite: 1]" },
+          "weekly_discount_etb": { "min": 10, "max": 12, "citation": "[cite: 1]" }
+        },
+        {
+          "period": "Mar - Apr",
+          "average_price_etb": { "min": 166, "max": 180, "citation": "[cite: 1]" },
+          "weekly_increase_etb": { "min": 5, "max": 10, "citation": "[cite: 1]" },
+          "weekly_discount_etb": { "min": 5, "max": 8, "citation": "[cite: 1]" }
+        },
+        {
+          "period": "May - Jun",
+          "average_price_etb": { "min": 155, "max": 165, "citation": "[cite: 1]" },
+          "weekly_increase_etb": { "min": 10, "max": 70, "citation": "[cite: 1]" },
+          "weekly_discount_etb": { "min": 5, "max": 8, "citation": "[cite: 1]" }
+        },
+        {
+          "period": "Jul - Aug",
+          "average_price_etb": { "min": 160, "max": 170, "citation": "[cite: 1]" },
+          "weekly_increase_etb": { "min": 10, "max": 25, "citation": "[cite: 1]" },
+          "weekly_discount_etb": { "min": 10, "max": 50, "citation": "[cite: 1]" }
+        }
+      ]
+    },
+    {
+      "product": "Marker",
+      "product_amharic": "ማርከር",
+      "file_reference": "44.pdf",
+      "source_citation": "[cite: 3]",
+      "bi_monthly_metrics": [
+        {
+          "period": "Sept - Oct",
+          "average_price_etb": { "min": 175, "max": 235, "citation": "[cite: 3]" },
+          "weekly_increase_etb": { "min": 10, "max": 60, "citation": "[cite: 3]" },
+          "weekly_discount_etb": { "min": 10, "max": 50, "citation": "[cite: 3]" }
+        },
+        {
+          "period": "Nov - Dec",
+          "average_price_etb": { "min": 235, "max": 280, "citation": "[cite: 3]" },
+          "weekly_increase_etb": { "min": 10, "max": 45, "citation": "[cite: 3]" },
+          "weekly_discount_etb": { "min": 10, "max": 30, "citation": "[cite: 3]" }
+        },
+        {
+          "period": "Jan - Feb",
+          "average_price_etb": { "min": 350, "max": 375, "citation": "[cite: 3]" },
+          "weekly_increase_etb": { "min": 10, "max": 95, "citation": "[cite: 3]" },
+          "weekly_discount_etb": { "min": 10, "max": 75, "citation": "[cite: 3]" }
+        },
+        {
+          "period": "Mar - Apr",
+          "average_price_etb": { "min": 230, "max": 275, "citation": "[cite: 3]" },
+          "weekly_increase_etb": { "min": 10, "max": 45, "citation": "[cite: 3]" },
+          "weekly_discount_etb": { "min": 10, "max": 25, "citation": "[cite: 3]" }
+        },
+        {
+          "period": "May - Jun",
+          "average_price_etb": { "min": 240, "max": 280, "citation": "[cite: 3]" },
+          "weekly_increase_etb": { "min": 10, "max": 40, "citation": "[cite: 3]" },
+          "weekly_discount_etb": { "min": 10, "max": 20, "citation": "[cite: 3]" }
+        },
+        {
+          "period": "Jul - Aug",
+          "average_price_etb": { "min": 275, "max": 295, "citation": "[cite: 3]" },
+          "weekly_increase_etb": { "min": 10, "max": 20, "citation": "[cite: 3]" },
+          "weekly_discount_etb": { "min": 10, "max": 15, "citation": "[cite: 3]" }
+        }
+      ]
+    }
+  ]
+}
