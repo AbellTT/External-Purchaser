@@ -1,91 +1,138 @@
-import { useState } from 'react'
-import { Bell, Truck, ShoppingBag, TrendingUp, CheckCircle2, Clock } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Bell, Truck, ShoppingBag, TrendingUp, CheckCircle2, Clock, Trash2, Radio, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import {
+  selectAllNotifications,
+  selectUnreadCount,
+  markAsRead,
+  markAllRead,
+  deleteNotification,
+  addNotification,
+} from '@/store/slices/notificationsSlice'
+import notificationsMock from '@/data/notifications/notificationsList.json'
+
+// ==================== SKELETON ====================
+
+function NotificationsSkeleton() {
+  return (
+    <DashboardLayout>
+      <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-3xl mx-auto space-y-6 animate-pulse">
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            <div className="h-8 w-48 bg-muted rounded" />
+            <div className="h-4 w-72 bg-muted rounded" />
+          </div>
+          <div className="h-9 w-28 bg-muted rounded" />
+        </div>
+        <div className="flex gap-2">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-8 w-20 bg-muted rounded-md" />
+          ))}
+        </div>
+        <div className="space-y-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 bg-muted rounded-lg" />
+          ))}
+        </div>
+      </div>
+    </DashboardLayout>
+  )
+}
 
 type NotifType = 'delivery' | 'basket' | 'price' | 'system'
 
-interface Notif {
-  id: string
-  type: NotifType
-  title: string
-  body: string
-  time: string
-  read: boolean
+const TYPE_CONFIG: Record<NotifType, { icon: React.FC<{ className?: string }>; style: string }> = {
+  delivery: { icon: Truck, style: 'text-info bg-info-bg' },
+  basket: { icon: ShoppingBag, style: 'text-primary bg-primary-subtle' },
+  price: { icon: TrendingUp, style: 'text-accent bg-accent-subtle' },
+  system: { icon: CheckCircle2, style: 'text-success bg-success-bg' },
 }
 
-const TYPE_CONFIG: Record<NotifType, { icon: React.FC<{ className?: string }>, style: string }> = {
-  delivery: { icon: Truck,        style: 'text-info bg-info-bg' },
-  basket:   { icon: ShoppingBag,  style: 'text-primary bg-primary-subtle' },
-  price:    { icon: TrendingUp,   style: 'text-accent bg-accent-subtle' },
-  system:   { icon: CheckCircle2, style: 'text-success bg-success-bg' },
-}
-
-const INITIAL: Notif[] = [
-  {
-    id: 'n1',
-    type: 'delivery',
-    title: 'Order ORD-2026-098 Out for Delivery',
-    body: 'Your 120 reams of Sinar Line A4 Paper are on the way. Estimated delivery: today between 2pm–5pm.',
-    time: '2 hours ago',
-    read: false,
-  },
-  {
-    id: 'n2',
-    type: 'basket',
-    title: 'Weekly Basket Closing in 2 Days',
-    body: 'The August Weekly Basket for A4 Paper closes on August 8th. 3,200 more reams needed for the 15% tier.',
-    time: '5 hours ago',
-    read: false,
-  },
-  {
-    id: 'n3',
-    type: 'price',
-    title: 'Price Alert — A4 Paper Rising',
-    body: 'Merkato market price for A4 Paper has risen 1.5% this week to ETB 985. Joining this week\'s basket locks in ETB 820.',
-    time: 'Yesterday',
-    read: false,
-  },
-  {
-    id: 'n4',
-    type: 'basket',
-    title: 'New 6-Month Basket Opened',
-    body: 'A new 6-month basket for HP 05A Toner Ink is now open. Projected discount: up to 22%. Closes September 15.',
-    time: '2 days ago',
-    read: true,
-  },
-  {
-    id: 'n5',
-    type: 'system',
-    title: 'Order ORD-2026-089 Delivered',
-    body: 'Your Box File Kent order (80 pieces) has been successfully delivered to your registered address.',
-    time: '3 days ago',
-    read: true,
-  },
-  {
-    id: 'n6',
-    type: 'price',
-    title: 'New Price Data Available',
-    body: 'August market price data has been updated. A4 Paper, Box Files, and HP Toner prices have been refreshed.',
-    time: '4 days ago',
-    read: true,
-  },
-]
+const PAGE_SIZE = 4 // Set to 4 so pagination controls are easily testable on mock datasets
 
 export function NotificationsPage() {
-  const [notifications, setNotifications] = useState(INITIAL)
+  const dispatch = useAppDispatch()
+  const reduxNotifs = useAppSelector(selectAllNotifications)
+  const unreadCount = useAppSelector(selectUnreadCount)
+
+  const [isFirstLoad, setIsFirstLoad] = useState(true)
   const [filter, setFilter] = useState<'all' | NotifType>('all')
+  const [page, setPage] = useState(1)
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  useEffect(() => {
+    setIsFirstLoad(true)
+    // Seed Redux with mock notifications data
+    dispatch({
+      type: 'notifications/fetchNotifications/fulfilled',
+      payload: {
+        notifications: notificationsMock.data.notifications.map((n: any) => ({
+          ...n,
+          type: n.type === 'order_update' ? 'delivery' : n.type === 'basket_closing' ? 'basket' : n.type === 'price_alert' ? 'price' : n.type,
+          body: n.message,
+          time: new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        })),
+        unreadCount: notificationsMock.data.unreadCount,
+        pagination: { currentPage: 1, totalPages: 1, totalNotifications: notificationsMock.data.notifications.length, pageSize: PAGE_SIZE },
+      },
+    })
+    const timer = setTimeout(() => setIsFirstLoad(false), 600)
+    return () => clearTimeout(timer)
+  }, [dispatch])
 
-  const filtered = notifications.filter((n) => filter === 'all' || n.type === filter)
+  if (isFirstLoad) return <NotificationsSkeleton />
 
-  const markAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+  const notifsList: any[] = reduxNotifs.length > 0 ? reduxNotifs : []
+
+  const filtered = notifsList.filter((n) => filter === 'all' || n.type === filter)
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const safePage = Math.min(page, totalPages)
+  const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+
+  const handleMarkAllRead = () => {
+    dispatch({
+      type: 'notifications/markAllRead/fulfilled',
+      payload: notifsList.map((n) => ({ ...n, read: true })),
+    })
+    dispatch(markAllRead())
   }
 
-  const markRead = (id: string) => {
-    setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n))
+  const handleMarkRead = (id: string) => {
+    const target = notifsList.find((n) => n.id === id)
+    if (target) {
+      dispatch({
+        type: 'notifications/markAsRead/fulfilled',
+        payload: { ...target, read: true },
+      })
+      dispatch(markAsRead(id))
+    }
+  }
+
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    dispatch({
+      type: 'notifications/deleteNotification/fulfilled',
+      payload: id,
+    })
+    dispatch(deleteNotification(id))
+  }
+
+  // Simulate real-time stream incoming alert
+  const handleSimulateStream = () => {
+    const simulatedTypes: NotifType[] = ['basket', 'price', 'delivery', 'system']
+    const randomType = simulatedTypes[Math.floor(Math.random() * simulatedTypes.length)]
+    const newNotif = {
+      id: `stream_${Date.now()}`,
+      type: randomType,
+      title: randomType === 'basket' ? 'New Group Basket Opened' : randomType === 'price' ? 'Price Alert: 8% Discount' : 'Delivery Dispatch Update',
+      body: 'Live update received from server stream! Join or check details inside dashboard.',
+      time: 'Just now',
+      read: false,
+      createdAt: new Date().toISOString(),
+    }
+    dispatch(addNotification(newNotif))
   }
 
   return (
@@ -98,17 +145,25 @@ export function NotificationsPage() {
               <Bell className="w-6 h-6 text-primary" />
               Notifications
               {unreadCount > 0 && (
-                <span className="text-sm font-bold bg-primary text-primary-foreground rounded-full px-2 py-0.5">{unreadCount}</span>
+                <span className="text-sm font-bold bg-primary text-primary-foreground rounded-full px-2 py-0.5">
+                  {unreadCount}
+                </span>
               )}
             </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Basket alerts, delivery updates, and price notifications.</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Basket alerts, delivery updates, and live price notifications.</p>
           </div>
-          {unreadCount > 0 && (
-            <Button variant="outline" size="sm" onClick={markAllRead} className="text-xs gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              Mark all read
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" size="sm" onClick={handleSimulateStream} className="text-xs gap-1.5">
+              <Radio className="w-3.5 h-3.5 text-primary animate-pulse" />
+              Simulate Stream
             </Button>
-          )}
+            {unreadCount > 0 && (
+              <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="text-xs gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Mark all read
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Filters */}
@@ -118,29 +173,37 @@ export function NotificationsPage() {
               key={f}
               size="sm"
               variant={filter === f ? 'default' : 'outline'}
-              onClick={() => setFilter(f)}
+              onClick={() => { setFilter(f); setPage(1) }}
               className="text-xs capitalize"
             >
-              {f === 'all' ? 'All' : f === 'price' ? 'Price Alerts' : f === 'basket' ? 'Baskets' : f === 'delivery' ? 'Deliveries' : 'System'}
+              {f === 'all'
+                ? 'All'
+                : f === 'price'
+                ? 'Price Alerts'
+                : f === 'basket'
+                ? 'Baskets'
+                : f === 'delivery'
+                ? 'Deliveries'
+                : 'System'}
             </Button>
           ))}
         </div>
 
         {/* Notification List */}
         <div className="space-y-2">
-          {filtered.length === 0 ? (
+          {paginated.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Bell className="w-10 h-10 mx-auto mb-3 opacity-30" />
               <p className="text-sm">No notifications in this category.</p>
             </div>
           ) : (
-            filtered.map((n) => {
-              const config = TYPE_CONFIG[n.type]
+            paginated.map((n) => {
+              const config = TYPE_CONFIG[n.type as NotifType] || TYPE_CONFIG.system
               return (
                 <div
                   key={n.id}
-                  onClick={() => markRead(n.id)}
-                  className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
+                  onClick={() => handleMarkRead(n.id)}
+                  className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors group ${
                     n.read
                       ? 'bg-card border-border opacity-70 hover:opacity-100'
                       : 'bg-card border-border hover:bg-surface-muted/40 ring-1 ring-primary/10'
@@ -150,16 +213,23 @@ export function NotificationsPage() {
                     <config.icon className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0 space-y-0.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold text-foreground">{n.title}</p>
-                      {!n.read && (
-                        <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-                      )}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">{n.title}</p>
+                        {!n.read && <span className="w-2 h-2 rounded-full bg-primary shrink-0" />}
+                      </div>
+                      <button
+                        onClick={(e) => handleDelete(e, n.id)}
+                        className="text-muted-foreground/60 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                        title="Delete notification"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{n.body}</p>
-                    <p className="text-[11px] text-muted-foreground/60 font-mono flex items-center gap-1">
+                    <p className="text-xs text-muted-foreground leading-relaxed">{n.body || n.message}</p>
+                    <p className="text-[11px] text-muted-foreground/60 font-mono flex items-center gap-1 pt-1">
                       <Clock className="w-3 h-3" />
-                      {n.time}
+                      {n.time || new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
@@ -167,6 +237,33 @@ export function NotificationsPage() {
             })
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={safePage <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="gap-1"
+            >
+              <ChevronLeft className="w-4 h-4" /> Prev
+            </Button>
+            <span className="text-sm font-mono text-muted-foreground">
+              Page {safePage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={safePage >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              className="gap-1"
+            >
+              Next <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   )

@@ -20,7 +20,7 @@ export const setStoreReference = (store: any) => {
 
 // Request interceptor - Add access token to requests
 api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
+  async (config: InternalAxiosRequestConfig) => {
     // Get access token from Redux store
     if (storeReference) {
       const state = storeReference.getState()
@@ -28,6 +28,14 @@ api.interceptors.request.use(
 
       if (accessToken && config.headers) {
         config.headers.Authorization = `Bearer ${accessToken}`
+      }
+
+      // Mark dashboard as stale after any mutating request so the overview
+      // page re-fetches fresh data on the next visit
+      const method = (config.method || 'get').toUpperCase()
+      if (method !== 'GET') {
+        const { markDashboardStale } = await import('@/store/slices/dashboardSlice')
+        storeReference.dispatch(markDashboardStale())
       }
     }
 

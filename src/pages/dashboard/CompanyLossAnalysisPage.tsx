@@ -1,60 +1,74 @@
-import { AlertTriangle, TrendingDown, DollarSign, Building2, Package, Calendar } from 'lucide-react'
+import { useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { AlertTriangle, TrendingDown, DollarSign, Building2, Package, Calendar, AlertCircle, ArrowLeft } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
-
-// Aggregate loss data by product (no individual company details)
-const PRODUCT_LOSS_DATA = [
-  {
-    product: 'A4 Paper',
-    avgLossPerCompany: 45200,
-    totalLoss500Companies: 22600000,
-    lossPercentOfProcurement: 18.5,
-  },
-  {
-    product: 'HP Toner',
-    avgLossPerCompany: 68400,
-    totalLoss500Companies: 34200000,
-    lossPercentOfProcurement: 22.3,
-  },
-  {
-    product: 'Box File',
-    avgLossPerCompany: 18900,
-    totalLoss500Companies: 9450000,
-    lossPercentOfProcurement: 15.2,
-  },
-  {
-    product: 'Marker',
-    avgLossPerCompany: 31200,
-    totalLoss500Companies: 15600000,
-    lossPercentOfProcurement: 19.8,
-  },
-]
-
-const TOTAL_LOSS = PRODUCT_LOSS_DATA.reduce((sum, item) => sum + item.totalLoss500Companies, 0)
-const AVG_LOSS_PER_COMPANY = TOTAL_LOSS / 500
-
-// Chart data
-const chartData = PRODUCT_LOSS_DATA.map(item => ({
-  product: item.product,
-  avgLoss: Math.round(item.avgLossPerCompany / 1000), // Convert to thousands for readability
-  totalLoss: Math.round(item.totalLoss500Companies / 1000000), // Convert to millions
-}))
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import {
+  fetchMarketData,
+  selectCapitalLossAnalysis,
+  selectMarketIntelligenceLoading,
+} from '@/store/slices/marketIntelligenceSlice'
 
 export function CompanyLossAnalysisPage() {
+  const dispatch = useAppDispatch()
+  const capitalLossAnalysis = useAppSelector(selectCapitalLossAnalysis)
+  const loading = useAppSelector(selectMarketIntelligenceLoading)
+
+  useEffect(() => {
+    dispatch(fetchMarketData())
+  }, [dispatch])
+
+  // Fallback defaults if state is initializing
+  const totalLoss = capitalLossAnalysis?.totalCapitalWasted ?? 33000000
+  const organizationsCount = capitalLossAnalysis?.organizationsAnalyzed ?? 500
+  const avgLossPerCompany = capitalLossAnalysis?.avgLossPerCompany ?? (totalLoss / organizationsCount)
+  
+  const lossBreakdown = capitalLossAnalysis?.lossBreakdown ?? [
+    { product: 'Siner Line A4 Paper', lossAmount: 10000000 },
+    { product: 'OSA HP Toner', lossAmount: 15000000 },
+    { product: 'Box File KENT', lossAmount: 5000000 },
+    { product: 'Marker', lossAmount: 3000000 },
+  ]
+
+  const chartData = lossBreakdown.map((item) => ({
+    product: item.product,
+    totalLoss: Math.round(item.lossAmount / 1000000), // Convert to millions for chart readability
+  }))
+
+  if (loading && !capitalLossAnalysis) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center space-y-3">
+            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-sm text-muted-foreground">Loading capital loss analysis...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
   return (
     <DashboardLayout>
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-5xl mx-auto space-y-6">
-        {/* Header */}
+        {/* Back Link & Header */}
         <div>
+          <Link
+            to="/dashboard/market-intelligence"
+            className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground mb-3 transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Back to Market Intelligence
+          </Link>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
             <AlertTriangle className="w-6 h-6 text-error" />
             Capital Loss Analysis
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Understanding the financial impact of poor procurement timing and price volatility across 500 organizations
+            Understanding the financial impact of poor procurement timing and price volatility across {organizationsCount} organizations
           </p>
         </div>
 
@@ -66,8 +80,8 @@ export function CompanyLossAnalysisPage() {
                 <DollarSign className="w-6 h-6" />
               </div>
               <p className="text-xs text-muted-foreground font-mono mb-1 uppercase tracking-wide">Total Capital Wasted</p>
-              <p className="text-3xl font-bold text-error font-mono">ETB {(TOTAL_LOSS / 1000000).toFixed(1)}M</p>
-              <p className="text-xs text-muted-foreground mt-1">annually across 500 organizations</p>
+              <p className="text-3xl font-bold text-error font-mono">ETB {(totalLoss / 1000000).toFixed(0)}M</p>
+              <p className="text-xs text-muted-foreground mt-1">annually across {organizationsCount} organizations</p>
             </CardContent>
           </Card>
 
@@ -77,7 +91,7 @@ export function CompanyLossAnalysisPage() {
                 <Building2 className="w-6 h-6" />
               </div>
               <p className="text-xs text-muted-foreground font-mono mb-1 uppercase tracking-wide">Organizations Analyzed</p>
-              <p className="text-3xl font-bold text-foreground font-mono">500</p>
+              <p className="text-3xl font-bold text-foreground font-mono">{organizationsCount}</p>
               <p className="text-xs text-muted-foreground mt-1">nationwide sample</p>
             </CardContent>
           </Card>
@@ -88,62 +102,75 @@ export function CompanyLossAnalysisPage() {
                 <TrendingDown className="w-6 h-6" />
               </div>
               <p className="text-xs text-muted-foreground font-mono mb-1 uppercase tracking-wide">Avg. Loss Per Organization</p>
-              <p className="text-3xl font-bold text-foreground font-mono">ETB {(AVG_LOSS_PER_COMPANY / 1000).toFixed(0)}K</p>
+              <p className="text-3xl font-bold text-foreground font-mono">ETB {(avgLossPerCompany / 1000).toFixed(0)}K</p>
               <p className="text-xs text-muted-foreground mt-1">annually per organization</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Product-Level Loss Breakdown */}
-        <Card className="border-border">
+        <Card className="border-border border-error/30 bg-error-bg/20">
           <CardHeader>
-            <CardTitle className="text-base">Loss by Product Category</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-error" />
+              {organizationsCount} Companies Capital Loss Analysis
+            </CardTitle>
             <CardDescription>
-              Annual capital losses aggregated across 500 organizations, broken down by stationery product
+              Annual financial losses due to poor procurement timing and price volatility
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Bar Chart - Average Loss Per Company */}
-            <div>
-              <p className="text-sm font-semibold text-foreground mb-3">Average Loss Per Company (ETB Thousands)</p>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis
-                    dataKey="product"
-                    tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }}
-                    label={{ value: 'ETB (Thousands)', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: 'var(--muted-foreground)' } }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: 'var(--card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      fontFamily: 'IBM Plex Mono',
-                    }}
-                    formatter={(val) => [`ETB ${val}K`, 'Avg Loss']}
-                  />
-                  <Bar dataKey="avgLoss" fill="var(--error)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+          <CardContent className="space-y-5">
+            {/* KPI Cards */}
+            <div className="grid sm:grid-cols-3 gap-3">
+              <Card className="border-border bg-card">
+                <CardContent className="p-4 text-center">
+                  <div className="w-10 h-10 rounded-lg bg-error-bg text-error flex items-center justify-center mx-auto mb-2">
+                    <DollarSign className="w-5 h-5" />
+                  </div>
+                  <p className="text-xs text-muted-foreground font-mono mb-1">Total Capital Wasted</p>
+                  <p className="text-2xl font-bold text-error font-mono">ETB {(totalLoss / 1000000).toFixed(0)}M</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">annually across {organizationsCount} organizations</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border bg-card">
+                <CardContent className="p-4 text-center">
+                  <div className="w-10 h-10 rounded-lg bg-primary-subtle text-primary flex items-center justify-center mx-auto mb-2">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <p className="text-xs text-muted-foreground font-mono mb-1">Organizations Analyzed</p>
+                  <p className="text-2xl font-bold text-foreground font-mono">{organizationsCount}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">companies nationwide</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border bg-card">
+                <CardContent className="p-4 text-center">
+                  <div className="w-10 h-10 rounded-lg bg-accent-subtle text-accent flex items-center justify-center mx-auto mb-2">
+                    <TrendingDown className="w-5 h-5" />
+                  </div>
+                  <p className="text-xs text-muted-foreground font-mono mb-1">Avg. Loss Per Company</p>
+                  <p className="text-2xl font-bold text-foreground font-mono">ETB {(avgLossPerCompany / 1000).toFixed(0)}K</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">annually per organization</p>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Bar Chart - Total Loss 500 Companies */}
+            {/* Product Loss Bar Chart */}
             <div>
-              <p className="text-sm font-semibold text-foreground mb-3">Total Loss Across 500 Companies (ETB Millions)</p>
-              <ResponsiveContainer width="100%" height={250}>
+              <p className="text-sm font-semibold text-foreground mb-3">Capital Lost by Product Category</p>
+              <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis
                     dataKey="product"
-                    tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                    tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                    angle={-15}
+                    textAnchor="end"
+                    height={60}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }}
+                    tick={{ fontSize: 10, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }}
                     label={{ value: 'ETB (Millions)', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: 'var(--muted-foreground)' } }}
                   />
                   <Tooltip
@@ -156,43 +183,20 @@ export function CompanyLossAnalysisPage() {
                     }}
                     formatter={(val) => [`ETB ${val}M`, 'Total Loss']}
                   />
-                  <Bar dataKey="totalLoss" fill="var(--primary)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="totalLoss" fill="var(--error)" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
 
-            {/* Detailed Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-2 font-semibold text-foreground">Product</th>
-                    <th className="text-right py-3 px-2 font-semibold text-foreground">Avg Loss/Company</th>
-                    <th className="text-right py-3 px-2 font-semibold text-foreground">Total Loss (500)</th>
-                    <th className="text-right py-3 px-2 font-semibold text-foreground">% of Procurement</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {PRODUCT_LOSS_DATA.map((item) => (
-                    <tr key={item.product} className="border-b border-border hover:bg-surface-muted/50">
-                      <td className="py-3 px-2 font-medium text-foreground">{item.product}</td>
-                      <td className="py-3 px-2 text-right font-mono text-error">ETB {item.avgLossPerCompany.toLocaleString()}</td>
-                      <td className="py-3 px-2 text-right font-mono text-foreground font-semibold">
-                        ETB {(item.totalLoss500Companies / 1000000).toFixed(2)}M
-                      </td>
-                      <td className="py-3 px-2 text-right font-mono text-muted-foreground">{item.lossPercentOfProcurement}%</td>
-                    </tr>
-                  ))}
-                  <tr className="border-t-2 border-border bg-surface-muted/50">
-                    <td className="py-3 px-2 font-bold text-foreground">TOTAL</td>
-                    <td className="py-3 px-2 text-right font-mono text-error font-bold">ETB {AVG_LOSS_PER_COMPANY.toLocaleString('en', { maximumFractionDigits: 0 })}</td>
-                    <td className="py-3 px-2 text-right font-mono text-foreground font-bold">
-                      ETB {(TOTAL_LOSS / 1000000).toFixed(2)}M
-                    </td>
-                    <td className="py-3 px-2 text-right font-mono text-muted-foreground">—</td>
-                  </tr>
-                </tbody>
-              </table>
+            {/* Explanation */}
+            <div className="bg-card border border-border rounded-md p-4 text-xs text-muted-foreground space-y-2">
+              <p className="font-semibold text-foreground uppercase tracking-wide">Why Organizations Lose Money</p>
+              <ul className="space-y-1.5">
+                <li>• <strong className="text-foreground">Poor timing:</strong> Purchasing during seasonal price spikes (Sept-Oct) instead of optimal periods</li>
+                <li>• <strong className="text-foreground">Small quantities:</strong> Missing volume discounts by ordering individually instead of pooling demand</li>
+                <li>• <strong className="text-foreground">Price volatility:</strong> Unpredictable weekly price swings of 5-20% in Merkato retail market</li>
+                <li>• <strong className="text-foreground">Lack of intelligence:</strong> No access to historical pricing data to inform procurement decisions</li>
+              </ul>
             </div>
           </CardContent>
         </Card>

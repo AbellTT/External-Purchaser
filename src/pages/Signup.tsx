@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useAppDispatch } from '@/store/hooks'
 
 /* ─────────────────────────────────────────────────────────────
    Geoapify Autocomplete Types
@@ -204,6 +205,7 @@ export function Signup() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
 
   const [form, setForm] = useState({
     // Step 1: Organization
@@ -321,9 +323,45 @@ export function Signup() {
     if (!validateStep3()) return
 
     setIsSubmitting(true)
-    await new Promise((res) => setTimeout(res, 1000))
-    setIsSubmitting(false)
-    setIsSuccess(true)
+    
+    try {
+      // Create mock registration data from form
+      const mockRegisterData = {
+        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_access_token_" + Date.now(),
+        refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_refresh_token_" + Date.now(),
+        user: {
+          id: "user_" + Date.now(),
+          email: form.email,
+          organizationName: form.orgName,
+          organizationType: form.orgType,
+          phoneNumber: form.phoneNumber,
+          tinNumber: form.tinNumber,
+          address: {
+            addressType: addressMode === 'auto' ? 'autocomplete' : 'manual',
+            addressFormatted: form.addressFormatted || null,
+            street: form.street || null,
+            subCity: form.subCity || null,
+            area: form.area || null,
+            city: form.city,
+            region: form.region,
+          }
+        }
+      }
+      
+      // Dispatch to Redux via auth/register/fulfilled so authSlice.extraReducers runs
+      // and persists user + refreshToken to localStorage automatically.
+      // Production: replace with dispatch(register({ ...formPayload })).unwrap()
+      dispatch({
+        type: 'auth/register/fulfilled',
+        payload: mockRegisterData      // shape: { accessToken, refreshToken, user }
+      })
+      
+      setIsSubmitting(false)
+      setIsSuccess(true)
+    } catch (error) {
+      setIsSubmitting(false)
+      console.error('Registration failed:', error)
+    }
   }
 
   return (

@@ -5,13 +5,18 @@ import { Eye, EyeOff, LogIn, Loader2, ArrowRight, ShieldCheck } from 'lucide-rea
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { selectAuthLoading, selectAuthError } from '@/store/slices/authSlice'
+import loginMockData from '@/data/auth/loginResponse.json'
 
 export function Login() {
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [form, setForm] = useState({ email: '', password: '', rememberMe: false })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const isLoading = useAppSelector(selectAuthLoading)
+  const authError = useAppSelector(selectAuthError)
 
   const validate = () => {
     const errs: Record<string, string> = {}
@@ -29,10 +34,20 @@ export function Login() {
     e.preventDefault()
     if (!validate()) return
 
-    setIsLoading(true)
-    await new Promise((res) => setTimeout(res, 1000))
-    setIsLoading(false)
-    navigate('/dashboard')
+    try {
+      // Mock: dispatch fulfilled action directly with mock data payload.
+      // The authSlice.login.fulfilled case will run and persist user to localStorage.
+      // Production: replace this block with:
+      //   await dispatch(login({ email: form.email, password: form.password, rememberMe: form.rememberMe })).unwrap()
+      dispatch({
+        type: 'auth/login/fulfilled',
+        payload: loginMockData.data   // shape: { accessToken, refreshToken, user }
+      })
+
+      navigate('/dashboard')
+    } catch (error) {
+      console.error('Login failed:', error)
+    }
   }
 
   return (
@@ -79,6 +94,13 @@ export function Login() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+          {/* Auth Error Alert */}
+          {authError && (
+            <div className="p-3 bg-error/10 border border-error/20 rounded-md">
+              <p className="text-sm text-error">{authError}</p>
+            </div>
+          )}
+
           {/* Email */}
           <div className="space-y-1.5">
             <Label htmlFor="email" className="font-mono text-xs font-semibold text-foreground">

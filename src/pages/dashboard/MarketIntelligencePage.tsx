@@ -1,143 +1,73 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { TrendingUp, TrendingDown, AlertCircle, Building2, DollarSign, AlertTriangle } from 'lucide-react'
+import { TrendingUp, AlertCircle, AlertTriangle, ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart,
-  BarChart, Bar, Legend,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, Legend,
 } from 'recharts'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
-import biMonthlyData from '@/data/MI/bi-monthly_data.json'
-import lossAnalysisData from '@/data/MI/500_companies_badSalesAndLoss.json'
-
-// Current week prices (Merkato Retailer prices - August 2026, Week 2)
-const CURRENT_WEEK_PRICES = {
-  'Siner Line A4 Paper': 675,
-  'OSA HP Toner': 865,
-  'Box File KENT': 163,
-  'Marker': 280,
-}
-
-// All products with weekly price history for August 2026 (4 weeks total, only first 2 weeks have data)
-// Weeks 3 and 4 are empty - will be filled by super admin as they become available
-const ALL_PRODUCTS_WEEKLY = [
-  {
-    name: 'Siner Line A4 Paper',
-    unit: 'ream',
-    currentPrice: 675, // Week 2 price
-    category: 'Paper Products',
-    weeklyHistory: [
-      { week: 'Aug W1', price: 670 },
-      { week: 'Aug W2', price: 675 },
-      { week: 'Aug W3', price: null },
-      { week: 'Aug W4', price: null },
-    ]
-  },
-  {
-    name: 'OSA HP Toner',
-    unit: 'cartridge',
-    currentPrice: 865, // Week 2 price
-    category: 'Printer Supplies',
-    weeklyHistory: [
-      { week: 'Aug W1', price: 860 },
-      { week: 'Aug W2', price: 865 },
-      { week: 'Aug W3', price: null },
-      { week: 'Aug W4', price: null },
-    ]
-  },
-  {
-    name: 'Box File KENT',
-    unit: 'piece',
-    currentPrice: 163, // Week 2 price
-    category: 'Filing & Storage',
-    weeklyHistory: [
-      { week: 'Aug W1', price: 162 },
-      { week: 'Aug W2', price: 163 },
-      { week: 'Aug W3', price: null },
-      { week: 'Aug W4', price: null },
-    ]
-  },
-  {
-    name: 'Marker',
-    unit: 'piece',
-    currentPrice: 280, // Week 2 price
-    category: 'Writing Instruments',
-    weeklyHistory: [
-      { week: 'Aug W1', price: 278 },
-      { week: 'Aug W2', price: 280 },
-      { week: 'Aug W3', price: null },
-      { week: 'Aug W4', price: null },
-    ]
-  },
-  {
-    name: 'Ballpoint Pen',
-    unit: 'box',
-    currentPrice: 215, // Week 2 price
-    category: 'Writing Instruments',
-    weeklyHistory: [
-      { week: 'Aug W1', price: 212 },
-      { week: 'Aug W2', price: 215 },
-      { week: 'Aug W3', price: null },
-      { week: 'Aug W4', price: null },
-    ]
-  },
-  {
-    name: 'Notebook',
-    unit: 'piece',
-    currentPrice: 73, // Week 2 price
-    category: 'Books & Notebooks',
-    weeklyHistory: [
-      { week: 'Aug W1', price: 72 },
-      { week: 'Aug W2', price: 73 },
-      { week: 'Aug W3', price: null },
-      { week: 'Aug W4', price: null },
-    ]
-  },
-  {
-    name: 'Ledger Book',
-    unit: 'piece',
-    currentPrice: 390, // Week 2 price
-    category: 'Books & Notebooks',
-    weeklyHistory: [
-      { week: 'Aug W1', price: 385 },
-      { week: 'Aug W2', price: 390 },
-      { week: 'Aug W3', price: null },
-      { week: 'Aug W4', price: null },
-    ]
-  },
-  {
-    name: 'Stapler',
-    unit: 'piece',
-    currentPrice: 640, // Week 2 price
-    category: 'Office Equipment',
-    weeklyHistory: [
-      { week: 'Aug W1', price: 635 },
-      { week: 'Aug W2', price: 640 },
-      { week: 'Aug W3', price: null },
-      { week: 'Aug W4', price: null },
-    ]
-  },
-]
-
-// Weekly historical trend (4 weeks of August 2026, only first 2 have data - Merkato Retailer prices) for 4 main products
-const WEEKLY_TRENDS: Record<string, Array<{week: string, price: number | null}>> = {
-  'Siner Line A4 Paper': ALL_PRODUCTS_WEEKLY.find(p => p.name === 'Siner Line A4 Paper')!.weeklyHistory,
-  'OSA HP Toner': ALL_PRODUCTS_WEEKLY.find(p => p.name === 'OSA HP Toner')!.weeklyHistory,
-  'Box File KENT': ALL_PRODUCTS_WEEKLY.find(p => p.name === 'Box File KENT')!.weeklyHistory,
-  'Marker': ALL_PRODUCTS_WEEKLY.find(p => p.name === 'Marker')!.weeklyHistory,
-}
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import {
+  fetchMarketData,
+  selectMarketProducts,
+  selectMarketIntelligenceLoading,
+  selectCapitalLossAnalysis,
+} from '@/store/slices/marketIntelligenceSlice'
 
 export function MarketIntelligencePage() {
-  const [view, setView] = useState<'main' | 'weekly'>('main') // Toggle between main 4 products and all products weekly view
-  const [selectedProduct, setSelectedProduct] = useState<string>(biMonthlyData.market_data[0].product)
-  const [selectedWeeklyProduct, setSelectedWeeklyProduct] = useState<string>(ALL_PRODUCTS_WEEKLY[0].name)
-  const [selectedYear] = useState<number>(2026) // Only 2026 data available currently
+  const dispatch = useAppDispatch()
+  const productsFromRedux = useAppSelector(selectMarketProducts)
+  const capitalLossFromRedux = useAppSelector(selectCapitalLossAnalysis)
+  const loading = useAppSelector(selectMarketIntelligenceLoading)
+  
+  const [view, setView] = useState<'main' | 'weekly'>('main')
+  const [selectedProduct, setSelectedProduct] = useState<string>('')
+  const [selectedWeeklyProduct, setSelectedWeeklyProduct] = useState<string>('')
+  const [selectedYear] = useState<number>(2026)
 
-  const productData = biMonthlyData.market_data.find(p => p.product === selectedProduct)!
+  // Load market intelligence data on mount
+  useEffect(() => {
+    dispatch(fetchMarketData())
+  }, [dispatch])
 
-  // Prepare chart data with shaded bands
-  const chartData = productData.bi_monthly_metrics.map((metric) => {
+  // Set selected product when data loads
+  useEffect(() => {
+    if (productsFromRedux.length > 0 && !selectedProduct) {
+      setSelectedProduct(productsFromRedux[0].name)
+    }
+  }, [productsFromRedux, selectedProduct])
+
+  // Set selected weekly product when data loads
+  useEffect(() => {
+    if (productsFromRedux.length > 0 && !selectedWeeklyProduct) {
+      setSelectedWeeklyProduct(productsFromRedux[0].name)
+    }
+  }, [productsFromRedux, selectedWeeklyProduct])
+
+  // Show loading
+  if (loading && productsFromRedux.length === 0) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center space-y-3">
+            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-sm text-muted-foreground">Loading market intelligence...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  // Get selected product data
+  const selectedProductData = productsFromRedux.find(p => p.name === selectedProduct) || productsFromRedux[0]
+  
+  if (!selectedProductData) {
+    return <DashboardLayout><div>No market data available</div></DashboardLayout>
+  }
+
+  // Prepare chart data with shaded bands from Redux
+  const chartData = selectedProductData.bi_monthly_metrics.map((metric) => {
     const midpoint = (metric.average_price_etb.min + metric.average_price_etb.max) / 2
     const maxVolatility = midpoint + metric.weekly_increase_etb.max
     const minVolatility = midpoint - metric.weekly_discount_etb.max
@@ -152,30 +82,26 @@ export function MarketIntelligencePage() {
     }
   })
 
-  // Total loss across all products
-  const totalLoss = lossAnalysisData.financial_loss_analysis.reduce(
-    (sum, item) => sum + item.estimated_annual_loss_etb.aggregate_500_companies_loss,
-    0
-  )
-
-  // Prepare bar chart data for product losses
-  const productLossData = lossAnalysisData.financial_loss_analysis.map(item => ({
-    product: item.product.replace('Siner Line ', '').replace('OSA ', '').replace('Box File ', ''),
-    loss: item.estimated_annual_loss_etb.aggregate_500_companies_loss / 1000000, // Convert to millions
-  }))
-
   return (
     <DashboardLayout>
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-primary" />
-            Market Intelligence
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Historical Merkato retailer pricing data, trends, and market analysis.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
+              <TrendingUp className="w-6 h-6 text-primary" />
+              Market Intelligence
+            </h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Historical Merkato retailer pricing data, trends, and market analysis.
+            </p>
+          </div>
+          <Link to="/dashboard/company-loss-analysis">
+            <Button variant="outline" size="sm" className="text-xs text-error border-error/30 hover:bg-error-bg/20 flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 text-error" />
+              Capital Loss Analysis
+            </Button>
+          </Link>
         </div>
 
         {/* View Toggle */}
@@ -203,7 +129,7 @@ export function MarketIntelligencePage() {
           <>
             {/* Product Selector for Weekly View */}
             <div className="flex flex-wrap gap-2">
-              {ALL_PRODUCTS_WEEKLY.map((product) => (
+              {productsFromRedux.map((product) => (
                 <Button
                   key={product.name}
                   size="sm"
@@ -217,9 +143,11 @@ export function MarketIntelligencePage() {
             </div>
 
             {(() => {
-              const weeklyProduct = ALL_PRODUCTS_WEEKLY.find(p => p.name === selectedWeeklyProduct)!
-              const week1Price = weeklyProduct.weeklyHistory[0].price
-              const week2Price = weeklyProduct.weeklyHistory[1].price
+              const weeklyProduct = productsFromRedux.find(p => p.name === selectedWeeklyProduct)
+              if (!weeklyProduct?.weeklyHistory) return null
+              
+              const week1Price = weeklyProduct.weeklyHistory[0]?.price
+              const week2Price = weeklyProduct.weeklyHistory[1]?.price
               const priceChange = week1Price && week2Price ? week2Price - week1Price : 0
               const priceChangePercent = week1Price && week2Price ? ((priceChange / week1Price) * 100).toFixed(1) : '0.0'
               
@@ -238,7 +166,7 @@ export function MarketIntelligencePage() {
                         {weeklyProduct.name} — Platform Direct Price (Week 2)
                       </p>
                       <p className="text-4xl font-bold text-primary font-mono">
-                        ETB {weeklyProduct.currentPrice}
+                        ETB {weeklyProduct.current_pricing.merkatoRetailerPrice}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">per {weeklyProduct.unit}</p>
                       <div className="mt-2">
@@ -310,15 +238,15 @@ export function MarketIntelligencePage() {
           <>
             {/* Product Selector */}
             <div className="flex flex-wrap gap-2">
-              {biMonthlyData.market_data.map((product) => (
+              {productsFromRedux.map((product) => (
                 <Button
-                  key={product.product}
+                  key={product.name}
                   size="sm"
-                  variant={selectedProduct === product.product ? 'default' : 'outline'}
-                  onClick={() => setSelectedProduct(product.product)}
+                  variant={selectedProduct === product.name ? 'default' : 'outline'}
+                  onClick={() => setSelectedProduct(product.name)}
                   className="text-xs"
                 >
-                  {product.product}
+                  {product.name}
                 </Button>
               ))}
             </div>
@@ -338,7 +266,7 @@ export function MarketIntelligencePage() {
                 {selectedProduct} — Platform Direct Price
               </p>
               <p className="text-4xl font-bold text-primary font-mono">
-                ETB {CURRENT_WEEK_PRICES[selectedProduct as keyof typeof CURRENT_WEEK_PRICES]}
+                ETB {selectedProductData.current_pricing.merkatoRetailerPrice}
               </p>
               <p className="text-xs text-muted-foreground mt-1">per unit</p>
             </div>
@@ -350,7 +278,7 @@ export function MarketIntelligencePage() {
               </p>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart
-                  data={WEEKLY_TRENDS[selectedProduct as keyof typeof WEEKLY_TRENDS]}
+                  data={selectedProductData.weeklyHistory || []}
                   margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -476,7 +404,7 @@ export function MarketIntelligencePage() {
                   />
                   <Legend
                     wrapperStyle={{ fontSize: '11px' }}
-                    formatter={(value) => {
+                    formatter={(value: string) => {
                       if (value === 'max_volatility') return 'Extreme Volatility Band'
                       if (value === 'price_upper_bound') return 'Normal Price Range'
                       if (value === 'midpoint') return 'Average Trend'
@@ -559,111 +487,24 @@ export function MarketIntelligencePage() {
           </CardContent>
         </Card>
 
-        {/* Section 3: 500 Companies Loss Analysis */}
-        <Card className="border-border border-error/30 bg-error-bg/20">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-error" />
-              500 Companies Capital Loss Analysis
-            </CardTitle>
-            <CardDescription>
-              Annual financial losses due to poor procurement timing and price volatility
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            {/* KPI Cards */}
-            <div className="grid sm:grid-cols-3 gap-3">
-              <Card className="border-border bg-card">
-                <CardContent className="p-4 text-center">
-                  <div className="w-10 h-10 rounded-lg bg-error-bg text-error flex items-center justify-center mx-auto mb-2">
-                    <DollarSign className="w-5 h-5" />
-                  </div>
-                  <p className="text-xs text-muted-foreground font-mono mb-1">Total Capital Wasted</p>
-                  <p className="text-2xl font-bold text-error font-mono">ETB {(totalLoss / 1000000).toFixed(0)}M</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">annually across 500 organizations</p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-border bg-card">
-                <CardContent className="p-4 text-center">
-                  <div className="w-10 h-10 rounded-lg bg-primary-subtle text-primary flex items-center justify-center mx-auto mb-2">
-                    <Building2 className="w-5 h-5" />
-                  </div>
-                  <p className="text-xs text-muted-foreground font-mono mb-1">Organizations Analyzed</p>
-                  <p className="text-2xl font-bold text-foreground font-mono">500</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">companies nationwide</p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-border bg-card">
-                <CardContent className="p-4 text-center">
-                  <div className="w-10 h-10 rounded-lg bg-accent-subtle text-accent flex items-center justify-center mx-auto mb-2">
-                    <TrendingDown className="w-5 h-5" />
-                  </div>
-                  <p className="text-xs text-muted-foreground font-mono mb-1">Avg. Loss Per Company</p>
-                  <p className="text-2xl font-bold text-foreground font-mono">ETB {(totalLoss / 500 / 1000).toFixed(0)}K</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">annually per organization</p>
-                </CardContent>
-              </Card>
+        {/* Capital Loss Analysis Callout */}
+        <Card className="border-error/30 bg-error-bg/10">
+          <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-error shrink-0" />
+                <h3 className="font-semibold text-foreground">500 Companies Capital Loss Analysis</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Discover how Ethiopian organizations lose an estimated ETB {((capitalLossFromRedux?.totalCapitalWasted || 33000000) / 1000000).toFixed(0)}M annually due to poor procurement timing and price volatility.
+              </p>
             </div>
-
-            {/* Product Loss Bar Chart */}
-            <div>
-              <p className="text-sm font-semibold text-foreground mb-3">Capital Lost by Product Category</p>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={productLossData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis
-                    dataKey="product"
-                    tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
-                    angle={-15}
-                    textAnchor="end"
-                    height={60}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 10, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }}
-                    label={{ value: 'ETB (Millions)', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: 'var(--muted-foreground)' } }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: 'var(--card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      fontFamily: 'IBM Plex Mono',
-                    }}
-                    formatter={(val) => [`ETB ${val}M`, 'Total Loss']}
-                  />
-                  <Bar dataKey="loss" fill="var(--error)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Explanation */}
-            <div className="bg-card border border-border rounded-md p-4 text-xs text-muted-foreground space-y-2">
-              <p className="font-semibold text-foreground uppercase tracking-wide">Why Organizations Lose Money</p>
-              <ul className="space-y-1.5">
-                <li>• <strong className="text-foreground">Poor timing:</strong> Purchasing during seasonal price spikes (Sept-Oct) instead of optimal periods</li>
-                <li>• <strong className="text-foreground">Small quantities:</strong> Missing volume discounts by ordering individually instead of pooling demand</li>
-                <li>• <strong className="text-foreground">Price volatility:</strong> Unpredictable weekly price swings of 5-20% in Merkato retail market</li>
-                <li>• <strong className="text-foreground">Lack of intelligence:</strong> No access to historical pricing data to inform procurement decisions</li>
-              </ul>
-            </div>
-
-            {/* View Detailed Analysis Button */}
-            <div className="flex justify-center pt-2">
-              <Button
-                asChild
-                variant="default"
-                size="sm"
-                className="gap-2"
-              >
-                <Link to="/dashboard/company-loss-analysis">
-                  <AlertTriangle className="w-4 h-4" />
-                  View Detailed Loss Analysis
-                </Link>
+            <Link to="/dashboard/company-loss-analysis" className="shrink-0">
+              <Button size="sm" className="bg-error text-white hover:bg-error/90 text-xs flex items-center gap-1.5">
+                View Loss Analysis
+                <ArrowRight className="w-3.5 h-3.5" />
               </Button>
-            </div>
+            </Link>
           </CardContent>
         </Card>
           </>

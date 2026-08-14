@@ -18,6 +18,9 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { useAppSelector } from '@/store/hooks'
+import { selectUser } from '@/store/slices/authSlice'
+import { selectUnreadCount } from '@/store/slices/notificationsSlice'
 
 const NAV_ITEMS = [
   { label: 'Overview',              icon: LayoutDashboard, to: '/dashboard' },
@@ -35,6 +38,12 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   const location = useLocation()
   const navigate = useNavigate()
   const activeRoute = location.pathname
+  const currentUser = useAppSelector(selectUser)
+  const unreadCount = useAppSelector(selectUnreadCount)
+
+  const navItems = NAV_ITEMS.map(item => 
+    item.label === 'Notifications' ? { ...item, badge: unreadCount > 0 ? unreadCount : undefined } : item
+  )
 
   return (
     <div className="flex flex-col h-full">
@@ -67,14 +76,16 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             <Building2 className="w-4 h-4 text-sidebar-foreground/80" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-sidebar-foreground truncate">Addis Ababa University</p>
+            <p className="text-sm font-semibold text-sidebar-foreground truncate">
+              {currentUser?.organizationName || 'Organization'}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const isActive = item.to === '/dashboard'
             ? activeRoute === '/dashboard'
             : activeRoute.startsWith(item.to)
@@ -129,6 +140,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const unreadCount = useAppSelector(selectUnreadCount)
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -161,7 +173,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <div className="ml-auto flex items-center gap-2">
             <Link to="/dashboard/notifications">
               <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 gap-1">
-                <Bell className="w-3 h-3" />3
+                <Bell className="w-3 h-3" />{unreadCount}
               </Badge>
             </Link>
           </div>
