@@ -20,6 +20,67 @@ export interface User {
   phoneNumber: string
   tinNumber: string
   address: Address
+  role?: 'admin' | 'user'
+  verificationStatus?: 'pending' | 'approved' | 'suspended'
+}
+
+// ==================== SUPER ADMIN MANAGEMENT TYPES ====================
+
+export interface AdminSupplier {
+  id: string
+  name: string
+  contactPerson: string
+  phoneNumber: string
+  locationInMerkato: string
+  suppliedCategories: string[]
+  performanceRating: number // 1-5
+  negotiatedDiscountPercent: number
+  totalFulfilledOrders: number
+}
+
+export interface AdminOrganization {
+  id: string
+  name: string
+  type: string
+  email: string
+  phone: string
+  tinNumber: string
+  city: string
+  subCity: string
+  registeredDate: string
+  verificationStatus: 'pending' | 'approved' | 'suspended'
+  totalSpendingEtb: number
+  totalOrdersCount: number
+}
+
+export interface AdminCreateBasketRequest {
+  name: string
+  type: 'weekly' | 'monthly' | '6-month'
+  brandName: string
+  productName: string
+  productUnit: string
+  basketPrice: number
+  merkatoRetailerPrice: number
+  regularMarketPrice: number
+  targetQuantity: number
+  startDate: string
+  endDate: string
+  deliveryDate: string
+}
+
+export interface AdminUpdateOrderStatusRequest {
+  orderId: string
+  status: 'pending' | 'accepted' | 'out-for-delivery' | 'delivered'
+  estimatedDeliveryDate?: string
+  deliveryDriverNotes?: string
+}
+
+export interface AdminUpdatePriceRequest {
+  productId: string
+  brandId?: string
+  merkatoRetailerPrice: number
+  platformDirectPrice: number
+  supplierWholesalePrice?: number
 }
 
 export interface LoginRequest {
@@ -84,8 +145,11 @@ export interface ActiveOrder {
   orderNumber: string
   date: string
   status: 'delivered' | 'out-for-delivery' | 'pending' | 'accepted'
-  total: number
-  items: number
+  type?: 'direct' | 'basket'
+  items: OrderItem[]
+  pricing: OrderPricing
+  delivery: OrderDelivery
+  savings: OrderSavings
 }
 
 export interface ActiveOrders {
@@ -157,7 +221,11 @@ export interface Brand {
   imageUrl: string
   inStock: boolean
   stockQuantity: number
-  price: number
+  price: number // Direct Purchase Price
+  merkatoRetailerPrice?: number
+  regularMarketPrice?: number
+  babiPlatformPrice?: number | null // Auto-filled on basket completion
+  supplierCost?: number | null // Auto-filled on basket completion
 }
 
 export interface Product {
@@ -167,6 +235,11 @@ export interface Product {
   unit: string
   inStock: boolean
   brands: Brand[]
+  merkatoRetailerPrice?: number
+  regularMarketPrice?: number
+  directPurchasePrice?: number
+  babiPlatformPrice?: number | null
+  supplierCost?: number | null
 }
 
 export interface ProductsResponse {
@@ -240,6 +313,16 @@ export interface Order {
   savings: OrderSavings
 }
 
+export interface CreateOrderRequest {
+  items: Array<{
+    productId: string
+    brandId: string
+    quantity: number
+    price: number
+  }>
+  notes?: string
+}
+
 export interface CreateDirectPurchaseRequest {
   items: Array<{
     productId: string
@@ -288,6 +371,8 @@ export interface BasketPricing {
   basketPrice: number
   merkato_retailer_price: number
   regular_stationary_market_price: number
+  babiPlatformPrice?: number | null  // Auto-filled when basket completes (negotiated bulk price shown to users)
+  supplierCost?: number | null        // Auto-filled when basket completes (actual Merkato wholesale cost)
 }
 
 export interface BasketTimeline {
@@ -297,10 +382,16 @@ export interface BasketTimeline {
   daysRemaining: number
 }
 
+export interface BasketCommitment {
+  quantity: number
+  totalValue: number
+}
+
 export interface BasketParticipant {
   organizationName: string
   commitment: number
   joinedDate: string
+  address?: string
 }
 
 export interface BasketParticipationInfo {
@@ -335,6 +426,10 @@ export interface Basket {
   participation: BasketParticipationInfo
   userParticipation: UserBasketParticipation
   completedSavings?: CompletedSavings
+}
+
+export interface CompletedBasket extends Basket {
+  completedSavings: CompletedSavings
 }
 
 export interface BasketsResponse {
@@ -388,6 +483,21 @@ export interface NotificationsResponse {
 
 // ==================== MARKET INTELLIGENCE TYPES ====================
 
+export interface MarketDataPoint {
+  date: string
+  price: number
+  source: string
+}
+
+export interface CompanyLossData {
+  companyId: string
+  companyName: string
+  totalLoss: number
+  lossPercentage: number
+  badPurchases: number
+  potentialSavings: number
+}
+
 export interface CurrentPricing {
   regularMarketPrice: number
   merkatoRetailerPrice: number
@@ -401,13 +511,42 @@ export interface MonthlyData {
   platformDirect: number
 }
 
+export interface BiMonthlyMetric {
+  period: string
+  average_price_etb: {
+    min: number
+    max: number
+    citation?: string
+  }
+  weekly_increase_etb: {
+    min: number
+    max: number
+    citation?: string
+  }
+  weekly_discount_etb: {
+    min: number
+    max: number
+    citation?: string
+  }
+}
+
+export interface WeeklyHistory {
+  week: string
+  price: number | null
+}
+
 export interface MarketProduct {
   id: string
   name: string
+  name_amharic?: string
   unit: string
   category: string
+  file_reference?: string
+  source_citation?: string
   current_pricing: CurrentPricing
-  data: MonthlyData[]
+  weeklyHistory?: WeeklyHistory[]
+  bi_monthly_metrics: BiMonthlyMetric[]
+  data?: MonthlyData[]
 }
 
 export interface MarketIntelligenceResponse {
@@ -418,6 +557,15 @@ export interface MarketIntelligenceResponse {
 }
 
 // ==================== PROCUREMENT CALENDAR TYPES ====================
+
+export interface ProcurementEvent {
+  id: string
+  title: string
+  description?: string
+  date: string
+  type: 'basket' | 'order' | 'deadline' | 'reminder'
+  relatedId?: string | null
+}
 
 export interface BiMonthlyPeriod {
   period: string

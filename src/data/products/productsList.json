@@ -1,0 +1,231 @@
+{
+  "success": true,
+  "data": {
+    "products": [
+      {
+        "id": "prod_001",
+        "name": "A4 Copy Paper",
+        "category": "Paper Products",
+        "unit": "Ream (500 sheets)",
+        "inStock": true,
+        "brands": [
+          {
+            "id": "brand_001",
+            "name": "Double A",
+            "imageUrl": "/images/brands/double-a.png",
+            "inStock": true,
+            "stockQuantity": 500,
+            "price": 875.00
+          },
+          {
+            "id": "brand_002",
+            "name": "PaperOne",
+            "imageUrl": "/images/brands/paperone.png",
+            "inStock": true,
+            "stockQuantity": 300,
+            "price": 260.00
+          },
+          {
+            "id": "brand_003",
+            "name": "IK Plus",
+            "imageUrl": "/images/brands/ik-plus.png",
+            "inStock": false,
+            "stockQuantity": 0,
+            "price": 245.00
+          }
+        ]
+      },
+      {
+        "id": "prod_002",
+        "name": "Ballpoint Pen",
+        "category": "Writing Instruments",
+        "unit": "Box of 50",
+        "inStock": true,
+        "brands": [
+          {
+            "id": "brand_004",
+            "name": "BIC",
+            "imageUrl": "/images/brands/bic.png",
+            "inStock": true,
+            "stockQuantity": 200,
+            "price": 15.75
+          },
+          {
+            "id": "brand_005",
+            "name": "Pilot",
+            "imageUrl": "/images/brands/pilot.png",
+            "inStock": true,
+            "stockQuantity": 150,
+            "price": 18.50
+          },
+          {
+            "id": "brand_006",
+            "name": "Faber-Castell",
+            "imageUrl": "/images/brands/faber-castell.png",
+            "inStock": true,
+            "stockQuantity": 100,
+            "price": 22.00
+          }
+        ]
+      },
+      {
+        "id": "prod_003",
+        "name": "HP Printer Ink Cartridge",
+        "category": "Printer Supplies",
+        "unit": "Cartridge",
+        "inStock": true,
+        "brands": [
+          {
+            "id": "brand_007",
+            "name": "HP Original 680 Black",
+            "imageUrl": "/images/brands/hp-680.png",
+            "inStock": true,
+            "stockQuantity": 80,
+            "price": 880.00
+          },
+          {
+            "id": "brand_008",
+            "name": "HP Original 680 Tri-color",
+            "imageUrl": "/images/brands/hp-680-color.png",
+            "inStock": true,
+            "stockQuantity": 60,
+            "price": 950.00
+          },
+          {
+            "id": "brand_009",
+            "name": "HP Compatible 680 Black",
+            "imageUrl": "/images/brands/hp-compatible.png",
+            "inStock": false,
+            "stockQuantity": 0,
+            "price": 450.00
+          }
+        ]
+      },
+      {
+        "id": "prod_004",
+        "name": "Stapler",
+        "category": "Office Equipment",
+        "unit": "Piece",
+        "inStock": true,
+        "brands": [
+          {
+            "id": "brand_010",
+            "name": "Deli Heavy Duty",
+            "imageUrl": "/images/brands/deli-stapler.png",
+            "inStock": true,
+            "stockQuantity": 120,
+            "price": 85.00
+          },
+          {
+            "id": "brand_011",
+            "name": "Max HD-50",
+            "imageUrl": "/images/brands/max-stapler.png",
+            "inStock": true,
+            "stockQuantity": 90,
+            "price": 120.00
+          }
+        ]
+      },
+      {
+        "id": "prod_005",
+        "name": "File Folder",
+        "category": "Filing & Organization",
+        "unit": "Pack of 25",
+        "inStock": true,
+        "brands": [
+          {
+            "id": "brand_012",
+            "name": "Standard Manila",
+            "imageUrl": "/images/brands/manila-folder.png",
+            "inStock": true,
+            "stockQuantity": 250,
+            "price": 125.00
+          },
+          {
+            "id": "brand_013",
+            "name": "Colorful Plastic",
+            "imageUrl": "/images/brands/plastic-folder.png",
+            "inStock": true,
+            "stockQuantity": 180,
+            "price": 185.00
+          }
+        ]
+      },
+      {
+        "id": "prod_006",
+        "name": "Whiteboard Marker",
+        "category": "Writing Instruments",
+        "unit": "Set of 4",
+        "inStock": true,
+        "brands": [
+          {
+            "id": "brand_014",
+            "name": "Pilot V-Board Master",
+            "imageUrl": "/images/brands/pilot-whiteboard.png",
+            "inStock": true,
+            "stockQuantity": 140,
+            "price": 68.00
+          },
+          {
+            "id": "brand_015",
+            "name": "Artline 500A",
+            "imageUrl": "/images/brands/artline.png",
+            "inStock": true,
+            "stockQuantity": 110,
+            "price": 72.00
+          }
+        ]
+      },
+      {
+        "id": "prod_007",
+        "name": "Envelope A4",
+        "category": "Mailing Supplies",
+        "unit": "Pack of 100",
+        "inStock": true,
+        "brands": [
+          {
+            "id": "brand_016",
+            "name": "White Window",
+            "imageUrl": "/images/brands/envelope-window.png",
+            "inStock": true,
+            "stockQuantity": 200,
+            "price": 145.00
+          },
+          {
+            "id": "brand_017",
+            "name": "Brown Standard",
+            "imageUrl": "/images/brands/envelope-brown.png",
+            "inStock": true,
+            "stockQuantity": 180,
+            "price": 120.00
+          }
+        ]
+      },
+      {
+        "id": "prod_008",
+        "name": "Sticky Notes",
+        "category": "Office Supplies",
+        "unit": "Pack of 12 pads",
+        "inStock": true,
+        "brands": [
+          {
+            "id": "brand_018",
+            "name": "3M Post-it",
+            "imageUrl": "/images/brands/post-it.png",
+            "inStock": true,
+            "stockQuantity": 170,
+            "price": 95.00
+          },
+          {
+            "id": "brand_019",
+            "name": "Generic Sticky Notes",
+            "imageUrl": "/images/brands/generic-sticky.png",
+            "inStock": true,
+            "stockQuantity": 220,
+            "price": 55.00
+          }
+        ]
+      }
+    ]
+  }
+}

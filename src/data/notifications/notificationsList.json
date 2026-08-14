@@ -1,0 +1,129 @@
+{
+  "success": true,
+  "data": {
+    "notifications": [
+      {
+        "id": "notif_001",
+        "type": "order_update",
+        "title": "Order Out for Delivery",
+        "message": "Your order ORD-2024-001 is out for delivery and will arrive by Aug 7, 2026",
+        "read": false,
+        "createdAt": "2026-08-06T08:30:00Z",
+        "metadata": {
+          "orderId": "ord_001",
+          "actionUrl": "/dashboard/orders/ord_001"
+        }
+      },
+      {
+        "id": "notif_002",
+        "type": "basket_closing",
+        "title": "Basket Closing Soon",
+        "message": "The A4 Paper Basket - August 2026 will close in 4 days. Join now to save 21%!",
+        "read": false,
+        "createdAt": "2026-08-06T07:15:00Z",
+        "metadata": {
+          "basketId": "bsk_001",
+          "actionUrl": "/dashboard/baskets/bsk_001"
+        }
+      },
+      {
+        "id": "notif_003",
+        "type": "price_alert",
+        "title": "Price Drop Alert",
+        "message": "HP Printer Ink price dropped by 12%! Now ETB 880 (was ETB 1000)",
+        "read": false,
+        "createdAt": "2026-08-05T14:45:00Z",
+        "metadata": {
+          "productId": "prod_003",
+          "brandId": "brand_007",
+          "actionUrl": "/dashboard/direct-purchase?product=prod_003"
+        }
+      },
+      {
+        "id": "notif_004",
+        "type": "order_update",
+        "title": "Order Accepted",
+        "message": "Your order ORD-2024-002 has been accepted and is being prepared for delivery",
+        "read": true,
+        "createdAt": "2026-08-05T10:20:00Z",
+        "metadata": {
+          "orderId": "ord_002",
+          "actionUrl": "/dashboard/orders/ord_002"
+        }
+      },
+      {
+        "id": "notif_005",
+        "type": "delivery",
+        "title": "Order Delivered",
+        "message": "Your order ORD-2024-003 has been successfully delivered. Thank you!",
+        "read": true,
+        "createdAt": "2026-08-06T14:30:00Z",
+        "metadata": {
+          "orderId": "ord_003",
+          "actionUrl": "/dashboard/orders/ord_003"
+        }
+      },
+      {
+        "id": "notif_006",
+        "type": "basket_closing",
+        "title": "Last Call for Whiteboard Marker Basket",
+        "message": "The Whiteboard Marker Weekly Basket closes tomorrow! Join now and save 17%",
+        "read": true,
+        "createdAt": "2026-08-05T09:00:00Z",
+        "metadata": {
+          "basketId": "bsk_005",
+          "actionUrl": "/dashboard/baskets/bsk_005"
+        }
+      },
+      {
+        "id": "notif_007",
+        "type": "system",
+        "title": "Welcome to Babi Platform",
+        "message": "Thank you for registering! Explore baskets and direct purchases to start saving.",
+        "read": true,
+        "createdAt": "2026-08-01T08:00:00Z",
+        "metadata": {
+          "actionUrl": "/dashboard"
+        }
+      },
+      {
+        "id": "notif_008",
+        "type": "price_alert",
+        "title": "Price Increase Alert",
+        "message": "BIC Ballpoint Pen price increased by 5%. Current price: ETB 15.75",
+        "read": true,
+        "createdAt": "2026-08-04T11:30:00Z",
+        "metadata": {
+          "productId": "prod_002",
+          "brandId": "brand_004",
+          "actionUrl": "/dashboard/market-intelligence"
+        }
+      },
+      {
+        "id": "notif_009",
+        "type": "order_update",
+        "title": "Order Pending",
+        "message": "Your order ORD-2024-004 has been received and is pending confirmation",
+        "read": true,
+        "createdAt": "2026-08-02T16:25:00Z",
+        "metadata": {
+          "orderId": "ord_004",
+          "actionUrl": "/dashboard/orders/ord_004"
+        }
+      },
+      {
+        "id": "notif_010",
+        "type": "delivery",
+        "title": "Order Delivered",
+        "message": "Your order ORD-2024-005 has been successfully delivered",
+        "read": true,
+        "createdAt": "2026-08-04T10:15:00Z",
+        "metadata": {
+          "orderId": "ord_005",
+          "actionUrl": "/dashboard/orders/ord_005"
+        }
+      }
+    ],
+    "unreadCount": 3
+  }
+}

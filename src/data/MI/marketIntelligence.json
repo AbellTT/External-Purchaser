@@ -1,0 +1,262 @@
+{
+  "success": true,
+  "data": {
+    "products": [
+      {
+        "id": "prod_mi_001",
+        "name": "Siner Line A4 Paper",
+        "name_amharic": "Siner Line A4 ወረቀት",
+        "unit": "ream",
+        "category": "Paper Products",
+        "file_reference": "11.pdf",
+        "source_citation": "[cite: 5]",
+        "current_pricing": {
+          "regularMarketPrice": 700,
+          "merkatoRetailerPrice": 675,
+          "platformDirectPrice": 650
+        },
+        "weeklyHistory": [
+          { "week": "Aug W1", "price": 670 },
+          { "week": "Aug W2", "price": 675 },
+          { "week": "Aug W3", "price": null },
+          { "week": "Aug W4", "price": null }
+        ],
+        "bi_monthly_metrics": [
+          {
+            "period": "Sept - Oct",
+            "average_price_etb": { "min": 480, "max": 545, "citation": "[cite: 5]" },
+            "weekly_increase_etb": { "min": 5, "max": 65, "citation": "[cite: 5]" },
+            "weekly_discount_etb": { "min": 5, "max": 45, "citation": "[cite: 5]" }
+          },
+          {
+            "period": "Nov - Dec",
+            "average_price_etb": { "min": 505, "max": 630, "citation": "[cite: 5]" },
+            "weekly_increase_etb": { "min": 5, "max": 125, "citation": "[cite: 5]" },
+            "weekly_discount_etb": { "min": 5, "max": 95, "citation": "[cite: 5]" }
+          },
+          {
+            "period": "Jan - Feb",
+            "average_price_etb": { "min": 630, "max": 660, "citation": "[cite: 5]" },
+            "weekly_increase_etb": { "min": 10, "max": 30, "citation": "[cite: 5]" },
+            "weekly_discount_etb": { "min": 10, "max": 30, "citation": "[cite: 5]" }
+          },
+          {
+            "period": "Mar - Apr",
+            "average_price_etb": { "min": 570, "max": 650, "citation": "[cite: 5]" },
+            "weekly_increase_etb": { "min": 5, "max": 80, "citation": "[cite: 5]" },
+            "weekly_discount_etb": { "min": 5, "max": 80, "citation": "[cite: 5]" }
+          },
+          {
+            "period": "May - Jun",
+            "average_price_etb": { "min": 570, "max": 650, "citation": "[cite: 5]" },
+            "weekly_increase_etb": { "min": 5, "max": 80, "citation": "[cite: 5]" },
+            "weekly_discount_etb": { "min": 5, "max": 80, "citation": "[cite: 5]" }
+          },
+          {
+            "period": "Jul - Aug",
+            "average_price_etb": { "min": 580, "max": 700, "citation": "[cite: 5]" },
+            "weekly_increase_etb": { "min": 5, "max": 125, "citation": "[cite: 5]" },
+            "weekly_discount_etb": { "min": 5, "max": 120, "citation": "[cite: 5]" }
+          }
+        ]
+      },
+      {
+        "id": "prod_mi_002",
+        "name": "OSA HP Toner",
+        "name_amharic": "OSA HP ቶነር",
+        "unit": "cartridge",
+        "category": "Printer Supplies",
+        "file_reference": "22.pdf",
+        "source_citation": "[cite: 4]",
+        "current_pricing": {
+          "regularMarketPrice": 920,
+          "merkatoRetailerPrice": 865,
+          "platformDirectPrice": 820
+        },
+        "weeklyHistory": [
+          { "week": "Aug W1", "price": 860 },
+          { "week": "Aug W2", "price": 865 },
+          { "week": "Aug W3", "price": null },
+          { "week": "Aug W4", "price": null }
+        ],
+        "bi_monthly_metrics": [
+          {
+            "period": "Sept - Oct",
+            "average_price_etb": { "min": 700, "max": 780, "citation": "[cite: 4]" },
+            "weekly_increase_etb": { "min": 10, "max": 70, "citation": "[cite: 4]" },
+            "weekly_discount_etb": { "min": 10, "max": 50, "citation": "[cite: 4]" }
+          },
+          {
+            "period": "Nov - Dec",
+            "average_price_etb": { "min": 810, "max": 900, "citation": "[cite: 4]" },
+            "weekly_increase_etb": { "min": 10, "max": 90, "citation": "[cite: 4]" },
+            "weekly_discount_etb": { "min": 10, "max": 70, "citation": "[cite: 4]" }
+          },
+          {
+            "period": "Jan - Feb",
+            "average_price_etb": { "min": 850, "max": 950, "citation": "[cite: 4]" },
+            "weekly_increase_etb": { "min": 10, "max": 100, "citation": "[cite: 4]" },
+            "weekly_discount_etb": { "min": 10, "max": 90, "citation": "[cite: 4]" }
+          },
+          {
+            "period": "Mar - Apr",
+            "average_price_etb": { "min": 900, "max": 950, "citation": "[cite: 4]" },
+            "weekly_increase_etb": { "min": 10, "max": 50, "citation": "[cite: 4]" },
+            "weekly_discount_etb": { "min": 10, "max": 40, "citation": "[cite: 4]" }
+          },
+          {
+            "period": "May - Jun",
+            "average_price_etb": { "min": 850, "max": 900, "citation": "[cite: 4]" },
+            "weekly_increase_etb": { "min": 10, "max": 50, "citation": "[cite: 4]" },
+            "weekly_discount_etb": { "min": 10, "max": 25, "citation": "[cite: 4]" }
+          },
+          {
+            "period": "Jul - Aug",
+            "average_price_etb": { "min": 820, "max": 900, "citation": "[cite: 4]" },
+            "weekly_increase_etb": { "min": 10, "max": 80, "citation": "[cite: 4]" },
+            "weekly_discount_etb": { "min": 10, "max": 50, "citation": "[cite: 4]" }
+          }
+        ]
+      },
+      {
+        "id": "prod_mi_003",
+        "name": "Box File KENT",
+        "name_amharic": "KENT ቦክስ ፋይል",
+        "unit": "piece",
+        "category": "Filing & Storage",
+        "file_reference": "33.pdf",
+        "source_citation": "[cite: 1]",
+        "current_pricing": {
+          "regularMarketPrice": 170,
+          "merkatoRetailerPrice": 163,
+          "platformDirectPrice": 155
+        },
+        "weeklyHistory": [
+          { "week": "Aug W1", "price": 162 },
+          { "week": "Aug W2", "price": 163 },
+          { "week": "Aug W3", "price": null },
+          { "week": "Aug W4", "price": null }
+        ],
+        "bi_monthly_metrics": [
+          {
+            "period": "Sept - Oct",
+            "average_price_etb": { "min": 105, "max": 160, "citation": "[cite: 1]" },
+            "weekly_increase_etb": { "min": 10, "max": 25, "citation": "[cite: 1]" },
+            "weekly_discount_etb": { "min": 10, "max": 15, "citation": "[cite: 1]" }
+          },
+          {
+            "period": "Nov - Dec",
+            "average_price_etb": { "min": 170, "max": 195, "citation": "[cite: 1]" },
+            "weekly_increase_etb": { "min": 10, "max": 14, "citation": "[cite: 1]" },
+            "weekly_discount_etb": { "min": 10, "max": 15, "citation": "[cite: 1]" }
+          },
+          {
+            "period": "Jan - Feb",
+            "average_price_etb": { "min": 170, "max": 195, "citation": "[cite: 1]" },
+            "weekly_increase_etb": { "min": 5, "max": 10, "citation": "[cite: 1]" },
+            "weekly_discount_etb": { "min": 10, "max": 12, "citation": "[cite: 1]" }
+          },
+          {
+            "period": "Mar - Apr",
+            "average_price_etb": { "min": 166, "max": 180, "citation": "[cite: 1]" },
+            "weekly_increase_etb": { "min": 5, "max": 10, "citation": "[cite: 1]" },
+            "weekly_discount_etb": { "min": 5, "max": 8, "citation": "[cite: 1]" }
+          },
+          {
+            "period": "May - Jun",
+            "average_price_etb": { "min": 155, "max": 165, "citation": "[cite: 1]" },
+            "weekly_increase_etb": { "min": 10, "max": 70, "citation": "[cite: 1]" },
+            "weekly_discount_etb": { "min": 5, "max": 8, "citation": "[cite: 1]" }
+          },
+          {
+            "period": "Jul - Aug",
+            "average_price_etb": { "min": 160, "max": 170, "citation": "[cite: 1]" },
+            "weekly_increase_etb": { "min": 10, "max": 25, "citation": "[cite: 1]" },
+            "weekly_discount_etb": { "min": 10, "max": 50, "citation": "[cite: 1]" }
+          }
+        ]
+      },
+      {
+        "id": "prod_mi_004",
+        "name": "Marker",
+        "name_amharic": "ማርከር",
+        "unit": "piece",
+        "category": "Writing Instruments",
+        "file_reference": "44.pdf",
+        "source_citation": "[cite: 3]",
+        "current_pricing": {
+          "regularMarketPrice": 295,
+          "merkatoRetailerPrice": 280,
+          "platformDirectPrice": 265
+        },
+        "weeklyHistory": [
+          { "week": "Aug W1", "price": 278 },
+          { "week": "Aug W2", "price": 280 },
+          { "week": "Aug W3", "price": null },
+          { "week": "Aug W4", "price": null }
+        ],
+        "bi_monthly_metrics": [
+          {
+            "period": "Sept - Oct",
+            "average_price_etb": { "min": 175, "max": 235, "citation": "[cite: 3]" },
+            "weekly_increase_etb": { "min": 10, "max": 60, "citation": "[cite: 3]" },
+            "weekly_discount_etb": { "min": 10, "max": 50, "citation": "[cite: 3]" }
+          },
+          {
+            "period": "Nov - Dec",
+            "average_price_etb": { "min": 235, "max": 280, "citation": "[cite: 3]" },
+            "weekly_increase_etb": { "min": 10, "max": 45, "citation": "[cite: 3]" },
+            "weekly_discount_etb": { "min": 10, "max": 30, "citation": "[cite: 3]" }
+          },
+          {
+            "period": "Jan - Feb",
+            "average_price_etb": { "min": 350, "max": 375, "citation": "[cite: 3]" },
+            "weekly_increase_etb": { "min": 10, "max": 95, "citation": "[cite: 3]" },
+            "weekly_discount_etb": { "min": 10, "max": 75, "citation": "[cite: 3]" }
+          },
+          {
+            "period": "Mar - Apr",
+            "average_price_etb": { "min": 230, "max": 275, "citation": "[cite: 3]" },
+            "weekly_increase_etb": { "min": 10, "max": 45, "citation": "[cite: 3]" },
+            "weekly_discount_etb": { "min": 10, "max": 25, "citation": "[cite: 3]" }
+          },
+          {
+            "period": "May - Jun",
+            "average_price_etb": { "min": 240, "max": 280, "citation": "[cite: 3]" },
+            "weekly_increase_etb": { "min": 10, "max": 40, "citation": "[cite: 3]" },
+            "weekly_discount_etb": { "min": 10, "max": 20, "citation": "[cite: 3]" }
+          },
+          {
+            "period": "Jul - Aug",
+            "average_price_etb": { "min": 275, "max": 295, "citation": "[cite: 3]" },
+            "weekly_increase_etb": { "min": 10, "max": 20, "citation": "[cite: 3]" },
+            "weekly_discount_etb": { "min": 10, "max": 15, "citation": "[cite: 3]" }
+          }
+        ]
+      }
+    ],
+    "capitalLossAnalysis": {
+      "totalCapitalWasted": 33000000,
+      "organizationsAnalyzed": 500,
+      "avgLossPerCompany": 66000,
+      "lossBreakdown": [
+        {
+          "product": "Siner Line A4 Paper",
+          "lossAmount": 10000000
+        },
+        {
+          "product": "OSA HP Toner",
+          "lossAmount": 15000000
+        },
+        {
+          "product": "Box File KENT",
+          "lossAmount": 5000000
+        },
+        {
+          "product": "Marker",
+          "lossAmount": 3000000
+        }
+      ]
+    }
+  }
+}

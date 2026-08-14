@@ -1,0 +1,291 @@
+{
+  "success": true,
+  "data": {
+    "orders": [
+      {
+        "id": "ord_001",
+        "orderNumber": "ORD-2024-001",
+        "date": "2026-08-05T10:30:00Z",
+        "status": "out-for-delivery",
+        "items": [
+          {
+            "productName": "A4 Copy Paper",
+            "brandName": "Double A",
+            "quantity": 20,
+            "unit": "Ream",
+            "price": 275.00,
+            "subtotal": 5500.00
+          },
+          {
+            "productName": "Ballpoint Pen",
+            "brandName": "BIC",
+            "quantity": 10,
+            "unit": "Box of 50",
+            "price": 15.75,
+            "subtotal": 157.50
+          },
+          {
+            "productName": "File Folder",
+            "brandName": "Standard Manila",
+            "quantity": 5,
+            "unit": "Pack of 25",
+            "price": 125.00,
+            "subtotal": 625.00
+          }
+        ],
+        "pricing": {
+          "itemsTotal": 6282.50,
+          "deliveryFee": 150.00,
+          "discount": 1232.50,
+          "total": 5200.00
+        },
+        "delivery": {
+          "address": "123 Main Street, Bole, Addis Ababa",
+          "estimatedDate": "2026-08-07T00:00:00Z",
+          "actualDate": null
+        },
+        "savings": {
+          "vsMerkatoRetailer": {
+            "amount": 980.00,
+            "percentage": 15.8
+          },
+          "vsRegularStationaryMarket": {
+            "amount": 1450.00,
+            "percentage": 21.8
+          }
+        }
+      },
+      {
+        "id": "ord_002",
+        "orderNumber": "ORD-2024-002",
+        "date": "2026-08-04T14:15:00Z",
+        "status": "accepted",
+        "items": [
+          {
+            "productName": "HP Printer Ink Cartridge",
+            "brandName": "HP Original 680 Black",
+            "quantity": 5,
+            "unit": "Cartridge",
+            "price": 880.00,
+            "subtotal": 4400.00
+          },
+          {
+            "productName": "Whiteboard Marker",
+            "brandName": "Pilot V-Board Master",
+            "quantity": 8,
+            "unit": "Set of 4",
+            "price": 68.00,
+            "subtotal": 544.00
+          }
+        ],
+        "pricing": {
+          "itemsTotal": 4944.00,
+          "deliveryFee": 100.00,
+          "discount": 1244.00,
+          "total": 3800.00
+        },
+        "delivery": {
+          "address": "123 Main Street, Bole, Addis Ababa",
+          "estimatedDate": "2026-08-09T00:00:00Z",
+          "actualDate": null
+        },
+        "savings": {
+          "vsMerkatoRetailer": {
+            "amount": 1050.00,
+            "percentage": 21.6
+          },
+          "vsRegularStationaryMarket": {
+            "amount": 1620.00,
+            "percentage": 29.8
+          }
+        }
+      },
+      {
+        "id": "ord_003",
+        "orderNumber": "ORD-2024-003",
+        "date": "2026-08-03T09:45:00Z",
+        "status": "delivered",
+        "items": [
+          {
+            "productName": "A4 Copy Paper",
+            "brandName": "PaperOne",
+            "quantity": 30,
+            "unit": "Ream",
+            "price": 260.00,
+            "subtotal": 7800.00
+          },
+          {
+            "productName": "Stapler",
+            "brandName": "Deli Heavy Duty",
+            "quantity": 15,
+            "unit": "Piece",
+            "price": 85.00,
+            "subtotal": 1275.00
+          },
+          {
+            "productName": "Sticky Notes",
+            "brandName": "3M Post-it",
+            "quantity": 12,
+            "unit": "Pack of 12 pads",
+            "price": 95.00,
+            "subtotal": 1140.00
+          }
+        ],
+        "pricing": {
+          "itemsTotal": 10215.00,
+          "deliveryFee": 200.00,
+          "discount": 2115.00,
+          "total": 8300.00
+        },
+        "delivery": {
+          "address": "123 Main Street, Bole, Addis Ababa",
+          "estimatedDate": "2026-08-06T00:00:00Z",
+          "actualDate": "2026-08-06T14:30:00Z"
+        },
+        "savings": {
+          "vsMerkatoRetailer": {
+            "amount": 1680.00,
+            "percentage": 16.8
+          },
+          "vsRegularStationaryMarket": {
+            "amount": 2450.00,
+            "percentage": 22.8
+          }
+        }
+      },
+      {
+        "id": "ord_004",
+        "orderNumber": "ORD-2024-004",
+        "date": "2026-08-02T16:20:00Z",
+        "status": "pending",
+        "items": [
+          {
+            "productName": "Envelope A4",
+            "brandName": "White Window",
+            "quantity": 10,
+            "unit": "Pack of 100",
+            "price": 145.00,
+            "subtotal": 1450.00
+          }
+        ],
+        "pricing": {
+          "itemsTotal": 1450.00,
+          "deliveryFee": 80.00,
+          "discount": 130.00,
+          "total": 1400.00
+        },
+        "delivery": {
+          "address": "123 Main Street, Bole, Addis Ababa",
+          "estimatedDate": "2026-08-08T00:00:00Z",
+          "actualDate": null
+        },
+        "savings": {
+          "vsMerkatoRetailer": {
+            "amount": 95.00,
+            "percentage": 6.4
+          },
+          "vsRegularStationaryMarket": {
+            "amount": 180.00,
+            "percentage": 11.4
+          }
+        }
+      },
+      {
+        "id": "ord_005",
+        "orderNumber": "ORD-2024-005",
+        "date": "2026-08-01T11:00:00Z",
+        "status": "delivered",
+        "items": [
+          {
+            "productName": "Ballpoint Pen",
+            "brandName": "Pilot",
+            "quantity": 6,
+            "unit": "Box of 50",
+            "price": 18.50,
+            "subtotal": 111.00
+          },
+          {
+            "productName": "File Folder",
+            "brandName": "Colorful Plastic",
+            "quantity": 8,
+            "unit": "Pack of 25",
+            "price": 185.00,
+            "subtotal": 1480.00
+          }
+        ],
+        "pricing": {
+          "itemsTotal": 1591.00,
+          "deliveryFee": 80.00,
+          "discount": 671.00,
+          "total": 1000.00
+        },
+        "delivery": {
+          "address": "123 Main Street, Bole, Addis Ababa",
+          "estimatedDate": "2026-08-04T00:00:00Z",
+          "actualDate": "2026-08-04T10:15:00Z"
+        },
+        "savings": {
+          "vsMerkatoRetailer": {
+            "amount": 185.00,
+            "percentage": 15.6
+          },
+          "vsRegularStationaryMarket": {
+            "amount": 310.00,
+            "percentage": 23.7
+          }
+        }
+      },
+      {
+        "id": "ord_006",
+        "orderNumber": "ORD-2024-006",
+        "date": "2026-07-28T08:30:00Z",
+        "status": "delivered",
+        "items": [
+          {
+            "productName": "A4 Copy Paper",
+            "brandName": "Double A",
+            "quantity": 50,
+            "unit": "Ream",
+            "price": 275.00,
+            "subtotal": 13750.00
+          },
+          {
+            "productName": "HP Printer Ink Cartridge",
+            "brandName": "HP Original 680 Tri-color",
+            "quantity": 10,
+            "unit": "Cartridge",
+            "price": 950.00,
+            "subtotal": 9500.00
+          }
+        ],
+        "pricing": {
+          "itemsTotal": 23250.00,
+          "deliveryFee": 250.00,
+          "discount": 4500.00,
+          "total": 19000.00
+        },
+        "delivery": {
+          "address": "123 Main Street, Bole, Addis Ababa",
+          "estimatedDate": "2026-07-31T00:00:00Z",
+          "actualDate": "2026-07-31T16:45:00Z"
+        },
+        "savings": {
+          "vsMerkatoRetailer": {
+            "amount": 3250.00,
+            "percentage": 14.6
+          },
+          "vsRegularStationaryMarket": {
+            "amount": 5100.00,
+            "percentage": 21.2
+          }
+        }
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 1,
+      "totalOrders": 6,
+      "hasMore": false
+    }
+  }
+}

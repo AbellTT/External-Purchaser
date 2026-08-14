@@ -1,0 +1,223 @@
+{
+  "success": true,
+  "data": {
+    "productsWithData": [
+      "Siner Line A4 Paper",
+      "OSA HP Toner",
+      "Box File KENT",
+      "Marker"
+    ],
+    "allProducts": [
+      "Siner Line A4 Paper",
+      "OSA HP Toner",
+      "Box File KENT",
+      "Marker",
+      "Ballpoint Pen",
+      "Notebook",
+      "Ledger Book",
+      "Stapler"
+    ],
+    "adminRecommendations": {
+      "Siner Line A4 Paper": "Consider timing large orders around periods of lower market demand. Joining long-term baskets (3-6 months) can help lock in favorable rates and reduce price volatility exposure.",
+      "OSA HP Toner": "Toner cartridges benefit from bulk purchasing strategies. Pre-ordering 2-3 months ahead and participating in volume-based baskets typically yields better pricing.",
+      "Box File KENT": "Local suppliers offer competitive pricing during off-peak seasons. For orders exceeding 300 units, explore direct supplier negotiations for additional savings.",
+      "Marker": "Avoid purchasing during back-to-school season when demand peaks. Early procurement or off-season bulk orders provide better value and availability.",
+      "Ballpoint Pen": "Bulk purchases during off-peak seasons typically yield 15-20% better rates. Long-term basket participation (3-6 months) helps lock in favorable pricing and ensures consistent supply.",
+      "Notebook": "Strong seasonality around school periods drives price fluctuations. Strategic buyers procure 2-3 months before peak demand or participate in volume-pooling baskets.",
+      "Ledger Book": "Premium variants show more stable pricing. For large orders (500+ units), direct manufacturer contact or long-term basket commitments can secure better rates.",
+      "Stapler": "Limited local supply makes advance planning critical. Pre-ordering 2-3 months ahead and participating in quarterly baskets reduces both cost and supply risk."
+    },
+    "seasonalGuides": {
+      "Ballpoint Pen": {
+        "bestSeason": "May - Jun",
+        "secondBestSeason": "Sept - Oct",
+        "worstSeason": "Jan - Feb",
+        "recommendation": "Bulk purchases during off-peak seasons typically yield 15-20% better rates. Long-term basket participation (3-6 months) helps lock in favorable pricing and ensures consistent supply. Avoid January-February when back-to-school demand peaks."
+      },
+      "Notebook": {
+        "bestSeason": "Mar - Apr",
+        "secondBestSeason": "Jul - Aug",
+        "worstSeason": "Nov - Dec",
+        "recommendation": "Strong seasonality around school periods drives price fluctuations. Strategic buyers procure 2-3 months before peak demand or participate in volume-pooling baskets. November-December shows highest prices due to academic calendar alignment."
+      },
+      "Ledger Book": {
+        "bestSeason": "May - Jun",
+        "secondBestSeason": "Sept - Oct",
+        "worstSeason": "Jan - Feb",
+        "recommendation": "Premium variants show more stable pricing. For large orders (500+ units), direct manufacturer contact or long-term basket commitments can secure better rates. January-February typically sees elevated prices due to fiscal year-end demand."
+      },
+      "Stapler": {
+        "bestSeason": "Jul - Aug",
+        "secondBestSeason": "Mar - Apr",
+        "worstSeason": "Nov - Dec",
+        "recommendation": "Limited local supply makes advance planning critical. Pre-ordering 2-3 months ahead and participating in quarterly baskets reduces both cost and supply risk. November-December shows peak pricing due to year-end office procurement cycles."
+      }
+    },
+    "marketData": [
+      {
+        "product": "Siner Line A4 Paper",
+        "bi_monthly_metrics": [
+          {
+            "period": "Jan - Feb",
+            "average_price_etb": { "min": 980, "max": 1050 },
+            "weekly_increase_etb": { "max": 25 },
+            "weekly_discount_etb": { "max": 10 }
+          },
+          {
+            "period": "Mar - Apr",
+            "average_price_etb": { "min": 920, "max": 970 },
+            "weekly_increase_etb": { "max": 15 },
+            "weekly_discount_etb": { "max": 20 }
+          },
+          {
+            "period": "May - Jun",
+            "average_price_etb": { "min": 850, "max": 890 },
+            "weekly_increase_etb": { "max": 10 },
+            "weekly_discount_etb": { "max": 30 }
+          },
+          {
+            "period": "Jul - Aug",
+            "average_price_etb": { "min": 820, "max": 860 },
+            "weekly_increase_etb": { "max": 12 },
+            "weekly_discount_etb": { "max": 35 }
+          },
+          {
+            "period": "Sept - Oct",
+            "average_price_etb": { "min": 890, "max": 940 },
+            "weekly_increase_etb": { "max": 20 },
+            "weekly_discount_etb": { "max": 15 }
+          },
+          {
+            "period": "Nov - Dec",
+            "average_price_etb": { "min": 950, "max": 1020 },
+            "weekly_increase_etb": { "max": 30 },
+            "weekly_discount_etb": { "max": 10 }
+          }
+        ]
+      },
+      {
+        "product": "OSA HP Toner",
+        "bi_monthly_metrics": [
+          {
+            "period": "Jan - Feb",
+            "average_price_etb": { "min": 2400, "max": 2600 },
+            "weekly_increase_etb": { "max": 50 },
+            "weekly_discount_etb": { "max": 20 }
+          },
+          {
+            "period": "Mar - Apr",
+            "average_price_etb": { "min": 2250, "max": 2450 },
+            "weekly_increase_etb": { "max": 30 },
+            "weekly_discount_etb": { "max": 40 }
+          },
+          {
+            "period": "May - Jun",
+            "average_price_etb": { "min": 2100, "max": 2300 },
+            "weekly_increase_etb": { "max": 25 },
+            "weekly_discount_etb": { "max": 60 }
+          },
+          {
+            "period": "Jul - Aug",
+            "average_price_etb": { "min": 2050, "max": 2200 },
+            "weekly_increase_etb": { "max": 20 },
+            "weekly_discount_etb": { "max": 70 }
+          },
+          {
+            "period": "Sept - Oct",
+            "average_price_etb": { "min": 2200, "max": 2400 },
+            "weekly_increase_etb": { "max": 45 },
+            "weekly_discount_etb": { "max": 30 }
+          },
+          {
+            "period": "Nov - Dec",
+            "average_price_etb": { "min": 2350, "max": 2550 },
+            "weekly_increase_etb": { "max": 60 },
+            "weekly_discount_etb": { "max": 15 }
+          }
+        ]
+      },
+      {
+        "product": "Box File KENT",
+        "bi_monthly_metrics": [
+          {
+            "period": "Jan - Feb",
+            "average_price_etb": { "min": 140, "max": 160 },
+            "weekly_increase_etb": { "max": 5 },
+            "weekly_discount_etb": { "max": 2 }
+          },
+          {
+            "period": "Mar - Apr",
+            "average_price_etb": { "min": 130, "max": 148 },
+            "weekly_increase_etb": { "max": 4 },
+            "weekly_discount_etb": { "max": 5 }
+          },
+          {
+            "period": "May - Jun",
+            "average_price_etb": { "min": 118, "max": 132 },
+            "weekly_increase_etb": { "max": 3 },
+            "weekly_discount_etb": { "max": 8 }
+          },
+          {
+            "period": "Jul - Aug",
+            "average_price_etb": { "min": 115, "max": 128 },
+            "weekly_increase_etb": { "max": 2 },
+            "weekly_discount_etb": { "max": 10 }
+          },
+          {
+            "period": "Sept - Oct",
+            "average_price_etb": { "min": 125, "max": 140 },
+            "weekly_increase_etb": { "max": 6 },
+            "weekly_discount_etb": { "max": 4 }
+          },
+          {
+            "period": "Nov - Dec",
+            "average_price_etb": { "min": 135, "max": 152 },
+            "weekly_increase_etb": { "max": 8 },
+            "weekly_discount_etb": { "max": 3 }
+          }
+        ]
+      },
+      {
+        "product": "Marker",
+        "bi_monthly_metrics": [
+          {
+            "period": "Jan - Feb",
+            "average_price_etb": { "min": 75, "max": 90 },
+            "weekly_increase_etb": { "max": 3 },
+            "weekly_discount_etb": { "max": 1 }
+          },
+          {
+            "period": "Mar - Apr",
+            "average_price_etb": { "min": 70, "max": 82 },
+            "weekly_increase_etb": { "max": 2 },
+            "weekly_discount_etb": { "max": 3 }
+          },
+          {
+            "period": "May - Jun",
+            "average_price_etb": { "min": 65, "max": 75 },
+            "weekly_increase_etb": { "max": 1 },
+            "weekly_discount_etb": { "max": 5 }
+          },
+          {
+            "period": "Jul - Aug",
+            "average_price_etb": { "min": 68, "max": 78 },
+            "weekly_increase_etb": { "max": 2 },
+            "weekly_discount_etb": { "max": 4 }
+          },
+          {
+            "period": "Sept - Oct",
+            "average_price_etb": { "min": 85, "max": 98 },
+            "weekly_increase_etb": { "max": 6 },
+            "weekly_discount_etb": { "max": 2 }
+          },
+          {
+            "period": "Nov - Dec",
+            "average_price_etb": { "min": 78, "max": 88 },
+            "weekly_increase_etb": { "max": 4 },
+            "weekly_discount_etb": { "max": 3 }
+          }
+        ]
+      }
+    ]
+  }
+}

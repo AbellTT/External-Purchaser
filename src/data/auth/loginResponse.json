@@ -5,16 +5,16 @@
     "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_refresh_token",
     "user": {
       "id": "user_12345",
-      "email": "procurement@aau.edu.et",
-      "organizationName": "Addis Ababa University",
+      "email": "AAU@edu.et",
+      "organizationName": "AASTU",
       "organizationType": "University",
-      "phoneNumber": "0911234567",
-      "tinNumber": "0012345678",
+      "phoneNumber": "0912334467",
+      "tinNumber": "0123456789",
       "address": {
         "addressType": "manual",
         "addressFormatted": null,
-        "street": "Churchill Avenue",
-        "subCity": "Kirkos",
+        "street": "Tulu dimtu",
+        "subCity": "Sheger",
         "area": "Sidist Kilo",
         "city": "Addis Ababa",
         "region": "Addis Ababa City Administration"

@@ -1,0 +1,334 @@
+{
+  "success": true,
+  "data": {
+    "totalSavings": {
+      "amount": 44230.50,
+      "percentage": 28.5,
+      "trend": "up",
+      "comparedTo": "vs Merkato Retailers"
+    },
+    "activeOrders": {
+      "count": 5,
+      "totalValue": 20700.00,
+      "orders": [
+        {
+          "id": "ord_001",
+          "orderNumber": "ORD-2026-098",
+          "date": "2026-08-02T10:30:00Z",
+          "status": "out-for-delivery",
+          "type": "direct",
+          "items": [
+            {
+              "productName": "A4 Paper",
+              "brandName": "Sinar Line",
+              "quantity": 120,
+              "unit": "ream",
+              "price": 820.00,
+              "subtotal": 98400.00
+            },
+            {
+              "productName": "Ballpoint Pen",
+              "brandName": "Pilot",
+              "quantity": 50,
+              "unit": "box",
+              "price": 195.00,
+              "subtotal": 9750.00
+            }
+          ],
+          "pricing": {
+            "itemsTotal": 108150.00,
+            "deliveryFee": 0.00,
+            "discount": 0.00,
+            "total": 108150.00
+          },
+          "delivery": {
+            "address": "Main Campus, Addis Ababa University",
+            "estimatedDate": "2026-08-03T00:00:00Z",
+            "actualDate": null
+          },
+          "savings": {
+            "vsMerkatoRetailer": {
+              "amount": 17250.00,
+              "percentage": 13.8
+            },
+            "vsRegularStationaryMarket": {
+              "amount": 28750.00,
+              "percentage": 21.0
+            }
+          }
+        },
+        {
+          "id": "ord_002",
+          "orderNumber": "ORD-2026-095",
+          "date": "2026-08-01T14:15:00Z",
+          "status": "accepted",
+          "type": "direct",
+          "items": [
+            {
+              "productName": "Box File",
+              "brandName": "Kent",
+              "quantity": 200,
+              "unit": "piece",
+              "price": 118.00,
+              "subtotal": 23600.00
+            },
+            {
+              "productName": "Printer Toner",
+              "brandName": "HP Original",
+              "quantity": 8,
+              "unit": "cartridge",
+              "price": 2050.00,
+              "subtotal": 16400.00
+            }
+          ],
+          "pricing": {
+            "itemsTotal": 40000.00,
+            "deliveryFee": 0.00,
+            "discount": 0.00,
+            "total": 40000.00
+          },
+          "delivery": {
+            "address": "Main Campus, Addis Ababa University",
+            "estimatedDate": "2026-08-06T00:00:00Z",
+            "actualDate": null
+          },
+          "savings": {
+            "vsMerkatoRetailer": {
+              "amount": 5200.00,
+              "percentage": 11.5
+            },
+            "vsRegularStationaryMarket": {
+              "amount": 9800.00,
+              "percentage": 19.7
+            }
+          }
+        },
+        {
+          "id": "ord_003",
+          "orderNumber": "ORD-2026-089",
+          "date": "2026-07-30T09:45:00Z",
+          "status": "delivered",
+          "type": "direct",
+          "items": [
+            {
+              "productName": "A4 Paper",
+              "brandName": "Sinar Line",
+              "quantity": 80,
+              "unit": "ream",
+              "price": 795.00,
+              "subtotal": 63600.00
+            }
+          ],
+          "pricing": {
+            "itemsTotal": 63600.00,
+            "deliveryFee": 0.00,
+            "discount": 0.00,
+            "total": 63600.00
+          },
+          "delivery": {
+            "address": "Main Campus, Addis Ababa University",
+            "estimatedDate": "2026-08-02T00:00:00Z",
+            "actualDate": "2026-08-02T11:20:00Z"
+          },
+          "savings": {
+            "vsMerkatoRetailer": {
+              "amount": 15200.00,
+              "percentage": 19.3
+            },
+            "vsRegularStationaryMarket": {
+              "amount": 24400.00,
+              "percentage": 27.7
+            }
+          }
+        },
+        {
+          "id": "ord_004",
+          "orderNumber": "ORD-2026-082",
+          "date": "2026-07-28T16:20:00Z",
+          "status": "pending",
+          "type": "direct",
+          "items": [
+            {
+              "productName": "Marker",
+              "brandName": "Pilot",
+              "quantity": 150,
+              "unit": "piece",
+              "price": 45.00,
+              "subtotal": 6750.00
+            },
+            {
+              "productName": "Ledger Book",
+              "brandName": "Standard",
+              "quantity": 30,
+              "unit": "piece",
+              "price": 348.00,
+              "subtotal": 10440.00
+            }
+          ],
+          "pricing": {
+            "itemsTotal": 17190.00,
+            "deliveryFee": 0.00,
+            "discount": 0.00,
+            "total": 17190.00
+          },
+          "delivery": {
+            "address": "Main Campus, Addis Ababa University",
+            "estimatedDate": "2026-08-05T00:00:00Z",
+            "actualDate": null
+          },
+          "savings": {
+            "vsMerkatoRetailer": {
+              "amount": 2185.00,
+              "percentage": 11.3
+            },
+            "vsRegularStationaryMarket": {
+              "amount": 4080.00,
+              "percentage": 19.2
+            }
+          }
+        },
+        {
+          "id": "ord_005",
+          "orderNumber": "ORD-2026-075",
+          "date": "2026-07-25T11:00:00Z",
+          "status": "delivered",
+          "type": "direct",
+          "items": [
+            {
+              "productName": "Ballpoint Pen",
+              "brandName": "Bic",
+              "quantity": 40,
+              "unit": "box",
+              "price": 185.00,
+              "subtotal": 7400.00
+            },
+            {
+              "productName": "Notebook",
+              "brandName": "Campap",
+              "quantity": 200,
+              "unit": "piece",
+              "price": 68.00,
+              "subtotal": 13600.00
+            }
+          ],
+          "pricing": {
+            "itemsTotal": 21000.00,
+            "deliveryFee": 0.00,
+            "discount": 0.00,
+            "total": 21000.00
+          },
+          "delivery": {
+            "address": "Main Campus, Addis Ababa University",
+            "estimatedDate": "2026-07-29T00:00:00Z",
+            "actualDate": "2026-07-29T15:30:00Z"
+          },
+          "savings": {
+            "vsMerkatoRetailer": {
+              "amount": 2940.00,
+              "percentage": 12.3
+            },
+            "vsRegularStationaryMarket": {
+              "amount": 5320.00,
+              "percentage": 20.2
+            }
+          }
+        }
+      ]
+    },
+    "basketParticipation": {
+      "activeBaskets": 3,
+      "totalCommitted": 8500.00,
+      "upcomingDeliveries": 2,
+      "baskets": [
+        {
+          "id": "bsk_001",
+          "name": "Double A - A4 Paper Basket - August 2026",
+          "type": "monthly",
+          "yourCommitment": 5000.00,
+          "deliveryDate": "2026-08-15T00:00:00Z",
+          "status": "closing_soon",
+          "fillProgress": {
+            "current": 28500,
+            "target": 30000,
+            "percentage": 95
+          }
+        },
+        {
+          "id": "bsk_002",
+          "name": "HP - Ink Cartridge Weekly Basket",
+          "type": "weekly",
+          "yourCommitment": 2000.00,
+          "deliveryDate": "2026-08-10T00:00:00Z",
+          "status": "active",
+          "fillProgress": {
+            "current": 8200,
+            "target": 15000,
+            "percentage": 55
+          }
+        },
+        {
+          "id": "bsk_003",
+          "name": "Standard - Office Supplies 6-Month Basket",
+          "type": "6-month",
+          "yourCommitment": 1500.00,
+          "deliveryDate": "2027-02-01T00:00:00Z",
+          "status": "active",
+          "fillProgress": {
+            "current": 45000,
+            "target": 100000,
+            "percentage": 45
+          }
+        }
+      ]
+    },
+    "avgDiscountRate": {
+      "yourAverage": 16.8,
+      "calculation": {
+        "directPurchaseSavings": 12.5,
+        "basketSavings": 21.2,
+        "merkato_avg": 15.0
+      }
+    },
+    "priceAlerts": [
+      {
+        "productId": "prod_001",
+        "productName": "A4 Copy Paper",
+        "brandName": "Double A",
+        "priceChange": -8.5,
+        "direction": "down",
+        "currentPrice": 275.00,
+        "previousPrice": 300.00,
+        "userPurchaseHistory": {
+          "lastPurchased": "2026-07-15T00:00:00Z",
+          "avgPrice": 285.00
+        }
+      },
+      {
+        "productId": "prod_002",
+        "productName": "Ballpoint Pen",
+        "brandName": "BIC",
+        "priceChange": 5.0,
+        "direction": "up",
+        "currentPrice": 15.75,
+        "previousPrice": 15.00,
+        "userPurchaseHistory": {
+          "lastPurchased": "2026-07-20T00:00:00Z",
+          "avgPrice": 14.50
+        }
+      },
+      {
+        "productId": "prod_003",
+        "productName": "HP Printer Ink",
+        "brandName": "HP Original",
+        "priceChange": -12.0,
+        "direction": "down",
+        "currentPrice": 880.00,
+        "previousPrice": 1000.00,
+        "userPurchaseHistory": {
+          "lastPurchased": "2026-06-10T00:00:00Z",
+          "avgPrice": 950.00
+        }
+      }
+    ]
+  }
+}

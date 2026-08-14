@@ -1,0 +1,281 @@
+{
+  "success": true,
+  "data": {
+    "baskets": [
+      {
+        "id": "bsk_c001",
+        "basketNumber": "BSK-2026-07-001",
+        "name": "A4 Paper Basket - July 2026",
+        "type": "monthly",
+        "status": "completed",
+        "brand": {
+          "brandId": "brand_002",
+          "brandName": "PaperOne",
+          "productId": "prod_001",
+          "productName": "A4 Copy Paper",
+          "productUnit": "Ream (500 sheets)",
+          "brandImageUrl": "/images/brands/paperone.png"
+        },
+        "pricing": {
+          "basketPrice": 230.00,
+          "merkato_retailer_price": 275.00,
+          "regular_stationary_market_price": 305.00
+        },
+        "timeline": {
+          "startDate": "2026-07-01T00:00:00Z",
+          "endDate": "2026-07-10T23:59:59Z",
+          "deliveryDate": "2026-07-15T00:00:00Z",
+          "daysRemaining": 0
+        },
+        "participation": {
+          "participants": [
+            { "organizationName": "Commercial Bank of Ethiopia", "commitment": 8000, "joinedDate": "2026-07-02T09:30:00Z" }
+          ],
+          "totalParticipants": 3,
+          "totalCommitment": 25500,
+          "currentCommitment": 25500,
+          "minCommitment": 1000,
+          "maxCommitment": 50000
+        },
+        "userParticipation": {
+          "isParticipating": true,
+          "commitment": 8000,
+          "joinedDate": "2026-07-02T09:30:00Z"
+        },
+        "completedSavings": {
+          "vsMerkatoRetailer": 360.00,
+          "vsRegularStationaryMarket": 600.00
+        }
+      },
+      {
+        "id": "bsk_c002",
+        "basketNumber": "BSK-2026-W28",
+        "name": "HP Ink Weekly Basket",
+        "type": "weekly",
+        "status": "completed",
+        "brand": {
+          "brandId": "brand_008",
+          "brandName": "HP Original 680 Tri-color",
+          "productId": "prod_003",
+          "productName": "HP Printer Ink Cartridge",
+          "productUnit": "Cartridge",
+          "brandImageUrl": "/images/brands/hp-680-color.png"
+        },
+        "pricing": {
+          "basketPrice": 810.00,
+          "merkato_retailer_price": 980.00,
+          "regular_stationary_market_price": 1100.00
+        },
+        "timeline": {
+          "startDate": "2026-07-15T00:00:00Z",
+          "endDate": "2026-07-18T23:59:59Z",
+          "deliveryDate": "2026-07-20T00:00:00Z",
+          "daysRemaining": 0
+        },
+        "participation": {
+          "participants": [
+            { "organizationName": "Commercial Bank of Ethiopia", "commitment": 3240, "joinedDate": "2026-07-15T10:45:00Z" }
+          ],
+          "totalParticipants": 2,
+          "totalCommitment": 9720,
+          "currentCommitment": 9720,
+          "minCommitment": 500,
+          "maxCommitment": 20000
+        },
+        "userParticipation": {
+          "isParticipating": true,
+          "commitment": 3240,
+          "joinedDate": "2026-07-15T10:45:00Z"
+        },
+        "completedSavings": {
+          "vsMerkatoRetailer": 680.00,
+          "vsRegularStationaryMarket": 1160.00
+        }
+      },
+      {
+        "id": "bsk_c003",
+        "basketNumber": "BSK-2026-06-002",
+        "name": "File Folder Monthly Basket",
+        "type": "monthly",
+        "status": "completed",
+        "brand": {
+          "brandId": "brand_012",
+          "brandName": "Standard Manila",
+          "productId": "prod_005",
+          "productName": "File Folder",
+          "productUnit": "Pack of 25",
+          "brandImageUrl": "/images/brands/manila-folder.png"
+        },
+        "pricing": {
+          "basketPrice": 98.00,
+          "merkato_retailer_price": 128.00,
+          "regular_stationary_market_price": 148.00
+        },
+        "timeline": {
+          "startDate": "2026-06-01T00:00:00Z",
+          "endDate": "2026-06-15T23:59:59Z",
+          "deliveryDate": "2026-06-20T00:00:00Z",
+          "daysRemaining": 0
+        },
+        "participation": {
+          "participants": [
+            { "organizationName": "Commercial Bank of Ethiopia", "commitment": 1960, "joinedDate": "2026-06-03T13:15:00Z" }
+          ],
+          "totalParticipants": 3,
+          "totalCommitment": 14700,
+          "currentCommitment": 14700,
+          "minCommitment": 500,
+          "maxCommitment": 30000
+        },
+        "userParticipation": {
+          "isParticipating": true,
+          "commitment": 1960,
+          "joinedDate": "2026-06-03T13:15:00Z"
+        },
+        "completedSavings": {
+          "vsMerkatoRetailer": 600.00,
+          "vsRegularStationaryMarket": 1000.00
+        }
+      },
+      {
+        "id": "bsk_c004",
+        "basketNumber": "BSK-2026-W26",
+        "name": "Stapler Weekly Basket",
+        "type": "weekly",
+        "status": "completed",
+        "brand": {
+          "brandId": "brand_010",
+          "brandName": "Deli Heavy Duty",
+          "productId": "prod_004",
+          "productName": "Stapler",
+          "productUnit": "Piece",
+          "brandImageUrl": "/images/brands/deli-stapler.png"
+        },
+        "pricing": {
+          "basketPrice": 68.00,
+          "merkato_retailer_price": 88.00,
+          "regular_stationary_market_price": 98.00
+        },
+        "timeline": {
+          "startDate": "2026-07-01T00:00:00Z",
+          "endDate": "2026-07-04T23:59:59Z",
+          "deliveryDate": "2026-07-06T00:00:00Z",
+          "daysRemaining": 0
+        },
+        "participation": {
+          "participants": [
+            { "organizationName": "Commercial Bank of Ethiopia", "commitment": 2720, "joinedDate": "2026-07-01T14:30:00Z" }
+          ],
+          "totalParticipants": 2,
+          "totalCommitment": 8160,
+          "currentCommitment": 8160,
+          "minCommitment": 200,
+          "maxCommitment": 10000
+        },
+        "userParticipation": {
+          "isParticipating": true,
+          "commitment": 2720,
+          "joinedDate": "2026-07-01T14:30:00Z"
+        },
+        "completedSavings": {
+          "vsMerkatoRetailer": 800.00,
+          "vsRegularStationaryMarket": 1200.00
+        }
+      },
+      {
+        "id": "bsk_c005",
+        "basketNumber": "BSK-2026-05-001",
+        "name": "BIC Ballpoint Pen Monthly Basket",
+        "type": "monthly",
+        "status": "completed",
+        "brand": {
+          "brandId": "brand_004",
+          "brandName": "BIC Cristal",
+          "productId": "prod_002",
+          "productName": "Ballpoint Pen",
+          "productUnit": "Box of 50",
+          "brandImageUrl": "/images/brands/bic-pen.png"
+        },
+        "pricing": {
+          "basketPrice": 14.50,
+          "merkato_retailer_price": 17.50,
+          "regular_stationary_market_price": 19.80
+        },
+        "timeline": {
+          "startDate": "2026-05-01T00:00:00Z",
+          "endDate": "2026-05-15T23:59:59Z",
+          "deliveryDate": "2026-05-20T00:00:00Z",
+          "daysRemaining": 0
+        },
+        "participation": {
+          "participants": [
+            { "organizationName": "Commercial Bank of Ethiopia", "commitment": 1200, "joinedDate": "2026-05-03T10:00:00Z" }
+          ],
+          "totalParticipants": 4,
+          "totalCommitment": 15000,
+          "currentCommitment": 15000,
+          "minCommitment": 1000,
+          "maxCommitment": 40000
+        },
+        "userParticipation": {
+          "isParticipating": true,
+          "commitment": 1200,
+          "joinedDate": "2026-05-03T10:00:00Z"
+        },
+        "completedSavings": {
+          "vsMerkatoRetailer": 3600.00,
+          "vsRegularStationaryMarket": 6360.00
+        }
+      },
+      {
+        "id": "bsk_c006",
+        "basketNumber": "BSK-2026-04-003",
+        "name": "Notebook Semi-Annual Basket",
+        "type": "6-month",
+        "status": "cancelled",
+        "brand": {
+          "brandId": "brand_015",
+          "brandName": "Hardcover Executive",
+          "productId": "prod_006",
+          "productName": "Notebook",
+          "productUnit": "Piece",
+          "brandImageUrl": "/images/brands/notebook.png"
+        },
+        "pricing": {
+          "basketPrice": 120.00,
+          "merkato_retailer_price": 140.00,
+          "regular_stationary_market_price": 160.00
+        },
+        "timeline": {
+          "startDate": "2026-04-01T00:00:00Z",
+          "endDate": "2026-04-10T23:59:59Z",
+          "deliveryDate": null,
+          "daysRemaining": 0
+        },
+        "participation": {
+          "participants": [],
+          "totalParticipants": 0,
+          "totalCommitment": 0,
+          "currentCommitment": 0,
+          "minCommitment": 500,
+          "maxCommitment": 10000
+        },
+        "userParticipation": {
+          "isParticipating": false,
+          "commitment": 0,
+          "joinedDate": null
+        },
+        "completedSavings": {
+          "vsMerkatoRetailer": 0,
+          "vsRegularStationaryMarket": 0
+        }
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 3,
+      "totalBaskets": 6,
+      "pageSize": 2
+    }
+  }
+}

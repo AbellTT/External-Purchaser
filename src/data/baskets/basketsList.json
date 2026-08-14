@@ -1,0 +1,277 @@
+{
+  "success": true,
+  "data": {
+    "activeBaskets": [
+      {
+        "id": "bsk_001",
+        "basketNumber": "BSK-2026-08-001",
+        "name": "A4 Paper Basket - August 2026",
+        "type": "monthly",
+        "status": "active",
+        "brand": {
+          "brandId": "brand_001",
+          "brandName": "Double A",
+          "productId": "prod_001",
+          "productName": "A4 Copy Paper",
+          "productUnit": "Ream (500 sheets)",
+          "brandImageUrl": "/images/brands/double-a.png"
+        },
+        "pricing": {
+          "basketPrice": 245.00,
+          "merkato_retailer_price": 285.00,
+          "regular_stationary_market_price": 310.00
+        },
+        "timeline": {
+          "startDate": "2026-08-01T00:00:00Z",
+          "endDate": "2026-08-10T23:59:59Z",
+          "deliveryDate": "2026-08-15T00:00:00Z",
+          "daysRemaining": 4
+        },
+        "participation": {
+          "participants": [
+            {
+              "organizationName": "Addis Ababa University",
+              "commitment": 15000,
+              "joinedDate": "2026-08-02T10:30:00Z",
+              "address": "King George VI St, Sidist Kilo, Addis Ababa"
+            },
+            {
+              "organizationName": "Ministry of Education",
+              "commitment": 8500,
+              "joinedDate": "2026-08-03T14:15:00Z",
+              "address": "Arat Kilo, Addis Ababa"
+            },
+            {
+              "organizationName": "Commercial Bank of Ethiopia",
+              "commitment": 5000,
+              "joinedDate": "2026-08-04T09:45:00Z",
+              "address": "Gambia St, Churchill Ave, Addis Ababa"
+            }
+          ],
+          "totalParticipants": 3,
+          "totalCommitment": 28500,
+          "currentCommitment": 28500,
+          "minCommitment": 1000,
+          "maxCommitment": 50000
+        },
+        "userParticipation": {
+          "isParticipating": true,
+          "commitment": 5000,
+          "joinedDate": "2026-08-04T09:45:00Z"
+        }
+      },
+      {
+        "id": "bsk_003",
+        "basketNumber": "BSK-2026-Q3-001",
+        "name": "Office Supplies 6-Month Basket",
+        "type": "6-month",
+        "status": "active",
+        "brand": {
+          "brandId": "brand_012",
+          "brandName": "Standard Manila",
+          "productId": "prod_005",
+          "productName": "File Folder",
+          "productUnit": "Pack of 25",
+          "brandImageUrl": "/images/brands/manila-folder.png"
+        },
+        "pricing": {
+          "basketPrice": 95.00,
+          "merkato_retailer_price": 125.00,
+          "regular_stationary_market_price": 145.00
+        },
+        "timeline": {
+          "startDate": "2026-08-01T00:00:00Z",
+          "endDate": "2026-11-30T23:59:59Z",
+          "deliveryDate": "2027-02-01T00:00:00Z",
+          "daysRemaining": 117
+        },
+        "participation": {
+          "participants": [
+            {
+              "organizationName": "Awash International Bank",
+              "commitment": 25000,
+              "joinedDate": "2026-08-01T08:00:00Z",
+              "address": "Awash Tower, Ras Desta Damtew Ave, Bole, Addis Ababa"
+            },
+            {
+              "organizationName": "Dashen Bank",
+              "commitment": 18500,
+              "joinedDate": "2026-08-02T12:30:00Z",
+              "address": "Dashen Bank Bldg, Haile Gebre Selassie Ave, Addis Ababa"
+            },
+            {
+              "organizationName": "Commercial Bank of Ethiopia",
+              "commitment": 1500,
+              "joinedDate": "2026-08-03T16:45:00Z",
+              "address": "Gambia St, Churchill Ave, Addis Ababa"
+            }
+          ],
+          "totalParticipants": 3,
+          "totalCommitment": 45000,
+          "currentCommitment": 45000,
+          "minCommitment": 500,
+          "maxCommitment": 100000
+        },
+        "userParticipation": {
+          "isParticipating": true,
+          "commitment": 1500,
+          "joinedDate": "2026-08-03T16:45:00Z"
+        }
+      }
+    ],
+    "openBaskets": [
+      {
+        "id": "bsk_002",
+        "basketNumber": "BSK-2026-08-002",
+        "name": "HP Printer Ink Weekly Basket",
+        "type": "weekly",
+        "status": "active",
+        "brand": {
+          "brandId": "brand_007",
+          "brandName": "HP Original 680 Black",
+          "productId": "prod_003",
+          "productName": "HP Printer Ink Cartridge",
+          "productUnit": "Cartridge",
+          "brandImageUrl": "/images/brands/hp-680.png"
+        },
+        "pricing": {
+          "basketPrice": 750.00,
+          "merkato_retailer_price": 920.00,
+          "regular_stationary_market_price": 1050.00
+        },
+        "timeline": {
+          "startDate": "2026-08-05T00:00:00Z",
+          "endDate": "2026-08-08T23:59:59Z",
+          "deliveryDate": "2026-08-10T00:00:00Z",
+          "daysRemaining": 2
+        },
+        "participation": {
+          "participants": [
+            {
+              "organizationName": "St. Paul's Hospital",
+              "commitment": 5200,
+              "joinedDate": "2026-08-05T11:20:00Z",
+              "address": "Semen District, St. Paul's Hospital Millennium Medical College, Gulele, Addis Ababa"
+            },
+            {
+              "organizationName": "Ethiopian Airlines",
+              "commitment": 3000,
+              "joinedDate": "2026-08-05T15:40:00Z",
+              "address": "Ethiopian Airlines Group HQ, Bole International Airport, Addis Ababa"
+            }
+          ],
+          "totalParticipants": 2,
+          "totalCommitment": 8200,
+          "currentCommitment": 8200,
+          "minCommitment": 500,
+          "maxCommitment": 20000
+        },
+        "userParticipation": {
+          "isParticipating": false,
+          "commitment": null,
+          "joinedDate": null
+        }
+      },
+      {
+        "id": "bsk_004",
+        "basketNumber": "BSK-2026-08-003",
+        "name": "BIC Ballpoint Pen Monthly Basket",
+        "type": "monthly",
+        "status": "active",
+        "brand": {
+          "brandId": "brand_004",
+          "brandName": "BIC",
+          "productId": "prod_002",
+          "productName": "Ballpoint Pen",
+          "productUnit": "Box of 50",
+          "brandImageUrl": "/images/brands/bic.png"
+        },
+        "pricing": {
+          "basketPrice": 12.50,
+          "merkato_retailer_price": 16.00,
+          "regular_stationary_market_price": 18.50
+        },
+        "timeline": {
+          "startDate": "2026-08-01T00:00:00Z",
+          "endDate": "2026-08-20T23:59:59Z",
+          "deliveryDate": "2026-08-25T00:00:00Z",
+          "daysRemaining": 14
+        },
+        "participation": {
+          "participants": [
+            {
+              "organizationName": "Addis Ababa City Administration",
+              "commitment": 8000,
+              "joinedDate": "2026-08-01T09:15:00Z",
+              "address": "City Hall, Churchill Ave, Arada Sub-City, Addis Ababa"
+            }
+          ],
+          "totalParticipants": 1,
+          "totalCommitment": 8000,
+          "currentCommitment": 8000,
+          "minCommitment": 200,
+          "maxCommitment": 30000
+        },
+        "userParticipation": {
+          "isParticipating": false,
+          "commitment": null,
+          "joinedDate": null
+        }
+      }
+    ],
+    "completedBaskets": [
+      {
+        "id": "bsk_005",
+        "basketNumber": "BSK-2026-W32",
+        "name": "Whiteboard Marker Weekly Basket",
+        "type": "weekly",
+        "status": "completed",
+        "brand": {
+          "brandId": "brand_014",
+          "brandName": "Pilot V-Board Master",
+          "productId": "prod_006",
+          "productName": "Whiteboard Marker",
+          "productUnit": "Set of 4",
+          "brandImageUrl": "/images/brands/pilot-whiteboard.png"
+        },
+        "pricing": {
+          "basketPrice": 58.00,
+          "merkato_retailer_price": 70.00,
+          "regular_stationary_market_price": 78.00
+        },
+        "timeline": {
+          "startDate": "2026-08-04T00:00:00Z",
+          "endDate": "2026-08-07T23:59:59Z",
+          "deliveryDate": "2026-08-09T00:00:00Z",
+          "daysRemaining": 0
+        },
+        "participation": {
+          "participants": [
+            {
+              "organizationName": "International School of Addis Ababa",
+              "commitment": 3500,
+              "joinedDate": "2026-08-04T10:00:00Z",
+              "address": "Old Airport Area, Bole Sub-City, Addis Ababa"
+            },
+            {
+              "organizationName": "British Council Ethiopia",
+              "commitment": 2200,
+              "joinedDate": "2026-08-04T13:30:00Z",
+              "address": "Comoros St, Kazanchis, Kirkos Sub-City, Addis Ababa"
+            }
+          ],
+          "totalParticipants": 2,
+          "totalCommitment": 5700,
+          "currentCommitment": 5700,
+          "minCommitment": 300,
+          "maxCommitment": 15000
+        },
+        "userParticipation": {
+          "isParticipating": true,
+          "commitment": 2000,
+          "joinedDate": null
+        }
+      }
+    ]
+  }
+}
