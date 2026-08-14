@@ -8,6 +8,41 @@ import type {
   RefreshTokenResponse,
 } from '@/types/api'
 import { api } from '@/lib/api'
+import loginMockData from '@/data/auth/loginResponse.json'
+
+// ==================== LOCALSTORAGE HELPERS ====================
+
+/**
+ * Attempt to restore the user object from localStorage.
+ * Falls back to null if nothing is stored or the JSON is corrupt.
+ */
+function loadUserFromStorage(): User {
+  try {
+    const raw = localStorage.getItem('user')
+    if (raw) {
+      return JSON.parse(raw) as User
+    }
+  } catch {
+    // Ignore error and fall through to mock user
+  }
+  return loginMockData.data.user as User
+}
+
+/**
+ * Persist the user object to localStorage.
+ */
+function saveUserToStorage(user: User): void {
+  localStorage.setItem('user', JSON.stringify(user))
+}
+
+/**
+ * Clear auth-related tokens from localStorage.
+ * We deliberately keep the 'user' object so the app remembers the user's
+ * organization name for the sidebar and greetings even if they need to re-login.
+ */
+function clearAuthStorage(): void {
+  localStorage.removeItem('refreshToken')
+}
 
 // ==================== STATE INTERFACE ====================
 
@@ -19,10 +54,19 @@ interface AuthState {
   error: string | null
 }
 
+/**
+ * On page load we restore the user from localStorage so components like
+ * DashboardLayout and ProfilePage always have data even after a hard refresh.
+ * isAuthenticated is true only if we actually have a stored user — the
+ * AuthProvider will verify the session by calling initializeAuth() which
+ * also refreshes the accessToken from the refreshToken.
+ */
+const storedUser = loadUserFromStorage()
+
 const initialState: AuthState = {
-  user: null,
-  accessToken: null,
-  isAuthenticated: false,
+  user: storedUser,
+  accessToken: null,                      // Access tokens are NEVER persisted (memory-only)
+  isAuthenticated: localStorage.getItem('refreshToken') !== null, // Only true if we have a refresh token
   loading: false,
   error: null,
 }
@@ -195,7 +239,16 @@ const authSlice = createSlice({
       state.accessToken = null
       state.isAuthenticated = false
       state.error = null
-      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('user')
+      clearAuthStorage()
+    },
+
+    /**
+     * Update user in state and localStorage (e.g. after profile save via mock)
+     */
+    setUser: (state, action: PayloadAction<User>) => {
+      state.user = action.payload
+      saveUserToStorage(action.payload)
     },
   },
   extraReducers: (builder) => {
@@ -211,6 +264,9 @@ const authSlice = createSlice({
         state.accessToken = action.payload.accessToken
         state.isAuthenticated = true
         state.error = null
+        // Persist so page refresh keeps the org name visible everywhere
+        saveUserToStorage(action.payload.user)
+        localStorage.setItem('refreshToken', action.payload.refreshToken)
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false
@@ -230,6 +286,9 @@ const authSlice = createSlice({
         state.accessToken = action.payload.accessToken
         state.isAuthenticated = true
         state.error = null
+        // Persist so page refresh keeps the org name visible everywhere
+        saveUserToStorage(action.payload.user)
+        localStorage.setItem('refreshToken', action.payload.refreshToken)
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false
@@ -250,7 +309,8 @@ const authSlice = createSlice({
       })
       .addCase(refreshToken.rejected, (state, action) => {
         state.loading = false
-        state.user = null
+        // We do NOT set state.user = null here so that the UI can still
+        // display the user's org name until they explicitly log out.
         state.accessToken = null
         state.isAuthenticated = false
         state.error = action.payload as string
@@ -267,6 +327,8 @@ const authSlice = createSlice({
         state.accessToken = null
         state.isAuthenticated = false
         state.error = null
+        localStorage.removeItem('user')
+        clearAuthStorage()
       })
 
     // ===== INITIALIZE AUTH =====
@@ -278,10 +340,21 @@ const authSlice = createSlice({
         state.loading = false
         state.accessToken = action.payload.accessToken
         state.isAuthenticated = true
+        // Restore user from localStorage if not already in state
+        if (!state.user) {
+          state.user = loadUserFromStorage()
+        }
       })
       .addCase(initializeAuth.rejected, (state) => {
         state.loading = false
+        // Backend unreachable or session truly expired.
+        // We intentionally keep state.user so the sidebar / greeting
+        // still show the org name — the user isn't "forgotten", they
+        // just need to re-authenticate. isAuthenticated = false will
+        // redirect them through the auth guard.
+        state.accessToken = null
         state.isAuthenticated = false
+        clearAuthStorage()
       })
 
     // ===== UPDATE PROFILE =====
@@ -294,6 +367,8 @@ const authSlice = createSlice({
         state.loading = false
         state.user = action.payload
         state.error = null
+        // Keep localStorage in sync with profile edits
+        saveUserToStorage(action.payload)
       })
       .addCase(updateProfile.rejected, (state, action) => {
         state.loading = false
@@ -304,7 +379,7 @@ const authSlice = createSlice({
 
 // ==================== ACTIONS ====================
 
-export const { clearError, setAccessToken, clearAuth } = authSlice.actions
+export const { clearError, setAccessToken, clearAuth, setUser } = authSlice.actions
 
 // ==================== SELECTORS ====================
 

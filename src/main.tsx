@@ -8,6 +8,12 @@ import { store } from './store'
 import App from './App.tsx'
 import './index.css'
 
+// ─── Dev helper: expose store to browser console for manual testing ───────────
+if (import.meta.env.DEV) {
+  ;(window as any).__store = store
+}
+
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
