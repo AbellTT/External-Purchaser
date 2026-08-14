@@ -2,20 +2,47 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ShoppingBasket, Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 export function Footer() {
   const year = new Date().getFullYear()
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [sent, setSent] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email || !message) return
-    setSent(true)
-    setEmail('')
-    setMessage('')
-    setTimeout(() => setSent(false), 5000)
+
+    setIsSubmitting(true)
+    try {
+      // Production: calls POST /api/contact/submit
+      // Mock: simulates a 600ms network delay then succeeds
+      await new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+          // Simulate ~95% success rate for mock
+          if (Math.random() > 0.05) resolve()
+          else reject(new Error('Network error'))
+        }, 600)
+      })
+      // Uncomment when backend is live:
+      // await api.post('/contact/submit', { email, message })
+
+      setSent(true)
+      setEmail('')
+      setMessage('')
+      toast.success('Message sent!', {
+        description: "Our team will get back to you within 24 hours.",
+      })
+      setTimeout(() => setSent(false), 5000)
+    } catch {
+      toast.error('Failed to send message', {
+        description: 'Please try again or email us directly.',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -104,8 +131,8 @@ export function Footer() {
                   />
                 </div>
 
-                <Button type="submit" className="w-full sm:w-auto gap-2 font-semibold text-sm">
-                  Send Message
+                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2 font-semibold text-sm">
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                   <Send className="w-3.5 h-3.5" />
                 </Button>
               </form>

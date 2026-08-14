@@ -1,0 +1,37 @@
+{
+  "mcpServers": {
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
+    },
+    "vibe": {
+      "command": "npx",
+      "args": [
+        "@vibe/mcp"
+      ]
+    },
+    "react-bits": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@rpironato/mcp-reactbits-server@latest"
+      ]
+    },
+    "playwright": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\AT85\\Documents\\babi\\frontend\\node_modules\\@playwright\\mcp\\cli.js"
+      ]
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ]
+    }
+  }
+}
