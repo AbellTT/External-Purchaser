@@ -111,6 +111,57 @@ class Product(models.Model):
         return f"{self.name} ({self.sku})"
 
 
+class Brand(models.Model):
+    """A purchasable brand/variant of a reusable catalog product."""
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='brands'
+    )
+    name = models.CharField(max_length=100)
+    image_url = models.TextField(blank=True)
+
+    stock_quantity = models.PositiveIntegerField(default=0)
+    is_in_stock = models.BooleanField(default=True)
+
+    regular_market_price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
+    merkato_retailer_price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
+    direct_purchase_price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
+    babi_platform_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
+    supplier_cost = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'product_brands'
+        ordering = ['name']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['product', 'name'], name='unique_brand_per_product'
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.product.name} — {self.name}"
+
+
 class ProductImage(models.Model):
     """
     Additional images for products.
