@@ -8,11 +8,13 @@ class Organization(models.Model):
     """
     
     class OrganizationType(models.TextChoices):
-        SCHOOL = 'SCHOOL', 'School'
-        UNIVERSITY = 'UNIVERSITY', 'University'
-        GOVERNMENT = 'GOVERNMENT', 'Government Office'
+        SCHOOL = 'School', 'School'
+        UNIVERSITY = 'University', 'University'
+        GOVERNMENT = 'Government Office', 'Government Office'
         NGO = 'NGO', 'NGO'
-        COMPANY = 'COMPANY', 'Private Company'
+        COMPANY = 'Private Company', 'Private Company'
+        BANK = 'Bank & Financial Institution', 'Bank & Financial Institution'
+        HOSPITAL = 'Hospital & Health Centre', 'Hospital & Health Centre'
     
     class VerificationStatus(models.TextChoices):
         PENDING = 'PENDING', 'Pending Verification'
@@ -20,19 +22,33 @@ class Organization(models.Model):
         REJECTED = 'REJECTED', 'Rejected'
         SUSPENDED = 'SUSPENDED', 'Suspended'
     
+    class AddressType(models.TextChoices):
+        AUTOCOMPLETE = 'autocomplete', 'Autocomplete'
+        MANUAL = 'manual', 'Manual'
+    
     # Basic Information
     name = models.CharField(max_length=255, db_index=True)
     organization_type = models.CharField(
-        max_length=20,
+        max_length=50,
         choices=OrganizationType.choices
     )
-    registration_number = models.CharField(max_length=100, unique=True, db_index=True)
-    tax_id = models.CharField(max_length=100, blank=True)
+    tin_number = models.CharField(max_length=10, unique=True, db_index=True)
     
     # Contact Information
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=20)
-    website = models.URLField(blank=True)
+    phone_number = models.CharField(max_length=10)
+    
+    # Address Information
+    address_type = models.CharField(
+        max_length=20, 
+        choices=AddressType.choices,
+        default=AddressType.MANUAL
+    )
+    address_formatted = models.TextField(blank=True, null=True)
+    street = models.CharField(max_length=255, blank=True, null=True)
+    sub_city = models.CharField(max_length=100, blank=True, null=True)
+    area = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, default="Addis Ababa")
+    region = models.CharField(max_length=100, default="Addis Ababa City Administration")
     
     # Verification
     verification_status = models.CharField(

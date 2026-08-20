@@ -1,32 +1,48 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
+import { useAppSelector } from '@/store/hooks'
+import {
+  selectIsAuthenticated,
+  selectIsInitialized,
+  selectAuthLoading,
+} from '@/store/slices/authSlice'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
   requireAuth?: boolean
 }
 
-/**
- * ProtectedRoute Component
- * 
- * Protects routes from unauthorized access.
- * For now, this is a basic implementation that checks localStorage.
- * In production, this should verify with backend authentication.
- * 
- * Usage:
- * <Route path="/dashboard" element={<ProtectedRoute><DashboardHome /></ProtectedRoute>} />
- */
-export function ProtectedRoute({ children, requireAuth = true }: ProtectedRouteProps) {
-  // Check if user is authenticated
-  // For now, checking localStorage for a token
-  // In production, this should verify with backend
-  const isAuthenticated = localStorage.getItem('authToken') !== null
+export function ProtectedRoute({
+  children,
+  requireAuth = true,
+}: ProtectedRouteProps) {
+  const location = useLocation()
 
-  // If authentication is required and user is not authenticated
-  if (requireAuth && !isAuthenticated) {
-    // Redirect to login page
-    return <Navigate to="/login" replace />
+  const isAuthenticated = useAppSelector(selectIsAuthenticated)
+  const isInitialized = useAppSelector(selectIsInitialized)
+  const loading = useAppSelector(selectAuthLoading)
+
+  /*
+   * AuthProvider handles the initial refresh on page reload.
+   * While that is happening, do not prematurely redirect.
+   */
+  if (requireAuth && (!isInitialized || loading)) {
+    return null
   }
 
-  // User is authenticated or auth not required, render children
+  /*
+   * No valid authenticated session.
+   */
+  if (requireAuth && !isAuthenticated) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: location.pathname,
+        }}
+      />
+    )
+  }
+
   return <>{children}</>
 }

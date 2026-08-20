@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { logout, selectUser } from '@/store/slices/authSlice'
+import { adminLogout, selectAdminUser } from '@/store/adminSlices/adminAuthSlice'
 
 const ADMIN_NAV_ITEMS = [
   { label: 'Overview & Analytics', icon: LayoutDashboard, to: '/admin' },
@@ -34,32 +34,31 @@ function AdminSidebarContent({ onClose }: { onClose?: () => void }) {
   const location = useLocation()
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const currentUser = useAppSelector(selectUser)
+  const currentUser = useAppSelector(selectAdminUser)
   const activeRoute = location.pathname
 
   const handleLogout = () => {
-    localStorage.removeItem('isAdminSession')
-    dispatch(logout())
+    dispatch(adminLogout())
     navigate('/admin/login')
   }
 
   return (
-    <div className="flex flex-col h-full bg-slate-950 text-slate-100 border-r border-slate-800">
+    <div className="flex flex-col h-full bg-[#0d1117] text-[#c9d1d9] border-r border-[#30363d]">
       {/* Header / Brand */}
-      <div className="px-5 py-5 border-b border-slate-800 flex items-center justify-between">
+      <div className="px-5 py-5 border-b border-[#30363d] flex items-center justify-between">
         <Link to="/admin" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-[#f0f6fc]/20 text-[#f0f6fc] border border-[#f0f6fc]/40 flex items-center justify-center shrink-0">
             <ShieldAlert className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="font-bold text-sm text-white tracking-wide flex items-center gap-1.5">
+            <h2 className="font-bold text-sm text-[#f0f6fc] tracking-wide flex items-center gap-1.5">
               Super Admin
             </h2>
-            <p className="text-[11px] text-slate-400 font-mono">Babi Management</p>
+            <p className="text-[11px] text-[#8b949e] font-mono">Babi Management</p>
           </div>
         </Link>
         {onClose && (
-          <Button variant="ghost" size="icon" onClick={onClose} className="lg:hidden text-slate-400 hover:text-white">
+          <Button variant="ghost" size="icon" onClick={onClose} className="lg:hidden text-[#8b949e] hover:text-[#f0f6fc]">
             <X className="w-5 h-5" />
           </Button>
         )}
@@ -67,7 +66,7 @@ function AdminSidebarContent({ onClose }: { onClose?: () => void }) {
 
       {/* Nav Menu */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <p className="px-3 text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-2">Management Suite</p>
+        <p className="px-3 text-[10px] font-mono text-[#8b949e] uppercase tracking-wider mb-2">Management Suite</p>
         {ADMIN_NAV_ITEMS.map((item) => {
           const Icon = item.icon
           const isActive = activeRoute === item.to || (item.to !== '/admin' && activeRoute.startsWith(item.to))
@@ -78,36 +77,36 @@ function AdminSidebarContent({ onClose }: { onClose?: () => void }) {
               onClick={onClose}
               className={`flex items-center justify-between px-3 py-2.5 rounded-md text-xs font-medium transition-all ${
                 isActive
-                  ? 'bg-blue-600/15 text-blue-400 font-semibold border border-blue-500/30'
-                  : 'text-slate-300 hover:bg-slate-900 hover:text-white'
+                  ? 'bg-[#f0f6fc]/20 text-[#f0f6fc] font-semibold border border-[#f0f6fc]/40'
+                  : 'text-[#c9d1d9] hover:bg-[#161b22] hover:text-[#f0f6fc]'
               }`}
             >
               <div className="flex items-center gap-3">
-                <Icon className={`w-4 h-4 ${isActive ? 'text-blue-400' : 'text-slate-400'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-[#f0f6fc]' : 'text-[#8b949e]'}`} />
                 <span>{item.label}</span>
               </div>
-              {isActive && <ChevronRight className="w-3.5 h-3.5 text-blue-400" />}
+              {isActive && <ChevronRight className="w-3.5 h-3.5 text-[#f0f6fc]" />}
             </Link>
           )
         })}
       </nav>
 
       {/* User Portal Link & Logout */}
-      <div className="p-3 border-t border-slate-800 space-y-2">
+      <div className="p-3 border-t border-[#30363d] space-y-2">
         <Link to="/dashboard">
-          <Button variant="outline" size="sm" className="w-full text-xs bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800 hover:text-white justify-start gap-2">
-            <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
+          <Button variant="outline" size="sm" className="w-full text-xs bg-[#21262d] border-[#30363d] text-[#f0f6fc] hover:bg-[#30363d] hover:text-[#ffffff] justify-start gap-2">
+            <ExternalLink className="w-3.5 h-3.5 text-[#f0f6fc]" />
             Switch to User Portal
           </Button>
         </Link>
-        <div className="px-3 py-2 bg-slate-900 rounded-md flex items-center justify-between border border-slate-800">
+        <div className="px-3 py-2 bg-[#161b22] rounded-md flex items-center justify-between border border-[#30363d]">
           <div className="truncate pr-2">
-            <p className="text-xs font-medium text-white truncate">{currentUser?.email || 'admin@babi.et'}</p>
-            <p className="text-[10px] text-slate-400 flex items-center gap-1">
-              <UserCheck className="w-3 h-3 text-emerald-400" /> Super Administrator
+            <p className="text-xs font-medium text-[#f0f6fc] truncate">{currentUser?.email || 'admin@babi.et'}</p>
+            <p className="text-[10px] text-[#8b949e] flex items-center gap-1">
+              <UserCheck className="w-3 h-3 text-[#f0f6fc]" /> Super Administrator
             </p>
           </div>
-          <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout" className="text-slate-400 hover:text-red-400 hover:bg-slate-800 shrink-0">
+          <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout" className="text-[#8b949e] hover:text-[#f85149] hover:bg-[#21262d] shrink-0">
             <LogOut className="w-4 h-4" />
           </Button>
         </div>
@@ -124,7 +123,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex font-sans">
+    <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] flex font-sans">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:block w-64 shrink-0 fixed inset-y-0 z-30">
         <AdminSidebarContent />
@@ -133,7 +132,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {/* Mobile Drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
-          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <div className="fixed inset-0 bg-[#0d1117]/80 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
           <div className="relative w-64 max-w-full z-10">
             <AdminSidebarContent onClose={() => setMobileOpen(false)} />
           </div>
@@ -143,19 +142,19 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main Content Shell */}
       <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
         {/* Top Navbar */}
-        <header className="h-14 border-b border-slate-800 bg-slate-950 sticky top-0 z-20 flex items-center justify-between px-4 lg:px-8">
+        <header className="h-14 border-b border-[#30363d] bg-[#161b22] sticky top-0 z-20 flex items-center justify-between px-4 lg:px-8">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden text-slate-300"
+              className="lg:hidden text-[#c9d1d9]"
               onClick={() => setMobileOpen(true)}
             >
               <Menu className="w-5 h-5" />
             </Button>
             <div className="flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-blue-400" />
-              <span className="text-xs font-mono font-medium text-slate-200 hidden sm:inline">
+              <ShieldAlert className="w-4 h-4 text-[#f0f6fc]" />
+              <span className="text-xs font-mono font-medium text-[#c9d1d9] hidden sm:inline">
                 Super Admin Operations & Platform Control
               </span>
             </div>
@@ -163,7 +162,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </header>
 
         {/* Page Body */}
-        <main className="flex-1 bg-slate-950 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 bg-[#0d1117] p-4 sm:p-6 lg:p-8">
           {children}
         </main>
       </div>

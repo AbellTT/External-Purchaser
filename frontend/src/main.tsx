@@ -11,6 +11,7 @@ import './index.css'
 // ─── Dev helper: expose store to browser console for manual testing ───────────
 if (import.meta.env.DEV) {
   ;(window as any).__store = store
+  ;(window as any).store = store
 }
 
 

@@ -116,7 +116,7 @@ export interface AuthResponse {
     accessToken: string
     refreshToken: string
     user: User
-  }
+  } 
 }
 
 export interface RefreshTokenRequest {
@@ -128,6 +128,7 @@ export interface RefreshTokenResponse {
   data: {
     accessToken: string
     refreshToken: string
+    user?: User
   }
 }
 
@@ -302,11 +303,20 @@ export interface OrderSavings {
   }
 }
 
+export interface OrderCustomer {
+  name?: string
+  organization?: string
+  phone?: string
+  tinNumber?: string
+  address?: string
+}
+
 export interface Order {
   id: string
   orderNumber: string
   date: string
-  status: 'pending' | 'accepted' | 'out-for-delivery' | 'delivered'
+  status: 'pending' | 'accepted' | 'out-for-delivery' | 'delivered' | 'cancelled'
+  customer?: OrderCustomer
   items: OrderItem[]
   pricing: OrderPricing
   delivery: OrderDelivery

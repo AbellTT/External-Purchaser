@@ -18,8 +18,8 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useAppSelector } from '@/store/hooks'
-import { selectUser } from '@/store/slices/authSlice'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { logout, selectUser } from '@/store/slices/authSlice'
 import { selectUnreadCount } from '@/store/slices/notificationsSlice'
 
 const NAV_ITEMS = [
@@ -37,6 +37,7 @@ const NAV_ITEMS = [
 function SidebarContent({ onClose }: { onClose?: () => void }) {
   const location = useLocation()
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const activeRoute = location.pathname
   const currentUser = useAppSelector(selectUser)
   const unreadCount = useAppSelector(selectUnreadCount)
@@ -121,13 +122,16 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-sidebar-foreground truncate">Procurement Officer</p>
-            <p className="text-[10px] text-sidebar-foreground/60 truncate">procurement@aau.edu.et</p>
+            <p className="text-[10px] text-sidebar-foreground/60 truncate">{currentUser?.email}</p>
           </div>
         </div>
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/login')}
+          onClick={async () => {
+            await dispatch(logout())
+            navigate('/login')
+          }}
           className="w-full justify-start text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 gap-2 h-8 text-xs"
         >
           <LogOut className="w-3.5 h-3.5" />

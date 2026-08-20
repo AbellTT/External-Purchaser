@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { User, Building2, Phone, FileText, MapPin, Save, PenLine, Sparkles, Lock, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,11 +13,159 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { selectUser, selectAuthLoading, setUser } from '@/store/slices/authSlice'
+import { selectUser, selectAuthLoading, updateProfile } from '@/store/slices/authSlice'
+import { api, getApiError } from '@/lib/api'
 import { toast } from 'sonner'
 import type { User as UserType } from '@/types/api'
-import loginMockData from '@/data/auth/loginResponse.json'
 
+/* ─────────────────────────────────────────────────────────────
+   Geoapify Autocomplete Types
+───────────────────────────────────────────────────────────── */
+interface GeoapifyFeature {
+  properties: {
+    formatted: string
+    address_line1?: string
+    address_line2?: string
+    city?: string
+    district?: string
+    county?: string
+    state?: string
+    postcode?: string
+    country?: string
+  }
+}
+
+interface GeoapifyResponse {
+  features: GeoapifyFeature[]
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Geoapify Autocomplete Component (same as Signup.tsx)
+───────────────────────────────────────────────────────────── */
+function AddressAutocomplete({
+  initialValue,
+  onSelect,
+  disabled = false,
+}: {
+  initialValue: string
+  onSelect: (val: string, details?: GeoapifyFeature['properties']) => void
+  disabled?: boolean
+}) {
+  const [query, setQuery] = useState(initialValue)
+  const [results, setResults] = useState<GeoapifyFeature[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  const apiKey = (import.meta.env.VITE_GEOAPIFY_API_KEY as string) || 'b8f69c43e4e742839a3003ae982db017'
+
+  // Keep query in sync if initialValue changes from outside
+  useEffect(() => {
+    setQuery(initialValue)
+  }, [initialValue])
+
+  const search = useCallback(
+    async (text: string) => {
+      if (text.length < 3) {
+        setResults([])
+        setIsOpen(false)
+        return
+      }
+      setIsLoading(true)
+      try {
+        const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
+          text
+        )}&country=et&format=geojson&apiKey=${apiKey}`
+        const res = await fetch(url)
+        const data: GeoapifyResponse = await res.json()
+        setResults(data.features ?? [])
+        setIsOpen(true)
+      } catch {
+        setResults([])
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [apiKey]
+  )
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setQuery(val)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => search(val), 300)
+  }
+
+  const handlePick = (feature: GeoapifyFeature) => {
+    const formatted = feature.properties.formatted
+    setQuery(formatted)
+    setIsOpen(false)
+    onSelect(formatted, feature.properties)
+  }
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <div className="relative">
+        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+        <Input
+          id="addressFormatted"
+          type="text"
+          placeholder="Search location in Addis Ababa..."
+          value={query}
+          onChange={handleChange}
+          autoComplete="off"
+          disabled={disabled}
+          className="h-10 border-border pl-10 pr-9 text-sm rounded-md disabled:opacity-100 disabled:cursor-default"
+        />
+        {isLoading && (
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground animate-spin" />
+        )}
+      </div>
+
+      {isOpen && results.length > 0 && (
+        <ul className="absolute z-50 mt-1.5 w-full bg-card border border-border rounded-md shadow-lg max-h-60 overflow-y-auto p-1 divide-y divide-border/40">
+          {results.map((f, i) => (
+            <li key={i}>
+              <button
+                type="button"
+                onClick={() => handlePick(f)}
+                className="w-full text-left px-3.5 py-2.5 text-sm hover:bg-surface-muted transition-colors rounded-md flex flex-col gap-0.5"
+              >
+                <span className="font-medium text-foreground">
+                  {f.properties.address_line1 || f.properties.formatted}
+                </span>
+                {f.properties.address_line2 && (
+                  <span className="text-xs text-muted-foreground">{f.properties.address_line2}</span>
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {isOpen && !isLoading && results.length === 0 && query.length >= 3 && (
+        <div className="absolute z-50 mt-1.5 w-full bg-card border border-border rounded-md shadow-lg px-4 py-3 text-sm text-muted-foreground">
+          No matches found. Switch to manual address entry below.
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Constants
+───────────────────────────────────────────────────────────── */
 const ORG_TYPES = [
   'School',
   'University',
@@ -73,53 +221,48 @@ export function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [addressMode, setAddressMode] = useState<'auto' | 'manual'>('manual')
 
-  // ── 1. Self-Hydration: if Redux has no user (edge case), load from mock ──────
-  useEffect(() => {
-    if (!currentUser) {
-      // In production this should be: dispatch(fetchProfile()) → GET /api/user/profile
-      // For now: load from mock login response which mirrors the GET /api/user/profile response
-      const mockUser = loginMockData.data.user as UserType
-      dispatch(setUser(mockUser))
-    }
-  }, [currentUser, dispatch])
-
-  // ── 2. Sync addressMode from user data ────────────────────────────────────────
+  // ── Sync addressMode from user data ───────────────────────────────────────────
   useEffect(() => {
     if (currentUser) {
       setAddressMode(currentUser.address.addressType === 'autocomplete' ? 'auto' : 'manual')
     }
   }, [currentUser])
 
-  // ── 3. Initialize form when user data arrives ─────────────────────────────────
-  const [form, setForm] = useState({
-    organizationName: '',
-    organizationType: 'University',
-    phoneNumber: '',
-    tinNumber: '',
-    email: '',
-    addressFormatted: '',
-    street: '',
-    subCity: '',
-    area: '',
-    city: '',
-    region: '',
+  // ── Initialize / sync form when user data arrives ─────────────────────────────
+  const buildForm = (u: UserType) => ({
+    organizationName: u.organizationName ?? '',
+    // Normalize org type: the DB stores the display label directly ("University", etc.)
+    organizationType: u.organizationType ?? '',
+    phoneNumber: u.phoneNumber ?? '',
+    tinNumber: u.tinNumber ?? '',
+    email: u.email ?? '',
+    addressFormatted: u.address?.addressFormatted ?? '',
+    street: u.address?.street ?? '',
+    subCity: u.address?.subCity ?? '',
+    area: u.address?.area ?? '',
+    city: u.address?.city ?? 'Addis Ababa',
+    region: u.address?.region ?? 'Addis Ababa City Administration',
   })
+
+  const [form, setForm] = useState(() =>
+    currentUser ? buildForm(currentUser) : {
+      organizationName: '',
+      organizationType: '',
+      phoneNumber: '',
+      tinNumber: '',
+      email: '',
+      addressFormatted: '',
+      street: '',
+      subCity: '',
+      area: '',
+      city: 'Addis Ababa',
+      region: 'Addis Ababa City Administration',
+    }
+  )
 
   useEffect(() => {
     if (currentUser) {
-      setForm({
-        organizationName: currentUser.organizationName,
-        organizationType: currentUser.organizationType,
-        phoneNumber: currentUser.phoneNumber,
-        tinNumber: currentUser.tinNumber,
-        email: currentUser.email,
-        addressFormatted: currentUser.address.addressFormatted ?? '',
-        street: currentUser.address.street ?? '',
-        subCity: currentUser.address.subCity ?? '',
-        area: currentUser.address.area ?? '',
-        city: currentUser.address.city,
-        region: currentUser.address.region,
-      })
+      setForm(buildForm(currentUser))
     }
   }, [currentUser])
 
@@ -156,35 +299,32 @@ export function ProfilePage() {
 
     setIsSaving(true)
     try {
-      // Production: dispatch(updateProfile({ ... })).unwrap()
-      // Mock: build the updated user and dispatch setUser directly
-      const updatedUser: UserType = {
-        ...currentUser!,
-        organizationName: form.organizationName,
+      const updates: Partial<UserType> = {
+        organizationName: form.organizationName.trim(),
         organizationType: form.organizationType as UserType['organizationType'],
-        phoneNumber: form.phoneNumber,
+        phoneNumber: form.phoneNumber.trim(),
+        tinNumber: form.tinNumber.trim(),
+        email: form.email.trim(),
         address: {
           addressType: addressMode === 'auto' ? 'autocomplete' : 'manual',
-          addressFormatted: addressMode === 'auto' ? form.addressFormatted : null,
-          street: addressMode === 'manual' ? form.street : null,
-          subCity: addressMode === 'manual' ? form.subCity : null,
-          area: form.area || null,
+          addressFormatted: addressMode === 'auto' ? form.addressFormatted.trim() : null,
+          street: addressMode === 'manual' ? form.street.trim() : null,
+          subCity: addressMode === 'manual' ? form.subCity.trim() : null,
+          area: addressMode === 'manual' ? form.area.trim() || null : null,
           city: form.city,
           region: form.region,
         },
       }
 
-      // Simulate API call delay
-      await new Promise((res) => setTimeout(res, 700))
+      await dispatch(updateProfile(updates)).unwrap()
 
-      dispatch(setUser(updatedUser))
       setIsEditing(false)
       toast.success('Profile updated successfully!', {
         description: 'Your organization details have been saved.',
       })
-    } catch {
+    } catch (error) {
       toast.error('Failed to save profile', {
-        description: 'Please try again.',
+        description: typeof error === 'string' ? error : 'Please try again.',
       })
     } finally {
       setIsSaving(false)
@@ -192,28 +332,15 @@ export function ProfilePage() {
   }
 
   const handleCancel = () => {
-    // Reset form back to current Redux user data
     if (currentUser) {
-      setForm({
-        organizationName: currentUser.organizationName,
-        organizationType: currentUser.organizationType,
-        phoneNumber: currentUser.phoneNumber,
-        tinNumber: currentUser.tinNumber,
-        email: currentUser.email,
-        addressFormatted: currentUser.address.addressFormatted ?? '',
-        street: currentUser.address.street ?? '',
-        subCity: currentUser.address.subCity ?? '',
-        area: currentUser.address.area ?? '',
-        city: currentUser.address.city,
-        region: currentUser.address.region,
-      })
+      setForm(buildForm(currentUser))
       setAddressMode(currentUser.address.addressType === 'autocomplete' ? 'auto' : 'manual')
     }
     setErrors({})
     setIsEditing(false)
   }
 
-  // ── Show skeleton while fetching ──────────────────────────────────────────────
+  // ── Show skeleton while initializing ──────────────────────────────────────────
   if (authLoading || !currentUser) {
     return <ProfileSkeleton />
   }
@@ -278,8 +405,11 @@ export function ProfilePage() {
                     onValueChange={setSelectValue('organizationType')}
                     disabled={!isEditing}
                   >
-                    <SelectTrigger id="orgType" className="h-10 border-border text-sm rounded-md disabled:opacity-100 disabled:cursor-default">
-                      <SelectValue />
+                    <SelectTrigger
+                      id="orgType"
+                      className="h-10 border-border text-sm rounded-md disabled:opacity-100 disabled:cursor-default"
+                    >
+                      <SelectValue placeholder="Select type..." />
                     </SelectTrigger>
                     <SelectContent>
                       {ORG_TYPES.map((t) => (
@@ -319,7 +449,7 @@ export function ProfilePage() {
                   {errors.phoneNumber && <p className="text-xs text-error">{errors.phoneNumber}</p>}
                 </div>
 
-                {/* TIN Number (Read-only always) */}
+                {/* TIN Number */}
                 <div className="space-y-1.5">
                   <Label htmlFor="tinNumber" className="font-mono text-xs font-semibold text-foreground">
                     TIN Number
@@ -330,17 +460,15 @@ export function ProfilePage() {
                       id="tinNumber"
                       type="text"
                       value={form.tinNumber}
-                      disabled
-                      className="h-10 border-border pl-10 font-mono text-sm rounded-md bg-surface-muted cursor-not-allowed"
+                      onChange={setField('tinNumber')}
+                      disabled={!isEditing}
+                      className="h-10 border-border pl-10 font-mono text-sm rounded-md disabled:opacity-100 disabled:cursor-default"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    TIN cannot be changed. Contact support if needed.
-                  </p>
                 </div>
               </div>
 
-              {/* Email (Read-only always) */}
+              {/* Email */}
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="font-mono text-xs font-semibold text-foreground">
                   Email Address
@@ -349,12 +477,10 @@ export function ProfilePage() {
                   id="email"
                   type="email"
                   value={form.email}
-                  disabled
-                  className="h-10 border-border text-sm rounded-md bg-surface-muted cursor-not-allowed"
+                  onChange={setField('email')}
+                  disabled={!isEditing}
+                  className="h-10 border-border text-sm rounded-md disabled:opacity-100 disabled:cursor-default"
                 />
-                <p className="text-xs text-muted-foreground">
-                  To change email, please contact support for verification.
-                </p>
               </div>
             </CardContent>
           </Card>
@@ -369,6 +495,7 @@ export function ProfilePage() {
               <CardDescription>Update your official delivery location</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Address mode toggle (only visible while editing) */}
               {isEditing && (
                 <div className="grid grid-cols-2 p-1 bg-surface-muted rounded-md border border-border">
                   <button
@@ -403,16 +530,25 @@ export function ProfilePage() {
                   <Label htmlFor="addressFormatted" className="font-mono text-xs font-semibold text-foreground">
                     Full Address
                   </Label>
-                  <Input
-                    id="addressFormatted"
-                    type="text"
-                    value={form.addressFormatted}
-                    onChange={setField('addressFormatted')}
-                    disabled={!isEditing}
-                    placeholder="Search location in Addis Ababa..."
-                    className="h-10 border-border text-sm rounded-md disabled:opacity-100 disabled:cursor-default"
-                  />
-                  {errors.addressFormatted && <p className="text-xs text-error">{errors.addressFormatted}</p>}
+                  {isEditing ? (
+                    <>
+                      <AddressAutocomplete
+                        initialValue={form.addressFormatted}
+                        onSelect={(val) => setForm((f) => ({ ...f, addressFormatted: val }))}
+                      />
+                      {errors.addressFormatted && (
+                        <p className="text-xs text-error">{errors.addressFormatted}</p>
+                      )}
+                    </>
+                  ) : (
+                    <Input
+                      id="addressFormatted"
+                      type="text"
+                      value={form.addressFormatted}
+                      disabled
+                      className="h-10 border-border text-sm rounded-md disabled:opacity-100 disabled:cursor-default"
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="grid sm:grid-cols-2 gap-4">
@@ -544,12 +680,14 @@ function PasswordChangeForm() {
 
     setIsChanging(true)
     try {
-      // Production: call POST /api/auth/change-password
-      await new Promise((res) => setTimeout(res, 700))
+      await api.post('/auth/change-password', {
+        currentPassword: form.current,
+        newPassword: form.next,
+      })
       setForm({ current: '', next: '', confirm: '' })
       toast.success('Password updated!', { description: 'Your new password is now active.' })
-    } catch {
-      toast.error('Failed to update password', { description: 'Please try again.' })
+    } catch (error) {
+      toast.error('Failed to update password', { description: getApiError(error) })
     } finally {
       setIsChanging(false)
     }
