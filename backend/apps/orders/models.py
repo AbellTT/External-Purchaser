@@ -40,25 +40,28 @@ class Order(models.Model):
         related_name='orders'
     )
     
-    # Organization
+    # Organization & Delivery Address (Nullable for Direct Purchases without full org profile)
     organization = models.ForeignKey(
         'organizations.Organization',
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name='orders'
     )
     
     # Order Details
     delivery_address = models.ForeignKey(
         'organizations.DeliveryAddress',
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name='orders'
     )
     
     # Status
     status = models.CharField(
-        max_length=20,
-        choices=Status.choices,
-        default=Status.DRAFT
+        max_length=25,
+        default='pending'
     )
     
     # Pricing
@@ -88,13 +91,29 @@ class Order(models.Model):
         default=Decimal('0.00')
     )
     
-    # Savings (for basket orders)
+    # Savings (Calculated vs Merkato Retailer and vs Regular Market across all items)
+    savings_vs_merkato = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
+    savings_vs_regular = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
     estimated_savings = models.DecimalField(
         max_digits=12,
         decimal_places=2,
         default=Decimal('0.00'),
         help_text="Estimated savings compared to retail/last basket price"
     )
+    
+    # Customer/Org Contact Info snapshot
+    customer_name = models.CharField(max_length=255, blank=True)
+    customer_phone = models.CharField(max_length=50, blank=True)
+    customer_tin = models.CharField(max_length=50, blank=True)
+    shipping_address = models.TextField(blank=True)
     
     # Notes
     customer_notes = models.TextField(blank=True)
@@ -168,10 +187,23 @@ class OrderItem(models.Model):
         related_name='order_items'
     )
     
-    # Supplier
+    # Optional Brand reference & name snapshot
+    brand = models.ForeignKey(
+        'products.Brand',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='order_items'
+    )
+    brand_name = models.CharField(max_length=255, blank=True)
+    unit_name = models.CharField(max_length=50, blank=True, default='piece')
+    
+    # Supplier (Nullable for direct purchase items)
     supplier = models.ForeignKey(
         'suppliers.Supplier',
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name='order_items'
     )
     
