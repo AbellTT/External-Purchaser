@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -85,6 +85,7 @@ export function DirectPurchasePage() {
   const [step, setStep] = useState<Step>('cart')
   const [cart, setCart] = useState<CartItem[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchInputValue, setSearchInputValue] = useState('')
   const [selectedProductId, setSelectedProductId] = useState('')
   const [selectedBrandId, setSelectedBrandId] = useState('')
   const [selectedBrandName, setSelectedBrandName] = useState('')
@@ -92,9 +93,25 @@ export function DirectPurchasePage() {
   const [notes, setNotes] = useState('')
   const [completedCart, setCompletedCart] = useState<CartItem[]>([])
 
-  // Load products from Redux on mount
+  // Debounced backend search
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchInputValue(value)
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+      searchDebounceRef.current = setTimeout(() => {
+        setSearchQuery(value)
+        // Send search to the backend — resets local product page
+        dispatch(fetchProducts({ search: value || undefined, pageSize: 100, includeUnavailable: false }))
+        setProductPage(1)
+      }, 400)
+    },
+    [dispatch]
+  )
+
+  // Initial load and background refresh on mount
   useEffect(() => {
-    dispatch(fetchProducts())
+    dispatch(fetchProducts({ pageSize: 100, includeUnavailable: false }))
   }, [dispatch])
 
   const [productPage, setProductPage] = useState(1)
@@ -130,13 +147,14 @@ export function DirectPurchasePage() {
       id: brand.id,
       name: brand.name,
       imageUrl: brand.imageUrl || '/images/brands/default.png',
-      available: brand.inStock && brand.stockQuantity > 0,
-      stockQuantity: brand.stockQuantity,
+      available: brand.inStock && (brand.stockQuantity ?? 100) > 0,
+      stockQuantity: brand.stockQuantity ?? 100,
       price: brand.price,
     }))
   })
 
-  // Search works on brands across all products
+  // Show backend-searched results when there's an active query;
+  // the backend already filters by brand name, product name, and category
   const searchResults: Array<{
     productId: string
     brandId: string
@@ -147,20 +165,18 @@ export function DirectPurchasePage() {
   }> = []
 
   if (searchQuery) {
-    Object.entries(BRANDS).forEach(([productId, brands]) => {
-      brands.forEach((brand) => {
-        if (brand.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-          const product = productsFromRedux.find((p) => p.id === productId)
-          if (product) {
-            searchResults.push({
-              productId,
-              brandId: brand.id,
-              brandName: brand.name,
-              productName: product.name,
-              available: brand.available,
-              price: brand.price,
-            })
-          }
+    productsFromRedux.forEach((product) => {
+      product.brands.forEach((brand) => {
+        const bInfo = (BRANDS[product.id] || []).find((b) => b.id === brand.id)
+        if (bInfo) {
+          searchResults.push({
+            productId: product.id,
+            brandId: brand.id,
+            brandName: brand.name,
+            productName: product.name,
+            available: bInfo.available,
+            price: brand.price,
+          })
         }
       })
     })
@@ -204,6 +220,7 @@ export function DirectPurchasePage() {
     setSelectedBrandName('')
     setQuantity('')
     setSearchQuery('')
+    setSearchInputValue('')
   }
 
   const removeFromCart = (index: number) => {
@@ -219,24 +236,36 @@ export function DirectPurchasePage() {
     }
   }
 
-  // Exact brand-based pricing calculations
+  // Exact brand-based pricing & savings calculations across ALL items in cart
   const cartTotal = cart.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0)
   const regularMarketTotal = cart.reduce((sum, item) => {
-    return sum + item.quantity * Math.round(item.unitPrice * 1.2)
+    const prod = productsFromRedux.find((p) => p.id === item.productId)
+    const brand = prod?.brands.find((b) => b.id === item.brandId)
+    const regPrice = brand?.regularMarketPrice != null ? Number(brand.regularMarketPrice) : Math.round(item.unitPrice * 1.15)
+    return sum + item.quantity * regPrice
   }, 0)
   const merkatoRetailerTotal = cart.reduce((sum, item) => {
-    return sum + item.quantity * Math.round(item.unitPrice * 1.05)
+    const prod = productsFromRedux.find((p) => p.id === item.productId)
+    const brand = prod?.brands.find((b) => b.id === item.brandId)
+    const merkPrice = brand?.merkatoRetailerPrice != null ? Number(brand.merkatoRetailerPrice) : Math.round(item.unitPrice * 1.08)
+    return sum + item.quantity * merkPrice
   }, 0)
-  const regularSavings = regularMarketTotal - cartTotal
-  const merkatoSavings = merkatoRetailerTotal - cartTotal
+  const regularSavings = Math.max(0, regularMarketTotal - cartTotal)
+  const merkatoSavings = Math.max(0, merkatoRetailerTotal - cartTotal)
 
   // Totals for the completed order receipt screen
   const completedTotal = completedCart.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0)
   const completedRegularSavings = completedCart.reduce((sum, item) => {
-    return sum + item.quantity * (Math.round(item.unitPrice * 1.2) - item.unitPrice)
+    const prod = productsFromRedux.find((p) => p.id === item.productId)
+    const brand = prod?.brands.find((b) => b.id === item.brandId)
+    const regPrice = brand?.regularMarketPrice != null ? Number(brand.regularMarketPrice) : Math.round(item.unitPrice * 1.15)
+    return sum + item.quantity * (regPrice - item.unitPrice)
   }, 0)
   const completedMerkatoSavings = completedCart.reduce((sum, item) => {
-    return sum + item.quantity * (Math.round(item.unitPrice * 1.05) - item.unitPrice)
+    const prod = productsFromRedux.find((p) => p.id === item.productId)
+    const brand = prod?.brands.find((b) => b.id === item.brandId)
+    const merkPrice = brand?.merkatoRetailerPrice != null ? Number(brand.merkatoRetailerPrice) : Math.round(item.unitPrice * 1.08)
+    return sum + item.quantity * (merkPrice - item.unitPrice)
   }, 0)
 
   // Handle Order Submit
@@ -287,11 +316,11 @@ export function DirectPurchasePage() {
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
-            <ShoppingCart className="w-6 h-6 text-primary" />
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
+            <ShoppingCart className="w-7 h-7 text-primary" />
             Direct Purchase
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Order immediately at competitive wholesale pricing without waiting for a basket.
           </p>
         </div>
@@ -483,8 +512,8 @@ export function DirectPurchasePage() {
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         placeholder="Search by brand name..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        value={searchInputValue}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                         className="pl-9"
                       />
                     </div>
@@ -495,7 +524,7 @@ export function DirectPurchasePage() {
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                           Found {searchResults.length} brand(s)
                         </p>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full min-w-0 max-w-full overflow-hidden">
                           {searchResults.map((result, idx) => (
                             <button
                               key={idx}
@@ -507,10 +536,12 @@ export function DirectPurchasePage() {
                                   setSelectedBrandId(result.brandId)
                                   setSelectedBrandName(result.brandName)
                                   setSearchQuery('')
+                                  setSearchInputValue('')
+                                  dispatch(fetchProducts({ pageSize: 100, includeUnavailable: false }))
                                   setQuantity('')
                                 }
                               }}
-                              className={`p-3 rounded-lg border text-left transition-all ${
+                              className={`p-3 rounded-lg border text-left transition-all w-full min-w-0 max-w-full overflow-hidden ${
                                 !result.available
                                   ? 'border-border bg-surface-muted opacity-50 cursor-not-allowed'
                                   : 'border-border bg-card hover:bg-surface-muted/40 hover:border-primary/50'
@@ -542,7 +573,7 @@ export function DirectPurchasePage() {
                     {searchQuery && searchResults.length === 0 && (
                       <div className="p-4 border border-border rounded-lg bg-surface-muted text-center">
                         <AlertCircle className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground">No brands found matching "{searchQuery}"</p>
+                        <p className="text-sm text-muted-foreground">No brands found matching "{searchInputValue}"</p>
                       </div>
                     )}
                   </div>
@@ -565,7 +596,7 @@ export function DirectPurchasePage() {
                           )}
                         </div>
 
-                        <div className="grid sm:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full min-w-0 max-w-full overflow-hidden">
                           {paginatedUserProducts.map((p) => (
                             <button
                               key={p.id}
@@ -576,17 +607,17 @@ export function DirectPurchasePage() {
                                 setSelectedBrandName('')
                                 setQuantity('')
                               }}
-                              className="flex items-center justify-between p-3 rounded-lg border border-border bg-card hover:bg-surface-muted/40 hover:border-primary/50 text-left transition-all group"
+                              className="flex items-center justify-between p-3 rounded-lg border border-border bg-card hover:bg-surface-muted/40 hover:border-primary/50 text-left transition-all group w-full min-w-0 max-w-full overflow-hidden"
                             >
-                              <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                              <div className="flex items-center gap-2.5 flex-1 min-w-0 overflow-hidden">
                                 <div className="w-8 h-8 rounded-md flex items-center justify-center shrink-0 bg-surface-muted text-muted-foreground group-hover:bg-primary-subtle group-hover:text-primary transition-colors">
                                   <Package className="w-4 h-4" />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                                <div className="flex-1 min-w-0 overflow-hidden">
+                                  <p className="text-xs sm:text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                                     {p.name}
                                   </p>
-                                  <p className="text-xs text-muted-foreground">{p.category}</p>
+                                  <p className="text-[11px] sm:text-xs text-muted-foreground truncate">{p.category}</p>
                                 </div>
                               </div>
                             </button>
@@ -595,45 +626,77 @@ export function DirectPurchasePage() {
 
                         {/* Product Pagination Bar */}
                         {totalProductPages > 1 && (
-                          <div className="flex items-center justify-between pt-2 border-t border-border">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              disabled={productPage === 1}
-                              onClick={() => setProductPage((prev) => Math.max(1, prev - 1))}
-                              className="text-xs gap-1"
-                            >
-                              <ChevronLeft className="w-3.5 h-3.5" /> Previous
-                            </Button>
+                          <div className="pt-3 border-t border-border">
+                            {/* Mobile Pagination (Clean single line) */}
+                            <div className="flex sm:hidden items-center justify-between gap-2 w-full">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={productPage === 1}
+                                onClick={() => setProductPage((prev) => Math.max(1, prev - 1))}
+                                className="text-xs gap-1 h-9 px-3"
+                              >
+                                <ChevronLeft className="w-4 h-4" /> Previous
+                              </Button>
 
-                            <div className="flex items-center gap-1">
-                              {Array.from({ length: totalProductPages }, (_, i) => i + 1).map((pg) => (
-                                <button
-                                  key={pg}
-                                  type="button"
-                                  onClick={() => setProductPage(pg)}
-                                  className={`w-6 h-6 rounded text-xs font-mono transition-colors ${
-                                    productPage === pg
-                                      ? 'bg-primary text-primary-foreground font-bold'
-                                      : 'bg-surface-muted text-muted-foreground hover:bg-border'
-                                  }`}
-                                >
-                                  {pg}
-                                </button>
-                              ))}
+                              <span className="text-xs font-mono font-semibold text-muted-foreground">
+                                Page {productPage} of {totalProductPages}
+                              </span>
+
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={productPage === totalProductPages}
+                                onClick={() => setProductPage((prev) => Math.min(totalProductPages, prev + 1))}
+                                className="text-xs gap-1 h-9 px-3"
+                              >
+                                Next <ChevronRight className="w-4 h-4" />
+                              </Button>
                             </div>
 
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              disabled={productPage === totalProductPages}
-                              onClick={() => setProductPage((prev) => Math.min(totalProductPages, prev + 1))}
-                              className="text-xs gap-1"
-                            >
-                              Next <ChevronRight className="w-3.5 h-3.5" />
-                            </Button>
+                            {/* Desktop Pagination */}
+                            <div className="hidden sm:flex items-center justify-between gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={productPage === 1}
+                                onClick={() => setProductPage((prev) => Math.max(1, prev - 1))}
+                                className="text-xs gap-1"
+                              >
+                                <ChevronLeft className="w-3.5 h-3.5" /> Previous
+                              </Button>
+
+                              <div className="flex items-center gap-1.5 py-1">
+                                {Array.from({ length: totalProductPages }, (_, i) => i + 1).map((pg) => (
+                                  <button
+                                    key={pg}
+                                    type="button"
+                                    onClick={() => setProductPage(pg)}
+                                    className={`w-7 h-7 rounded-md text-xs font-mono transition-colors shrink-0 ${
+                                      productPage === pg
+                                        ? 'bg-primary text-primary-foreground font-bold shadow-sm'
+                                        : 'bg-surface-muted text-muted-foreground hover:bg-border'
+                                    }`}
+                                  >
+                                    {pg}
+                                  </button>
+                                ))}
+                              </div>
+
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={productPage === totalProductPages}
+                                onClick={() => setProductPage((prev) => Math.min(totalProductPages, prev + 1))}
+                                className="text-xs gap-1"
+                              >
+                                Next <ChevronRight className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -720,15 +783,14 @@ export function DirectPurchasePage() {
                                 <p className="text-xs font-mono font-bold text-primary text-center mt-0.5">
                                   ETB {b.price.toLocaleString()}
                                 </p>
-                                <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground mt-1 pt-1 border-t border-border/50">
-                                  <span>Stock: {b.stockQuantity}</span>
+                                <div className="flex items-center justify-center mt-1 pt-1 border-t border-border/50">
                                   <Badge
                                     variant="outline"
                                     className={`text-[9px] py-0 px-1 ${
                                       b.available ? 'bg-success-bg text-success border-success/30' : 'bg-error-bg text-error border-error/30'
                                     }`}
                                   >
-                                    {b.available ? 'In Stock' : 'Out'}
+                                    {b.available ? 'In Stock' : 'Out of Stock'}
                                   </Badge>
                                 </div>
                               </button>

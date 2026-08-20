@@ -2,12 +2,12 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { Product, Brand, CreateDirectPurchaseRequest, CreateOrderResponse } from '@/types/api'
 import { api } from '@/lib/api'
-import productsMock from '@/data/products/productsList.json'
 
 // ==================== STATE INTERFACE ====================
 
 interface ProductsState {
   products: Product[]
+  catalogProducts: Array<Pick<Product, 'id' | 'name' | 'category' | 'unit'>>
   searchResults: Product[]
   selectedProduct: Product | null
   loading: boolean
@@ -23,10 +23,9 @@ interface ProductsState {
   }
 }
 
-const initialMockProducts = productsMock.data.products as unknown as Product[]
-
 const initialState: ProductsState = {
-  products: initialMockProducts,
+  products: [],
+  catalogProducts: [],
   searchResults: [],
   selectedProduct: null,
   loading: false,
@@ -45,20 +44,24 @@ const initialState: ProductsState = {
  */
 export const fetchProducts = createAsyncThunk<
   Product[],
-  { category?: string; minPrice?: number; maxPrice?: number } | void
+  { category?: string; search?: string; minPrice?: number; maxPrice?: number; includeUnavailable?: boolean; page?: number; pageSize?: number } | void
 >(
   'products/fetchProducts',
-  async (filters) => {
+  async (filters, { rejectWithValue }) => {
     try {
       const params = new URLSearchParams()
       if (filters) {
+        if (filters.search) params.append('search', filters.search)
         if (filters.category) params.append('category', filters.category)
         if (filters.minPrice) params.append('minPrice', filters.minPrice.toString())
         if (filters.maxPrice) params.append('maxPrice', filters.maxPrice.toString())
+        if (filters.includeUnavailable) params.append('includeUnavailable', 'true')
+        if (filters.page) params.append('page', filters.page.toString())
+        if (filters.pageSize) params.append('pageSize', filters.pageSize.toString())
       }
 
       const response = await api.get<{ success: boolean; data: { products: Product[] } | Product[] }>(
-        `/products?${params.toString()}`
+        `/products/?${params.toString()}`
       )
       
       const data = response.data.data
@@ -67,10 +70,69 @@ export const fetchProducts = createAsyncThunk<
       } else if (data && Array.isArray(data.products)) {
         return data.products
       }
-      return initialMockProducts
-    } catch {
-      // Dev/Mock environment fallback
-      return initialMockProducts
+      return []
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error || 'Unable to load products')
+    }
+  }
+)
+
+export const fetchCatalogProducts = createAsyncThunk<ProductsState['catalogProducts']>(
+  'products/fetchCatalogProducts',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get<{ success: boolean; data: ProductsState['catalogProducts'] }>('/products/catalog-options')
+      return response.data.data
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error || 'Unable to load catalog products')
+    }
+  }
+)
+
+export const createCatalogProduct = createAsyncThunk<ProductsState['catalogProducts'][number], { name: string; category: string; unit: string }>(
+  'products/createCatalogProduct',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await api.post<{ success: boolean; data: ProductsState['catalogProducts'][number] }>('/products/catalog-options', payload)
+      return response.data.data
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error || 'Unable to create catalog product')
+    }
+  }
+)
+
+export const saveCatalogProduct = createAsyncThunk<ProductsState['catalogProducts'][number], { productId: string; updates: { name: string; category: string; unit: string } }>(
+  'products/saveCatalogProduct',
+  async ({ productId, updates }, { rejectWithValue }) => {
+    try {
+      const response = await api.patch<{ success: boolean; data: ProductsState['catalogProducts'][number] }>(`/products/catalog-options/${productId}`, updates)
+      return response.data.data
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error || 'Unable to save product')
+    }
+  }
+)
+
+export const createBrand = createAsyncThunk<Brand, { productId: string; brand: Omit<Brand, 'id' | 'babiPlatformPrice' | 'supplierCost'> }>(
+  'products/createBrand',
+  async ({ productId, brand }, { rejectWithValue }) => {
+    try {
+      const response = await api.post<{ success: boolean; data: Brand }>(`/products/${productId}/brands`, brand)
+      return response.data.data
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error || 'Unable to create brand')
+    }
+  }
+)
+
+export const saveBrand = createAsyncThunk<Brand, { brandId: string; updates: Partial<Brand> }>(
+  'products/saveBrand',
+  async ({ brandId, updates }, { rejectWithValue }) => {
+    try {
+      const response = await api.patch<{ success: boolean; data: Brand }>(`/products/brands/${brandId}`, updates)
+      return response.data.data
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error || 'Unable to save brand')
     }
   }
 )
@@ -114,27 +176,19 @@ export const fetchProductById = createAsyncThunk<Product, string>(
  */
 export const createDirectPurchaseOrder = createAsyncThunk<
   CreateOrderResponse['data'],
-  CreateDirectPurchaseRequest
+  CreateDirectPurchaseRequest,
+  { rejectValue: string }
 >(
   'products/createDirectPurchaseOrder',
-  async (orderData) => {
+  async (orderData, { rejectWithValue }) => {
     try {
       const response = await api.post<CreateOrderResponse>(
         '/orders/direct-purchase',
         orderData
       )
       return response.data.data
-    } catch {
-      // Dev/Mock environment fallback
-      const total = orderData.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-      const randomId = Math.floor(1000 + Math.random() * 9000)
-      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '/')
-      return {
-        orderId: `ord_${Date.now()}`,
-        orderNumber: `ORD-${dateStr}-${randomId}`,
-        total,
-        status: 'pending' as const,
-      }
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error || 'Unable to place direct purchase order.')
     }
   }
 )
@@ -246,15 +300,47 @@ const productsSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false
-        // Keep existing products if populated, otherwise use action payload
-        if (!state.products || state.products.length === 0) {
-          state.products = action.payload
-        }
+        state.products = action.payload
         state.error = null
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload as string
+      })
+
+    builder
+      .addCase(fetchCatalogProducts.fulfilled, (state, action) => {
+        state.catalogProducts = action.payload
+      })
+      .addCase(createCatalogProduct.fulfilled, (state, action) => {
+        state.catalogProducts.push(action.payload)
+      })
+      .addCase(saveCatalogProduct.fulfilled, (state, action) => {
+        const catalogIndex = state.catalogProducts.findIndex((product) => product.id === action.payload.id)
+        if (catalogIndex >= 0) state.catalogProducts[catalogIndex] = action.payload
+        const product = state.products.find((item) => item.id === action.payload.id)
+        if (product) {
+          product.name = action.payload.name
+          product.category = action.payload.category
+          product.unit = action.payload.unit
+        }
+      })
+      .addCase(createBrand.fulfilled, (state, action) => {
+        const product = state.products.find((item) => item.id === action.meta.arg.productId)
+        if (product) {
+          product.brands.push(action.payload)
+          product.inStock = product.brands.some((brand) => brand.inStock && brand.stockQuantity > 0)
+        }
+      })
+      .addCase(saveBrand.fulfilled, (state, action) => {
+        for (const product of state.products) {
+          const index = product.brands.findIndex((brand) => brand.id === action.payload.id)
+          if (index >= 0) {
+            product.brands[index] = action.payload
+            product.inStock = product.brands.some((brand) => brand.inStock && brand.stockQuantity > 0)
+            break
+          }
+        }
       })
 
     // ===== SEARCH PRODUCTS =====
@@ -326,6 +412,7 @@ export const {
 
 export const selectProducts = (state: { products: ProductsState }) => state.products
 export const selectAllProducts = (state: { products: ProductsState }) => state.products.products
+export const selectCatalogProducts = (state: { products: ProductsState }) => state.products.catalogProducts
 export const selectSearchResults = (state: { products: ProductsState }) => state.products.searchResults
 export const selectSelectedProduct = (state: { products: ProductsState }) => state.products.selectedProduct
 export const selectProductsLoading = (state: { products: ProductsState }) => state.products.loading
