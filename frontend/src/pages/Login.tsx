@@ -1,22 +1,27 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, LogIn, Loader2, ArrowRight, ShieldCheck } from 'lucide-react'
+import { Eye, EyeOff, LogIn, Loader2, ArrowRight, ShieldCheck, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { selectAuthLoading, selectAuthError } from '@/store/slices/authSlice'
-import loginMockData from '@/data/auth/loginResponse.json'
+import { selectAuthLoading, selectAuthError, clearError, login } from '@/store/slices/authSlice'
 
 export function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({ email: '', password: '', rememberMe: false })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const navigate = useNavigate()
+  const location = useLocation()
   const dispatch = useAppDispatch()
   const isLoading = useAppSelector(selectAuthLoading)
   const authError = useAppSelector(selectAuthError)
+
+  // Clear any residual background/refresh errors when visiting login
+  useEffect(() => {
+    dispatch(clearError())
+  }, [dispatch])
 
   const validate = () => {
     const errs: Record<string, string> = {}
@@ -35,20 +40,24 @@ export function Login() {
     if (!validate()) return
 
     try {
-      // Mock: dispatch fulfilled action directly with mock data payload.
-      // The authSlice.login.fulfilled case will run and persist user to localStorage.
-      // Production: replace this block with:
-      //   await dispatch(login({ email: form.email, password: form.password, rememberMe: form.rememberMe })).unwrap()
-      dispatch({
-        type: 'auth/login/fulfilled',
-        payload: loginMockData.data   // shape: { accessToken, refreshToken, user }
-      })
+      const authData = await dispatch(login({ 
+        email: form.email, 
+        password: form.password, 
+        rememberMe: form.rememberMe 
+      })).unwrap()
 
-      navigate('/dashboard')
+      const from = (location.state as any)?.from || '/dashboard'
+      navigate(from)
     } catch (error) {
       console.error('Login failed:', error)
     }
   }
+
+  // Filter out any background token errors
+  const isBackgroundTokenError = 
+    authError?.toLowerCase().includes('refresh token') || 
+    authError?.toLowerCase().includes('token refresh')
+  const displayAuthError = isBackgroundTokenError ? null : authError
 
   return (
     <div className="min-h-screen bg-neutral flex flex-col items-center justify-center px-4 py-12">
@@ -94,10 +103,18 @@ export function Login() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+          {/* Protected Route Redirect Notice */}
+          {location.state?.from && !displayAuthError && (
+            <div className="p-3 bg-primary-subtle/50 border border-primary/20 rounded-md flex items-center gap-2.5 text-xs text-primary">
+              <Info className="w-4 h-4 shrink-0" />
+              <span>Please log in to access your organization's dashboard.</span>
+            </div>
+          )}
+
           {/* Auth Error Alert */}
-          {authError && (
+          {displayAuthError && (
             <div className="p-3 bg-error/10 border border-error/20 rounded-md">
-              <p className="text-sm text-error">{authError}</p>
+              <p className="text-sm text-error">{displayAuthError}</p>
             </div>
           )}
 

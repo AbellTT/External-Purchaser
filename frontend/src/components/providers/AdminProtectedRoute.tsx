@@ -1,19 +1,39 @@
-import { type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
-import { useAppSelector } from '@/store/hooks'
-import { selectUser, selectIsAuthenticated } from '@/store/slices/authSlice'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import {
+  initializeAdminAuth,
+  selectAdminUser,
+  selectIsAdminAuthenticated,
+  selectIsAdminInitialized,
+  selectAdminAuthLoading,
+  selectAdminAccessToken,
+} from '@/store/adminSlices/adminAuthSlice'
 
 interface AdminProtectedRouteProps {
   children: ReactNode
 }
 
 export function AdminProtectedRoute({ children }: AdminProtectedRouteProps) {
-  const user = useAppSelector(selectUser)
-  const isAuthenticated = useAppSelector(selectIsAuthenticated)
-  const isAdminSession = localStorage.getItem('isAdminSession') === 'true'
+  const dispatch = useAppDispatch()
+  const user = useAppSelector(selectAdminUser)
+  const isAuthenticated = useAppSelector(selectIsAdminAuthenticated)
+  const isInitialized = useAppSelector(selectIsAdminInitialized)
+  const loading = useAppSelector(selectAdminAuthLoading)
+  const accessToken = useAppSelector(selectAdminAccessToken)
 
-  // Allow access if logged in as admin or if an active admin session flag is set
-  const isAdmin = (isAuthenticated && user?.role === 'admin') || isAdminSession
+  useEffect(() => {
+    if (!accessToken && !isInitialized) {
+      dispatch(initializeAdminAuth())
+    }
+  }, [dispatch, accessToken, isInitialized])
+
+  if (!isInitialized || loading) {
+    return null
+  }
+
+  const roleLower = (user?.role || '').toLowerCase()
+  const isAdmin = isAuthenticated && Boolean(accessToken) && (roleLower === 'admin' || user?.is_staff || user?.is_superuser)
 
   if (!isAdmin) {
     return <Navigate to="/admin/login" replace />

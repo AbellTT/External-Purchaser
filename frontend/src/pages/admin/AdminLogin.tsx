@@ -4,8 +4,7 @@ import { ShieldAlert, KeyRound, Mail, ArrowRight, Lock } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useAppDispatch } from '@/store/hooks'
-import { setUser } from '@/store/slices/authSlice'
-import type { User } from '@/types/api'
+import { adminLogin } from '@/store/adminSlices/adminAuthSlice'
 
 export function AdminLogin() {
   const navigate = useNavigate()
@@ -16,43 +15,21 @@ export function AdminLogin() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const handleAdminLogin = (e: React.FormEvent) => {
+  const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
 
-    setTimeout(() => {
-      if (email.trim() && password.trim()) {
-        const adminUser: User = {
-          id: 'usr_super_admin',
-          email: email.trim(),
-          organizationName: 'Babi Platform HQ',
-          organizationType: 'Government Office',
-          phoneNumber: '0911000000',
-          tinNumber: '9998887776',
-          address: {
-            addressType: 'manual',
-            addressFormatted: 'Babi Platform HQ, Addis Ababa',
-            street: 'Churchill Avenue',
-            subCity: 'Arada',
-            area: 'Piazza',
-            city: 'Addis Ababa',
-            region: 'Addis Ababa',
-          },
-          role: 'admin',
-          verificationStatus: 'approved',
-        }
-
-        dispatch(setUser(adminUser))
-        localStorage.setItem('isAdminSession', 'true')
-        localStorage.setItem('refreshToken', 'mock_admin_refresh_token')
-        setLoading(false)
-        navigate('/admin')
-      } else {
-        setError('Please enter valid email and password')
-        setLoading(false)
-      }
-    }, 400)
+    try {
+      await dispatch(adminLogin({ email: email.trim(), password: password.trim() })).unwrap()
+      setLoading(false)
+      navigate('/admin')
+    } catch (err: any) {
+      setError(typeof err === 'string' ? err : 'Invalid admin email or password')
+      setLoading(false)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -128,7 +105,7 @@ export function AdminLogin() {
 
             <div className="pt-3 border-t border-slate-800 text-center">
               <p className="text-[11px] text-slate-400 font-mono">
-                Demo Super Admin Account Credentials Auto-Filled
+                Use an account with real super-admin access
               </p>
             </div>
           </CardContent>

@@ -1,31 +1,27 @@
 import { useEffect } from 'react'
-import { useAppDispatch } from '@/store/hooks'
-import { initializeAuth } from '@/store/slices/authSlice'
+import { useLocation } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { initializeAuth, selectAccessToken, selectIsInitialized } from '@/store/slices/authSlice'
 
 interface AuthProviderProps {
   children: React.ReactNode
 }
 
-/**
- * AuthProvider - Initializes authentication on app load in background
- *
- * Never blocks initial render with a full-screen loading spinner.
- * Session verification happens asynchronously in the background.
- */
-export function AuthProvider({ children }: AuthProviderProps) {
+export function AuthProvider({
+  children,
+}: AuthProviderProps) {
   const dispatch = useAppDispatch()
+  const location = useLocation()
+  const accessToken = useAppSelector(selectAccessToken)
+  const isInitialized = useAppSelector(selectIsInitialized)
+
+  const isAdminRoute = location.pathname.startsWith('/admin')
 
   useEffect(() => {
-    const initialize = async () => {
-      try {
-        await dispatch(initializeAuth()).unwrap()
-      } catch {
-        // Silent fail — in mock mode or expired session, authSlice handles state
-      }
+    if (!isAdminRoute && !accessToken && !isInitialized) {
+      dispatch(initializeAuth())
     }
-
-    initialize()
-  }, [dispatch])
+  }, [dispatch, accessToken, isInitialized, isAdminRoute])
 
   return <>{children}</>
 }

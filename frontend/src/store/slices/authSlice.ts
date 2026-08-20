@@ -8,7 +8,7 @@ import type {
   RefreshTokenResponse,
 } from '@/types/api'
 import { api } from '@/lib/api'
-import loginMockData from '@/data/auth/loginResponse.json'
+
 
 // ==================== LOCALSTORAGE HELPERS ====================
 
@@ -16,16 +16,16 @@ import loginMockData from '@/data/auth/loginResponse.json'
  * Attempt to restore the user object from localStorage.
  * Falls back to null if nothing is stored or the JSON is corrupt.
  */
-function loadUserFromStorage(): User {
+function loadUserFromStorage(): User | null {
   try {
     const raw = localStorage.getItem('user')
     if (raw) {
       return JSON.parse(raw) as User
     }
   } catch {
-    // Ignore error and fall through to mock user
+    // Corrupt storage - treat as no user
   }
-  return loginMockData.data.user as User
+  return null
 }
 
 /**
@@ -41,7 +41,8 @@ function saveUserToStorage(user: User): void {
  * organization name for the sidebar and greetings even if they need to re-login.
  */
 function clearAuthStorage(): void {
-  localStorage.removeItem('refreshToken')
+  // Refresh token is stored in an HttpOnly cookie,
+  // so JavaScript does not manage it here.
 }
 
 // ==================== STATE INTERFACE ====================
@@ -50,6 +51,7 @@ interface AuthState {
   user: User | null
   accessToken: string | null
   isAuthenticated: boolean
+  isInitialized: boolean
   loading: boolean
   error: string | null
 }
@@ -59,14 +61,15 @@ interface AuthState {
  * DashboardLayout and ProfilePage always have data even after a hard refresh.
  * isAuthenticated is true only if we actually have a stored user — the
  * AuthProvider will verify the session by calling initializeAuth() which
- * also refreshes the accessToken from the refreshToken.
+ * also refreshes the accessToken from the refreshToken cookie.
  */
 const storedUser = loadUserFromStorage()
 
 const initialState: AuthState = {
   user: storedUser,
   accessToken: null,                      // Access tokens are NEVER persisted (memory-only)
-  isAuthenticated: localStorage.getItem('refreshToken') !== null, // Only true if we have a refresh token
+  isAuthenticated: false,
+  isInitialized: false,                   // Tracks whether initial cookie check has completed
   loading: false,
   error: null,
 }
@@ -81,10 +84,6 @@ export const login = createAsyncThunk<AuthResponse['data'], LoginRequest>(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await api.post<AuthResponse>('/auth/login', credentials)
-      
-      // Store refresh token in localStorage
-      localStorage.setItem('refreshToken', response.data.data.refreshToken)
-      
       return response.data.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error || 'Login failed')
@@ -99,14 +98,16 @@ export const register = createAsyncThunk<AuthResponse['data'], RegisterRequest>(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await api.post<AuthResponse>('/auth/register', userData)
-      
-      // Store refresh token in localStorage
-      localStorage.setItem('refreshToken', response.data.data.refreshToken)
-      
+      const response = await api.post<AuthResponse>('/auth/register', userData)      
       return response.data.data
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Registration failed')
+      return rejectWithValue(
+        error.response?.data?.errors ||
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        'Registration failed'
+      )
     }
   }
 )
@@ -122,24 +123,15 @@ export const refreshToken = createAsyncThunk<
   'auth/refreshToken',
   async (_, { rejectWithValue }) => {
     try {
-      const storedRefreshToken = localStorage.getItem('refreshToken')
-      
-      if (!storedRefreshToken) {
-        return rejectWithValue('No refresh token available')
-      }
+      const response = await api.post<RefreshTokenResponse>(
+        '/auth/refresh'
+      )
 
-      const response = await api.post<RefreshTokenResponse>('/auth/refresh', {
-        refreshToken: storedRefreshToken,
-      })
-      
-      // Update refresh token in localStorage
-      localStorage.setItem('refreshToken', response.data.data.refreshToken)
-      
       return response.data.data
     } catch (error: any) {
-      // Clear invalid refresh token
-      localStorage.removeItem('refreshToken')
-      return rejectWithValue(error.response?.data?.error || 'Token refresh failed')
+      return rejectWithValue(
+        error.response?.data?.error || 'Token refresh failed'
+      )
     }
   }
 )
@@ -152,16 +144,10 @@ export const logout = createAsyncThunk<void, void>(
   async () => {
     try {
       // Optional: Call backend to blacklist refresh token
-      const refreshToken = localStorage.getItem('refreshToken')
-      if (refreshToken) {
-        await api.post('/auth/logout', { refreshToken })
-      }
+      await api.post('/auth/logout')
     } catch (error) {
       // Continue with logout even if API call fails
       console.error('Logout API call failed:', error)
-    } finally {
-      // Always clear local storage
-      localStorage.removeItem('refreshToken')
     }
   }
 )
@@ -177,17 +163,10 @@ export const initializeAuth = createAsyncThunk<
   'auth/initialize',
   async (_, { dispatch, rejectWithValue }) => {
     try {
-      const storedRefreshToken = localStorage.getItem('refreshToken')
-      
-      if (!storedRefreshToken) {
-        return rejectWithValue('No stored session')
-      }
-
       // Try to refresh to get new access token and user info
       const result = await dispatch(refreshToken()).unwrap()
       return result
     } catch (error: any) {
-      localStorage.removeItem('refreshToken')
       return rejectWithValue('Session expired')
     }
   }
@@ -196,17 +175,21 @@ export const initializeAuth = createAsyncThunk<
 /**
  * Update user profile
  */
-export const updateProfile = createAsyncThunk<User, Partial<User>>(
+export const updateProfile = createAsyncThunk<User, Partial<User>, {rejectValue: string}>(
   'auth/updateProfile',
   async (updates, { rejectWithValue }) => {
     try {
-      const response = await api.put<{ success: boolean; data: User }>(
-        '/user/profile',
+      const response = await api.patch<{ success: boolean; data: User }>(
+        '/auth/me',
         updates
       )
       return response.data.data
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Profile update failed')
+      return rejectWithValue(
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        'Profile update failed'
+      )
     }
   }
 )
@@ -260,16 +243,16 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false
+        state.isInitialized = true
         state.user = action.payload.user
         state.accessToken = action.payload.accessToken
         state.isAuthenticated = true
         state.error = null
-        // Persist so page refresh keeps the org name visible everywhere
         saveUserToStorage(action.payload.user)
-        localStorage.setItem('refreshToken', action.payload.refreshToken)
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false
+        state.isInitialized = true
         state.error = action.payload as string
         state.isAuthenticated = false
       })
@@ -282,16 +265,16 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false
+        state.isInitialized = true
         state.user = action.payload.user
         state.accessToken = action.payload.accessToken
         state.isAuthenticated = true
         state.error = null
-        // Persist so page refresh keeps the org name visible everywhere
         saveUserToStorage(action.payload.user)
-        localStorage.setItem('refreshToken', action.payload.refreshToken)
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false
+        state.isInitialized = true
         state.error = action.payload as string
         state.isAuthenticated = false
       })
@@ -303,17 +286,21 @@ const authSlice = createSlice({
       })
       .addCase(refreshToken.fulfilled, (state, action) => {
         state.loading = false
+        state.isInitialized = true
         state.accessToken = action.payload.accessToken
         state.isAuthenticated = true
         state.error = null
+        if (action.payload.user) {
+          state.user = action.payload.user
+          saveUserToStorage(action.payload.user)
+        }
       })
-      .addCase(refreshToken.rejected, (state, action) => {
+      .addCase(refreshToken.rejected, (state) => {
         state.loading = false
-        // We do NOT set state.user = null here so that the UI can still
-        // display the user's org name until they explicitly log out.
+        state.isInitialized = true
         state.accessToken = null
         state.isAuthenticated = false
-        state.error = action.payload as string
+        state.error = null
       })
 
     // ===== LOGOUT =====
@@ -323,6 +310,7 @@ const authSlice = createSlice({
       })
       .addCase(logout.fulfilled, (state) => {
         state.loading = false
+        state.isInitialized = true
         state.user = null
         state.accessToken = null
         state.isAuthenticated = false
@@ -338,20 +326,19 @@ const authSlice = createSlice({
       })
       .addCase(initializeAuth.fulfilled, (state, action) => {
         state.loading = false
+        state.isInitialized = true
         state.accessToken = action.payload.accessToken
         state.isAuthenticated = true
-        // Restore user from localStorage if not already in state
-        if (!state.user) {
+        if (action.payload.user) {
+          state.user = action.payload.user
+          saveUserToStorage(action.payload.user)
+        } else if (!state.user) {
           state.user = loadUserFromStorage()
         }
       })
       .addCase(initializeAuth.rejected, (state) => {
         state.loading = false
-        // Backend unreachable or session truly expired.
-        // We intentionally keep state.user so the sidebar / greeting
-        // still show the org name — the user isn't "forgotten", they
-        // just need to re-authenticate. isAuthenticated = false will
-        // redirect them through the auth guard.
+        state.isInitialized = true
         state.accessToken = null
         state.isAuthenticated = false
         clearAuthStorage()
@@ -360,18 +347,15 @@ const authSlice = createSlice({
     // ===== UPDATE PROFILE =====
     builder
       .addCase(updateProfile.pending, (state) => {
-        state.loading = true
         state.error = null
       })
       .addCase(updateProfile.fulfilled, (state, action) => {
-        state.loading = false
         state.user = action.payload
         state.error = null
         // Keep localStorage in sync with profile edits
         saveUserToStorage(action.payload)
       })
       .addCase(updateProfile.rejected, (state, action) => {
-        state.loading = false
         state.error = action.payload as string
       })
   },
@@ -386,6 +370,7 @@ export const { clearError, setAccessToken, clearAuth, setUser } = authSlice.acti
 export const selectAuth = (state: { auth: AuthState }) => state.auth
 export const selectUser = (state: { auth: AuthState }) => state.auth.user
 export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuthenticated
+export const selectIsInitialized = (state: { auth: AuthState }) => state.auth.isInitialized
 export const selectAccessToken = (state: { auth: AuthState }) => state.auth.accessToken
 export const selectAuthLoading = (state: { auth: AuthState }) => state.auth.loading
 export const selectAuthError = (state: { auth: AuthState }) => state.auth.error

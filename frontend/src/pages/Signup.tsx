@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useAppDispatch } from '@/store/hooks'
+import { register } from '@/store/slices/authSlice'
 
 /* ─────────────────────────────────────────────────────────────
    Geoapify Autocomplete Types
@@ -323,43 +324,42 @@ export function Signup() {
     if (!validateStep3()) return
 
     setIsSubmitting(true)
+    setErrors((prev) => ({ ...prev, general: '' }))
     
     try {
-      // Create mock registration data from form
-      const mockRegisterData = {
-        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_access_token_" + Date.now(),
-        refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_refresh_token_" + Date.now(),
-        user: {
-          id: "user_" + Date.now(),
-          email: form.email,
-          organizationName: form.orgName,
-          organizationType: form.orgType,
-          phoneNumber: form.phoneNumber,
-          tinNumber: form.tinNumber,
-          address: {
-            addressType: addressMode === 'auto' ? 'autocomplete' : 'manual',
-            addressFormatted: form.addressFormatted || null,
-            street: form.street || null,
-            subCity: form.subCity || null,
-            area: form.area || null,
-            city: form.city,
-            region: form.region,
-          }
-        }
-      }
-      
-      // Dispatch to Redux via auth/register/fulfilled so authSlice.extraReducers runs
-      // and persists user + refreshToken to localStorage automatically.
-      // Production: replace with dispatch(register({ ...formPayload })).unwrap()
-      dispatch({
-        type: 'auth/register/fulfilled',
-        payload: mockRegisterData      // shape: { accessToken, refreshToken, user }
-      })
+      await dispatch(register({
+        organizationName: form.orgName,
+        organizationType: form.orgType,
+        phoneNumber: form.phoneNumber,
+        tinNumber: form.tinNumber,
+        addressType: addressMode === 'auto' ? 'autocomplete' : 'manual',
+        addressFormatted: form.addressFormatted || undefined,
+        street: form.street || undefined,
+        subCity: form.subCity || undefined,
+        area: form.area || undefined,
+        city: form.city,
+        region: form.region,
+        email: form.email,
+        password: form.password
+      })).unwrap()
       
       setIsSubmitting(false)
       setIsSuccess(true)
-    } catch (error) {
+    } catch (error: any) {
       setIsSubmitting(false)
+      if (typeof error === 'object' && error !== null) {
+        setErrors((prev) => ({
+          ...prev,
+          email: error.email ? (Array.isArray(error.email) ? error.email[0] : error.email) : '',
+          tinNumber: error.tinNumber ? (Array.isArray(error.tinNumber) ? error.tinNumber[0] : error.tinNumber) : '',
+          general: typeof error === 'string' ? error : (error.general || 'Registration failed. Please check the fields and try again.')
+        }))
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          general: typeof error === 'string' ? error : 'Registration failed. Please try again.'
+        }))
+      }
       console.error('Registration failed:', error)
     }
   }
@@ -830,6 +830,12 @@ export function Signup() {
                         Set up your login details for administrative access.
                       </p>
                     </div>
+
+                    {errors.general && (
+                      <div className="p-3 bg-error/10 border border-error/20 rounded-md">
+                        <p className="text-xs text-error">{errors.general}</p>
+                      </div>
+                    )}
 
                     <div className="space-y-4">
                       {/* Summary box */}
