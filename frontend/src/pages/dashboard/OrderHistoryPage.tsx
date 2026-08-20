@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { History, RotateCcw, Truck, CheckCircle2, Package, X, ChevronRight, Calendar, AlertCircle, ChevronLeft, XCircle } from 'lucide-react'
+import { History, RotateCcw, Truck, CheckCircle2, Package, X, ChevronRight, Calendar, AlertCircle, ChevronLeft, XCircle, Loader2, RefreshCw } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import {
@@ -13,9 +14,13 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
   cancelOrder,
+  reorder,
   selectAllOrders,
+  fetchOrderHistory,
+  selectOrdersPagination,
+  selectOrdersLoading,
+  selectOrdersSummaryStats,
 } from '@/store/slices/ordersSlice'
-import orderHistoryMock from '@/data/orders/orderHistory.json'
 
 // ==================== SKELETON ====================
 
@@ -23,29 +28,15 @@ function OrderHistorySkeleton() {
   return (
     <DashboardLayout>
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-5xl mx-auto space-y-6 animate-pulse">
-        <div className="space-y-2">
-          <div className="h-8 w-48 bg-muted rounded" />
-          <div className="h-4 w-80 bg-muted rounded" />
-        </div>
+        <div className="h-8 w-48 bg-surface-muted rounded" />
         <div className="grid sm:grid-cols-2 gap-3">
-          <div className="h-20 bg-muted rounded-lg" />
-          <div className="h-20 bg-muted rounded-lg" />
+          <div className="h-20 bg-surface-muted rounded" />
+          <div className="h-20 bg-surface-muted rounded" />
         </div>
-        <div className="h-9 w-44 bg-muted rounded" />
+        <div className="h-10 w-48 bg-surface-muted rounded" />
         <div className="space-y-3">
-          {[1, 2, 3, 4].map(i => (
-            <Card key={i} className="border-border">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-muted rounded-lg shrink-0" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 w-40 bg-muted rounded" />
-                    <div className="h-3 w-60 bg-muted rounded" />
-                  </div>
-                  <div className="h-6 w-24 bg-muted rounded" />
-                </div>
-              </CardContent>
-            </Card>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-20 bg-surface-muted rounded" />
           ))}
         </div>
       </div>
@@ -53,132 +44,90 @@ function OrderHistorySkeleton() {
   )
 }
 
-// ==================== TYPES ====================
-
-type OrderStatus = 'pending' | 'accepted' | 'out-for-delivery' | 'delivered' | 'cancelled'
-
-interface OrderItem {
-  productName: string
-  brandName: string
-  quantity: number
-  unit: string
-  price: number
-  subtotal: number
-}
-
-interface MappedOrder {
-  id: string
-  orderNumber: string
-  date: string
-  status: OrderStatus
-  items: OrderItem[]
-  pricing: {
-    itemsTotal: number
-    deliveryFee: number
-    discount: number
-    total: number
-  }
-  delivery: {
-    address: string
-    estimatedDate: string | null
-    actualDate: string | null
-  }
-  savings: {
-    vsMerkatoRetailer: { amount: number; percentage: number }
-    vsRegularStationaryMarket: { amount: number; percentage: number }
-  }
-}
-
-// ==================== STATUS CONFIG ====================
-
-const STATUS_STYLES: Record<string, string> = {
-  'pending':          'text-warning bg-warning-bg',
-  'accepted':         'text-success bg-success-bg',
-  'out-for-delivery': 'text-info bg-info-bg',
-  'delivered':        'text-muted-foreground bg-surface-muted',
-  'cancelled':        'text-error bg-error-bg',
-}
-
 const STATUS_LABELS: Record<string, string> = {
-  'pending':          'Pending',
-  'accepted':         'Accepted',
+  'pending':          'Pending Confirmation',
+  'accepted':         'Order Accepted',
   'out-for-delivery': 'Out for Delivery',
   'delivered':        'Delivered',
   'cancelled':        'Cancelled',
 }
 
-const STATUS_ICONS: Record<string, React.FC<{ className?: string }>> = {
-  'pending':          AlertCircle,
+const STATUS_STYLES: Record<string, string> = {
+  'pending':          'bg-amber-500/10 text-orange-800 border-amber-500/20 dark:text-orange-800',
+  'accepted':         'bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400',
+  'out-for-delivery': 'bg-purple-500/10 text-purple-600 border-purple-500/20 dark:text-purple-400',
+  'delivered':        'bg-success-bg text-success border-success/20',
+  'cancelled':        'bg-error-bg text-error border-error/20',
+}
+
+const STATUS_ICONS: Record<string, any> = {
+  'pending':          Calendar,
   'accepted':         CheckCircle2,
   'out-for-delivery': Truck,
   'delivered':        CheckCircle2,
   'cancelled':        XCircle,
 }
 
-const PAGE_SIZE = 3
-
 // ==================== PAGE COMPONENT ====================
 
 export function OrderHistoryPage() {
   const dispatch = useAppDispatch()
-  const ordersFromRedux = useAppSelector(selectAllOrders)
+  const orders = useAppSelector(selectAllOrders)
+  const pagination = useAppSelector(selectOrdersPagination)
+  const loading = useAppSelector(selectOrdersLoading)
+  const summaryStats = useAppSelector(selectOrdersSummaryStats)
 
   const [isFirstLoad, setIsFirstLoad] = useState(true)
   const [filter, setFilter] = useState('all')
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const [cancellingId, setCancellingId] = useState<string | null>(null)
+  const [reorderingId, setReorderingId] = useState<string | null>(null)
   const [page, setPage] = useState(1)
 
   useEffect(() => {
-    setIsFirstLoad(true)
-    // Seed from mock
-    dispatch({
-      type: 'orders/fetchOrderHistory/fulfilled',
-      payload: {
-        orders: orderHistoryMock.data.orders,
-        pagination: orderHistoryMock.data.pagination,
-      },
-    })
-    const timer = setTimeout(() => setIsFirstLoad(false), 600)
+    dispatch(fetchOrderHistory({
+      page,
+      status: filter !== 'all' ? filter : undefined,
+      pageSize: 10,
+    }))
+  }, [dispatch, page, filter])
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsFirstLoad(false), 400)
     return () => clearTimeout(timer)
-  }, [dispatch])
+  }, [])
 
-  if (isFirstLoad) return <OrderHistorySkeleton />
+  if (isFirstLoad && loading && orders.length === 0) return <OrderHistorySkeleton />
 
-  const orders: MappedOrder[] = ordersFromRedux.length > 0
-    ? (ordersFromRedux as any[])
-    : (orderHistoryMock.data.orders as any[])
-
-  const filtered = orders.filter(o => {
-    if (filter === 'all') return true
-    return o.status === filter
-  })
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const safePage = Math.min(page, totalPages)
-  const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
-
-  const selectedOrder = orders.find(o => o.id === selectedOrderId)
-
-  const deliveredOrders = orders.filter(o => o.status === 'delivered')
-  const totalSpend = deliveredOrders.reduce((s, o) => s + o.pricing.total, 0)
-  const totalSavingsVsMarket = deliveredOrders.reduce((s, o) => s + o.savings.vsRegularStationaryMarket.amount, 0)
-  const totalSavingsVsMerkato = deliveredOrders.reduce((s, o) => s + o.savings.vsMerkatoRetailer.amount, 0)
+  const selectedOrder = orders.find((o) => o.id === selectedOrderId || o.orderNumber === selectedOrderId)
 
   const handleCancel = async (orderId: string) => {
     setCancellingId(orderId)
-    // Optimistically update in Redux
-    dispatch({
-      type: 'orders/cancelOrder/fulfilled',
-      payload: {
-        ...orders.find(o => o.id === orderId),
-        status: 'cancelled',
-      },
-    })
-    // Try real API call
-    dispatch(cancelOrder(orderId))
-    setCancellingId(null)
-    setSelectedOrderId(null)
+    try {
+      await dispatch(cancelOrder(orderId)).unwrap()
+      toast.success('Order cancelled successfully.')
+      setSelectedOrderId(null)
+      dispatch(fetchOrderHistory({ page, status: filter !== 'all' ? filter : undefined, pageSize: 10 }))
+    } catch (err: any) {
+      toast.error(typeof err === 'string' ? err : 'Failed to cancel order.')
+    } finally {
+      setCancellingId(null)
+    }
+  }
+
+  const handleReorder = async (orderId: string) => {
+    setReorderingId(orderId)
+    try {
+      const res = await dispatch(reorder(orderId)).unwrap()
+      toast.success(`Reorder created successfully: ${res.orderNumber}`)
+      setSelectedOrderId(null)
+      setPage(1)
+      dispatch(fetchOrderHistory({ page: 1, status: filter !== 'all' ? filter : undefined, pageSize: 10 }))
+    } catch (err: any) {
+      toast.error(typeof err === 'string' ? err : 'Failed to reorder.')
+    } finally {
+      setReorderingId(null)
+    }
   }
 
   return (
@@ -186,53 +135,74 @@ export function OrderHistoryPage() {
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-5xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
-            <History className="w-6 h-6 text-primary" />
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
+            <History className="w-7 h-7 text-primary" />
             Order History
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">All your direct purchase orders including pending and completed.</p>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">All your direct purchase orders including pending and completed.</p>
         </div>
 
-        {/* Summary — only from delivered orders */}
-        <div className="grid sm:grid-cols-2 gap-3">
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <p className="text-xs font-mono text-muted-foreground">Total Spend (Delivered)</p>
-              <p className="text-xl font-bold text-foreground font-mono mt-1">ETB {totalSpend.toLocaleString()}</p>
+        {/* Global Summary — considers ALL delivered transactions in database */}
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Card className="border-border shadow-sm">
+            <CardContent className="p-4 sm:p-5">
+              <p className="text-xs sm:text-sm font-mono font-medium text-muted-foreground">Total Spend (Delivered)</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground font-mono mt-1.5">
+                ETB {(summaryStats?.totalSpend || 0).toLocaleString()}
+              </p>
             </CardContent>
           </Card>
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <p className="text-xs font-mono text-muted-foreground">Total Savings (Delivered)</p>
-              <div className="space-y-0.5 mt-1">
-                <p className="text-sm font-bold text-success font-mono">ETB {totalSavingsVsMarket.toLocaleString()} vs Regular Market</p>
-                <p className="text-sm font-bold text-success font-mono">ETB {totalSavingsVsMerkato.toLocaleString()} vs Merkato Retailers</p>
+          <Card className="border-border shadow-sm">
+            <CardContent className="p-4 sm:p-5">
+              <p className="text-xs sm:text-sm font-mono font-medium text-muted-foreground">Total Savings (Delivered)</p>
+              <div className="space-y-1 mt-1.5">
+                <p className="text-sm sm:text-base font-bold text-success font-mono">
+                  ETB {(summaryStats?.savingsVsRegular || 0).toLocaleString()} vs Regular Market
+                </p>
+                <p className="text-sm sm:text-base font-bold text-success font-mono">
+                  ETB {(summaryStats?.savingsVsMerkato || 0).toLocaleString()} vs Merkato Retailers
+                </p>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filter */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <Select value={filter} onValueChange={(v) => { setFilter(v); setPage(1) }}>
-            <SelectTrigger className="w-48 h-9 text-sm">
-              <SelectValue placeholder="Filter orders" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Orders</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="accepted">Accepted</SelectItem>
-              <SelectItem value="out-for-delivery">Out for Delivery</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
-          <span className="text-xs text-muted-foreground">{filtered.length} order(s)</span>
+        {/* Filter & Count & Refresh */}
+        <div className="flex items-center gap-3 flex-wrap justify-between">
+          <div className="flex items-center gap-3 flex-wrap">
+            <Select value={filter} onValueChange={(v) => { setFilter(v); setPage(1) }}>
+              <SelectTrigger className="w-48 h-9 text-sm">
+                <SelectValue placeholder="Filter orders" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Orders</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="accepted">Accepted</SelectItem>
+                <SelectItem value="out-for-delivery">Out for Delivery</SelectItem>
+                <SelectItem value="delivered">Delivered</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => dispatch(fetchOrderHistory({ page, status: filter !== 'all' ? filter : undefined, pageSize: 10 }))}
+              className="text-xs h-9 gap-1.5"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+
+            <span className="text-xs text-muted-foreground font-mono">
+              Page {pagination.currentPage} of {pagination.totalPages} ({pagination.totalOrders} total orders)
+            </span>
+          </div>
         </div>
 
         {/* Orders list */}
         <div className="space-y-3">
-          {paginated.length === 0 ? (
+          {orders.length === 0 ? (
             <Card className="border-border">
               <CardContent className="py-12 text-center">
                 <Package className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
@@ -240,7 +210,7 @@ export function OrderHistoryPage() {
               </CardContent>
             </Card>
           ) : (
-            paginated.map((o) => {
+            orders.map((o) => {
               const StatusIcon = STATUS_ICONS[o.status] || Package
               const itemCount = o.items.length
               const firstItem = o.items[0]
@@ -253,26 +223,26 @@ export function OrderHistoryPage() {
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${STATUS_STYLES[o.status]}`}>
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${STATUS_STYLES[o.status] || STATUS_STYLES.pending}`}>
                         <StatusIcon className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <p className="text-sm font-semibold text-foreground font-mono">{o.orderNumber}</p>
-                          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[o.status]}`}>
-                            {STATUS_LABELS[o.status]}
+                          <p className="text-base sm:text-lg font-bold text-foreground font-mono">{o.orderNumber}</p>
+                          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_STYLES[o.status] || STATUS_STYLES.pending}`}>
+                            {STATUS_LABELS[o.status] || o.status}
                           </span>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          {itemCount === 1
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          {itemCount === 1 && firstItem
                             ? `${firstItem.brandName} ${firstItem.productName}`
-                            : `${itemCount} products`} · {new Date(o.date).toLocaleDateString()}
+                            : `${itemCount} products`} · {o.date}
                         </p>
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
                         <div className="text-right">
-                          <p className="text-xs text-muted-foreground font-mono">Total</p>
-                          <p className="text-lg font-bold text-foreground font-mono">ETB {o.pricing.total.toLocaleString()}</p>
+                          <p className="text-xs font-mono text-muted-foreground">Total</p>
+                          <p className="text-lg sm:text-xl font-bold text-foreground font-mono">ETB {o.pricing.total.toLocaleString()}</p>
                         </div>
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
@@ -284,27 +254,29 @@ export function OrderHistoryPage() {
           )}
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-3">
+        {/* Server-side Pagination Controls */}
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-center gap-3 pt-2">
             <Button
               variant="outline"
               size="sm"
-              disabled={safePage <= 1}
-              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page <= 1 || loading}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
               className="gap-1"
             >
               <ChevronLeft className="w-4 h-4" />
               Prev
             </Button>
+
             <span className="text-sm text-muted-foreground font-mono">
-              Page {safePage} of {totalPages}
+              Page {pagination.currentPage} of {pagination.totalPages}
             </span>
+
             <Button
               variant="outline"
               size="sm"
-              disabled={safePage >= totalPages}
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page >= pagination.totalPages || loading}
+              onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
               className="gap-1"
             >
               Next
@@ -325,16 +297,16 @@ export function OrderHistoryPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <CardTitle className="text-lg font-mono">{selectedOrder.orderNumber}</CardTitle>
-                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[selectedOrder.status]}`}>
-                        {STATUS_LABELS[selectedOrder.status]}
+                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[selectedOrder.status] || STATUS_STYLES.pending}`}>
+                        {STATUS_LABELS[selectedOrder.status] || selectedOrder.status}
                       </span>
                     </div>
                     <CardDescription className="flex items-center gap-3 text-xs flex-wrap">
-                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(selectedOrder.date).toLocaleDateString()}</span>
+                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{selectedOrder.date}</span>
                       {selectedOrder.delivery.estimatedDate && (
                         <span className="flex items-center gap-1">
                           <Truck className="w-3 h-3" />
-                          Est. delivery: {new Date(selectedOrder.delivery.estimatedDate).toLocaleDateString()}
+                          Est. delivery: {selectedOrder.delivery.estimatedDate}
                         </span>
                       )}
                     </CardDescription>
@@ -410,21 +382,39 @@ export function OrderHistoryPage() {
 
                 {/* Actions */}
                 <div className="border-t border-border pt-4 flex gap-2 flex-wrap">
-                  {selectedOrder.status === 'delivered' && (
-                    <Button className="flex-1 gap-2" variant="outline">
-                      <RotateCcw className="w-4 h-4" />
-                      Reorder These Items
-                    </Button>
-                  )}
-                  {selectedOrder.status === 'pending' && (
+                  <Button
+                    className="flex-1 gap-2"
+                    variant="outline"
+                    disabled={reorderingId === selectedOrder.id}
+                    onClick={() => handleReorder(selectedOrder.id)}
+                  >
+                    {reorderingId === selectedOrder.id ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" /> Reordering...
+                      </>
+                    ) : (
+                      <>
+                        <RotateCcw className="w-4 h-4" /> Reorder These Items
+                      </>
+                    )}
+                  </Button>
+
+                  {['pending', 'accepted'].includes(selectedOrder.status.toLowerCase()) && (
                     <Button
                       className="flex-1 gap-2"
                       variant="destructive"
                       disabled={cancellingId === selectedOrder.id}
                       onClick={() => handleCancel(selectedOrder.id)}
                     >
-                      <XCircle className="w-4 h-4" />
-                      {cancellingId === selectedOrder.id ? 'Cancelling...' : 'Cancel Order'}
+                      {cancellingId === selectedOrder.id ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" /> Cancelling...
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-4 h-4" /> Cancel Order
+                        </>
+                      )}
                     </Button>
                   )}
                 </div>

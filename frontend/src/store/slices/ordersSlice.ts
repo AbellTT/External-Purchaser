@@ -11,12 +11,19 @@ interface Pagination {
   pageSize: number
 }
 
+interface SummaryStats {
+  totalSpend: number
+  savingsVsRegular: number
+  savingsVsMerkato: number
+}
+
 interface OrdersState {
   orders: Order[]
   selectedOrder: Order | null
   loading: boolean
   error: string | null
   pagination: Pagination
+  summaryStats: SummaryStats
   filters: {
     status?: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
     startDate?: string
@@ -29,18 +36,20 @@ const initialState: OrdersState = {
   selectedOrder: null,
   loading: false,
   error: null,
-  pagination: { currentPage: 1, totalPages: 1, totalOrders: 0, pageSize: 10 },
+  pagination: { currentPage: 1, totalPages: 1, totalOrders: 0, pageSize: 5 },
+  summaryStats: { totalSpend: 0, savingsVsRegular: 0, savingsVsMerkato: 0 },
   filters: {},
 }
 
 // ==================== ASYNC THUNKS ====================
 
 /**
- * Fetch order history with optional filters
+ * Fetch order history with optional filters & pagination
  */
 export const fetchOrderHistory = createAsyncThunk<
-  { orders: Order[]; pagination: { currentPage: number; totalPages: number; totalOrders: number; pageSize: number } },
-  { status?: string; startDate?: string; endDate?: string; page?: number } | void
+  { orders: Order[]; pagination: Pagination; summaryStats?: SummaryStats },
+  { status?: string; startDate?: string; endDate?: string; page?: number; pageSize?: number; silent?: boolean } | void,
+  { rejectValue: string }
 >(
   'orders/fetchOrderHistory',
   async (filters, { rejectWithValue }) => {
@@ -51,11 +60,14 @@ export const fetchOrderHistory = createAsyncThunk<
         if (filters.startDate) params.append('startDate', filters.startDate)
         if (filters.endDate) params.append('endDate', filters.endDate)
         if (filters.page) params.append('page', String(filters.page))
+        if (filters.pageSize) params.append('pageSize', String(filters.pageSize))
       }
 
-      const response = await api.get<{ success: boolean; data: { orders: Order[]; pagination: any } }>(
-        `/orders?${params.toString()}`
-      )
+      const response = await api.get<{
+        success: boolean
+        data: { orders: Order[]; pagination: Pagination; summaryStats?: SummaryStats }
+      }>(`/orders?${params.toString()}`)
+
       return response.data.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error || 'Failed to fetch orders')
@@ -101,12 +113,12 @@ export const createOrder = createAsyncThunk<Order, CreateOrderRequest>(
 /**
  * Reorder (duplicate an existing order)
  */
-export const reorder = createAsyncThunk<Order, string>(
+export const reorder = createAsyncThunk<Order, string, { rejectValue: string }>(
   'orders/reorder',
   async (orderId, { rejectWithValue }) => {
     try {
       const response = await api.post<{ success: boolean; data: Order }>(
-        `/orders/${orderId}/reorder`
+        `/orders/${orderId}/reorder/`
       )
       return response.data.data
     } catch (error: any) {
@@ -116,14 +128,14 @@ export const reorder = createAsyncThunk<Order, string>(
 )
 
 /**
- * Cancel an order
+ * Cancel an order permanently
  */
-export const cancelOrder = createAsyncThunk<Order, string>(
+export const cancelOrder = createAsyncThunk<Order, string, { rejectValue: string }>(
   'orders/cancelOrder',
   async (orderId, { rejectWithValue }) => {
     try {
       const response = await api.post<{ success: boolean; data: Order }>(
-        `/orders/${orderId}/cancel`
+        `/orders/${orderId}/cancel/`
       )
       return response.data.data
     } catch (error: any) {
@@ -154,14 +166,21 @@ const ordersSlice = createSlice({
   extraReducers: (builder) => {
     // ===== FETCH ORDER HISTORY =====
     builder
-      .addCase(fetchOrderHistory.pending, (state) => {
-        state.loading = true
+      .addCase(fetchOrderHistory.pending, (state, action) => {
+        if (!action.meta.arg?.silent) {
+          state.loading = true
+        }
         state.error = null
       })
       .addCase(fetchOrderHistory.fulfilled, (state, action) => {
         state.loading = false
-        state.orders = action.payload.orders
-        state.pagination = action.payload.pagination
+        state.orders = action.payload.orders || []
+        if (action.payload.pagination) {
+          state.pagination = action.payload.pagination
+        }
+        if (action.payload.summaryStats) {
+          state.summaryStats = action.payload.summaryStats
+        }
         state.error = null
       })
       .addCase(fetchOrderHistory.rejected, (state, action) => {
@@ -193,7 +212,7 @@ const ordersSlice = createSlice({
       })
       .addCase(createOrder.fulfilled, (state, action) => {
         state.loading = false
-        state.orders.unshift(action.payload) // Add to beginning
+        state.orders.unshift(action.payload)
         state.error = null
       })
       .addCase(createOrder.rejected, (state, action) => {
@@ -209,7 +228,7 @@ const ordersSlice = createSlice({
       })
       .addCase(reorder.fulfilled, (state, action) => {
         state.loading = false
-        state.orders.unshift(action.payload) // Add new order to beginning
+        state.orders.unshift(action.payload)
         state.error = null
       })
       .addCase(reorder.rejected, (state, action) => {
@@ -225,13 +244,16 @@ const ordersSlice = createSlice({
       })
       .addCase(cancelOrder.fulfilled, (state, action) => {
         state.loading = false
-        // Update order in the list
-        const index = state.orders.findIndex(o => o.id === action.payload.id)
+        const index = state.orders.findIndex(
+          (o) => o.id === action.payload.id || o.orderNumber === action.payload.orderNumber
+        )
         if (index !== -1) {
           state.orders[index] = action.payload
         }
-        // Update selected order if it's the same
-        if (state.selectedOrder?.id === action.payload.id) {
+        if (
+          state.selectedOrder?.id === action.payload.id ||
+          state.selectedOrder?.orderNumber === action.payload.orderNumber
+        ) {
           state.selectedOrder = action.payload
         }
         state.error = null
@@ -256,6 +278,7 @@ export const selectOrdersLoading = (state: { orders: OrdersState }) => state.ord
 export const selectOrdersError = (state: { orders: OrdersState }) => state.orders.error
 export const selectOrderFilters = (state: { orders: OrdersState }) => state.orders.filters
 export const selectOrdersPagination = (state: { orders: OrdersState }) => state.orders.pagination
+export const selectOrdersSummaryStats = (state: { orders: OrdersState }) => state.orders.summaryStats
 
 // ==================== EXPORT ====================
 
