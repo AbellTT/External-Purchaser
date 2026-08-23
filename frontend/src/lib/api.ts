@@ -6,11 +6,17 @@ import type { ApiError } from '@/types/api'
 // AXIOS INSTANCE
 // ============================================================
 
-export const api = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_BASE_URL ||
-    'http://localhost:8001/api',
+// Dynamically resolve the API base URL so the app works on any device
+// on the local network (phones, tablets) without hardcoding 'localhost'.
+const getApiBaseUrl = (): string => {
+  if (import.meta.env.VITE_API_BASE_URL) return import.meta.env.VITE_API_BASE_URL
+  const hostname =
+    typeof window !== 'undefined' ? window.location.hostname : 'localhost'
+  return `http://${hostname}:8001/api`
+}
 
+export const api = axios.create({
+  baseURL: getApiBaseUrl(),
   timeout: 30000,
   withCredentials: true,
   headers: {

@@ -15,10 +15,12 @@ import {
   ExternalLink,
   ChevronRight,
   UserCheck,
+  ShieldCheck,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { adminLogout, selectAdminUser } from '@/store/adminSlices/adminAuthSlice'
+import { useOrgWebSocket } from '@/lib/useOrgWebSocket'
 
 const ADMIN_NAV_ITEMS = [
   { label: 'Overview & Analytics', icon: LayoutDashboard, to: '/admin' },
@@ -26,8 +28,8 @@ const ADMIN_NAV_ITEMS = [
   { label: 'Orders Processing',   icon: ShoppingCart,    to: '/admin/orders' },
   { label: 'Products & Pricing',  icon: Tag,             to: '/admin/products' },
   { label: 'Org Approvals',       icon: Building2,       to: '/admin/organizations' },
+  { label: 'TIN Verification',    icon: ShieldCheck,     to: '/admin/tin-verification' },
   { label: 'Market Data Entry',   icon: TrendingUp,      to: '/admin/market-data' },
-  { label: 'Wholesale Suppliers', icon: Truck,           to: '/admin/suppliers' },
 ]
 
 function AdminSidebarContent({ onClose }: { onClose?: () => void }) {
@@ -121,6 +123,7 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  useOrgWebSocket()
 
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] flex font-sans">

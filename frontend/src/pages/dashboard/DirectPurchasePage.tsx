@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { toast } from 'sonner'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
@@ -290,6 +291,12 @@ export function DirectPurchasePage() {
       dispatch(fetchProducts())
       setCart([])
       setStep('success')
+    } else {
+      const errorMsg = (res.payload as string) || 'Unable to place direct purchase order.'
+      toast.error('Order Submission Failed', {
+        description: errorMsg,
+        duration: 6000,
+      })
     }
   }
 
@@ -316,11 +323,11 @@ export function DirectPurchasePage() {
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-            <ShoppingCart className="w-7 h-7 text-primary" />
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground flex items-center gap-3">
+            <ShoppingCart className="w-8 h-8 text-primary" />
             Direct Purchase
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">
+          <p className="text-base sm:text-lg text-muted-foreground mt-1 font-medium">
             Order immediately at competitive wholesale pricing without waiting for a basket.
           </p>
         </div>
@@ -614,10 +621,10 @@ export function DirectPurchasePage() {
                                   <Package className="w-4 h-4" />
                                 </div>
                                 <div className="flex-1 min-w-0 overflow-hidden">
-                                  <p className="text-xs sm:text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                                  <p className="text-sm sm:text-base font-bold text-foreground truncate group-hover:text-primary transition-colors">
                                     {p.name}
                                   </p>
-                                  <p className="text-[11px] sm:text-xs text-muted-foreground truncate">{p.category}</p>
+                                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{p.category}</p>
                                 </div>
                               </div>
                             </button>
@@ -777,10 +784,10 @@ export function DirectPurchasePage() {
                                     )}
                                   </div>
                                 </div>
-                                <p className={`text-sm font-semibold text-center truncate ${!b.available ? 'text-muted-foreground' : 'text-foreground'}`}>
+                                <p className={`text-base sm:text-lg font-bold text-center truncate ${!b.available ? 'text-muted-foreground' : 'text-foreground'}`}>
                                   {b.name}
                                 </p>
-                                <p className="text-xs font-mono font-bold text-primary text-center mt-0.5">
+                                <p className="text-sm sm:text-base font-mono font-black text-primary text-center mt-0.5">
                                   ETB {b.price.toLocaleString()}
                                 </p>
                                 <div className="flex items-center justify-center mt-1 pt-1 border-t border-border/50">
@@ -903,8 +910,8 @@ export function DirectPurchasePage() {
                             className="flex items-center gap-3 p-3 bg-surface-muted/60 rounded-lg border border-border"
                           >
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-foreground">{item.productName}</p>
-                              <p className="text-xs text-muted-foreground">Brand: {item.brand}</p>
+                              <p className="text-base sm:text-lg font-bold text-foreground">{item.productName}</p>
+                              <p className="text-xs sm:text-sm text-muted-foreground">Brand: <strong className="text-foreground">{item.brand}</strong></p>
                             </div>
                             <div className="flex items-center gap-2">
                               <Button

@@ -1,514 +1,379 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { TrendingUp, AlertCircle, AlertTriangle, ArrowRight } from 'lucide-react'
+import { TrendingUp, AlertTriangle, Calendar, Clock, Info, ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, Legend,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
 } from 'recharts'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
-  fetchMarketData,
-  selectMarketProducts,
+  fetchMarketIntelligence,
+  selectMarketIntelligenceProducts,
   selectMarketIntelligenceLoading,
-  selectCapitalLossAnalysis,
 } from '@/store/slices/marketIntelligenceSlice'
+import { useOrgWebSocket } from '@/lib/useOrgWebSocket'
+
+// Correct sequential ordering of bi-monthly periods
+const PERIOD_ORDER: Record<string, number> = {
+  'Sept - Oct': 1,
+  'Nov - Dec': 2,
+  'Jan - Feb': 3,
+  'Mar - Apr': 4,
+  'May - Jun': 5,
+  'Jul - Aug': 6,
+}
 
 export function MarketIntelligencePage() {
+  useOrgWebSocket()
   const dispatch = useAppDispatch()
-  const productsFromRedux = useAppSelector(selectMarketProducts)
-  const capitalLossFromRedux = useAppSelector(selectCapitalLossAnalysis)
+  const allProducts = useAppSelector(selectMarketIntelligenceProducts)
   const loading = useAppSelector(selectMarketIntelligenceLoading)
-  
-  const [view, setView] = useState<'main' | 'weekly'>('main')
-  const [selectedProduct, setSelectedProduct] = useState<string>('')
-  const [selectedWeeklyProduct, setSelectedWeeklyProduct] = useState<string>('')
-  const [selectedYear] = useState<number>(2026)
 
-  // Load market intelligence data on mount
+  // Filter products to ONLY include products that have at least one entered current month spot price
+  const productsWithSpotPrices = allProducts.filter(
+    (p) => p.weeklyHistory && p.weeklyHistory.some((w) => w.price !== null && w.price !== undefined)
+  )
+
+  // Use filtered products if available, fallback to all products if data is initializing
+  const displayProducts = productsWithSpotPrices.length > 0 ? productsWithSpotPrices : allProducts
+
+  const [selectedProductId, setSelectedProductId] = useState<string>('')
+  const [selectedYear, setSelectedYear] = useState<number>(2026)
+
   useEffect(() => {
-    dispatch(fetchMarketData())
+    dispatch(fetchMarketIntelligence())
   }, [dispatch])
 
-  // Set selected product when data loads
   useEffect(() => {
-    if (productsFromRedux.length > 0 && !selectedProduct) {
-      setSelectedProduct(productsFromRedux[0].name)
+    if (displayProducts.length > 0 && (!selectedProductId || !displayProducts.some(p => p.id === selectedProductId))) {
+      setSelectedProductId(displayProducts[0].id)
     }
-  }, [productsFromRedux, selectedProduct])
+  }, [displayProducts, selectedProductId])
 
-  // Set selected weekly product when data loads
-  useEffect(() => {
-    if (productsFromRedux.length > 0 && !selectedWeeklyProduct) {
-      setSelectedWeeklyProduct(productsFromRedux[0].name)
-    }
-  }, [productsFromRedux, selectedWeeklyProduct])
+  const selectedProduct = displayProducts.find((p) => p.id === selectedProductId) || displayProducts[0]
 
-  // Show loading
-  if (loading && productsFromRedux.length === 0) {
+  if (loading && allProducts.length === 0) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-96">
           <div className="text-center space-y-3">
             <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-sm text-muted-foreground">Loading market intelligence...</p>
+            <p className="text-sm font-semibold text-muted-foreground">Loading market intelligence...</p>
           </div>
         </div>
       </DashboardLayout>
     )
   }
 
-  // Get selected product data
-  const selectedProductData = productsFromRedux.find(p => p.name === selectedProduct) || productsFromRedux[0]
-  
-  if (!selectedProductData) {
-    return <DashboardLayout><div>No market data available</div></DashboardLayout>
-  }
+  // Extract years available for selected product
+  const availableYears = selectedProduct?.biMonthlyDataByYear
+    ? Object.keys(selectedProduct.biMonthlyDataByYear).map(Number).sort((a, b) => b - a)
+    : []
 
-  // Prepare chart data with shaded bands from Redux
-  const chartData = selectedProductData.bi_monthly_metrics.map((metric) => {
-    const midpoint = (metric.average_price_etb.min + metric.average_price_etb.max) / 2
-    const maxVolatility = midpoint + metric.weekly_increase_etb.max
-    const minVolatility = midpoint - metric.weekly_discount_etb.max
+  const rawBiMonthlyForYear = selectedProduct?.biMonthlyDataByYear?.[selectedYear] || []
 
-    return {
-      period: metric.period,
-      midpoint,
-      price_lower_bound: metric.average_price_etb.min,
-      price_upper_bound: metric.average_price_etb.max,
-      max_volatility: maxVolatility,
-      min_volatility: minVolatility,
-    }
+  // Sort bi-monthly periods strictly starting from Sept - Oct to Jul - Aug
+  const biMonthlyForYear = [...rawBiMonthlyForYear].sort((a, b) => {
+    const orderA = PERIOD_ORDER[a.period] || 99
+    const orderB = PERIOD_ORDER[b.period] || 99
+    return orderA - orderB
   })
+
+  // Check if selected product has VALID bi-monthly historical data (must have non-zero prices!)
+  const hasBiMonthlyData =
+    selectedProduct?.hasBiMonthlyData &&
+    biMonthlyForYear.length > 0 &&
+    biMonthlyForYear.some(
+      (bm) => bm.average_price_etb.max > 0 || bm.average_price_etb.min > 0
+    )
+
+  // Chart data for bi-monthly range analysis
+  const biMonthlyChartData = biMonthlyForYear.map((bm) => ({
+    period: bm.period,
+    minPrice: bm.average_price_etb.min,
+    maxPrice: bm.average_price_etb.max,
+    avgPrice: Math.round((bm.average_price_etb.min + bm.average_price_etb.max) / 2),
+    minIncrease: bm.weekly_increase_etb.min,
+    maxIncrease: bm.weekly_increase_etb.max,
+    minDiscount: bm.weekly_discount_etb.min,
+    maxDiscount: bm.weekly_discount_etb.max,
+  }))
 
   return (
     <DashboardLayout>
-      <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-5xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-primary" />
-              Market Intelligence
-            </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Historical Merkato retailer pricing data, trends, and market analysis.
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-6xl mx-auto">
+        {/* Header Bar */}
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground flex items-center gap-2.5">
+            <TrendingUp className="w-8 h-8 text-primary" />
+            Historical Market Intelligence
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1 font-medium">
+            Real-time platform spot prices, bi-monthly historical range analysis, and purchasing insights.
+          </p>
+        </div>
+
+        {/* General Informational Context Description Box */}
+        <div className="bg-primary-subtle/20 border border-primary/20 rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row items-start gap-4">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+            <Info className="w-6 h-6" />
+          </div>
+          <div className="space-y-1.5 text-sm text-muted-foreground leading-relaxed">
+            <h2 className="text-base font-bold text-foreground">Understanding Market Pricing & Volatility</h2>
+            <p>
+              This dashboard provides institutional buyers with transparent price tracking across local stationery and supply markets. 
+              By tracking live weekly spot prices alongside bi-monthly historical price ranges, procurement teams can anticipate seasonal price surges and optimize bulk purchasing timing.
             </p>
           </div>
-          <Link to="/dashboard/company-loss-analysis">
-            <Button variant="outline" size="sm" className="text-xs text-error border-error/30 hover:bg-error-bg/20 flex items-center gap-1.5">
-              <AlertTriangle className="w-4 h-4 text-error" />
-              Capital Loss Analysis
-            </Button>
-          </Link>
         </div>
 
-        {/* View Toggle */}
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant={view === 'main' ? 'default' : 'outline'}
-            onClick={() => setView('main')}
-            className="text-xs"
+        {/* Product Dropdown Selector Bar */}
+        <div className="bg-card p-4 sm:p-5 rounded-xl border border-border flex flex-col sm:flex-row sm:items-center gap-3">
+          <label className="text-xs sm:text-sm font-mono font-bold text-muted-foreground uppercase tracking-wider">
+            Select Product & Brand:
+          </label>
+          <select
+            value={selectedProductId}
+            onChange={(e) => setSelectedProductId(e.target.value)}
+            className="px-4 py-2.5 bg-background border border-border rounded-lg text-sm sm:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary min-w-[280px]"
           >
-            4 Main Products Analysis
-          </Button>
-          <Button
-            size="sm"
-            variant={view === 'weekly' ? 'default' : 'outline'}
-            onClick={() => setView('weekly')}
-            className="text-xs"
-          >
-            All Products Weekly Prices
-          </Button>
+            {displayProducts.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} {p.brandName ? `(${p.brandName})` : ''}
+              </option>
+            ))}
+          </select>
         </div>
 
-        {/* Weekly Prices View for All Products */}
-        {view === 'weekly' && (
-          <>
-            {/* Product Selector for Weekly View */}
-            <div className="flex flex-wrap gap-2">
-              {productsFromRedux.map((product) => (
-                <Button
-                  key={product.name}
-                  size="sm"
-                  variant={selectedWeeklyProduct === product.name ? 'default' : 'outline'}
-                  onClick={() => setSelectedWeeklyProduct(product.name)}
-                  className="text-xs"
-                >
-                  {product.name}
-                </Button>
-              ))}
-            </div>
+        {/* 1. Top Section — Current / Recent Week Price */}
+        {selectedProduct && (() => {
+          const info = selectedProduct.currentMonthInfo
+          if (!info || !info.isCurrentMonth || !info.latestAvailableWeekNumber) {
+            return (
+              <Card className="border-border bg-card shadow-sm">
+                <CardContent className="p-5 sm:p-6 text-center space-y-1">
+                  <p className="text-xs sm:text-sm font-mono font-bold text-muted-foreground uppercase tracking-wide">
+                    Current Month Spot Price — {selectedProduct.name} {selectedProduct.brandName ? `(${selectedProduct.brandName})` : ''}
+                  </p>
+                  <p className="text-sm font-medium text-muted-foreground italic pt-1">
+                    No spot prices published for the current month yet.
+                  </p>
+                </CardContent>
+              </Card>
+            )
+          }
 
-            {(() => {
-              const weeklyProduct = productsFromRedux.find(p => p.name === selectedWeeklyProduct)
-              if (!weeklyProduct?.weeklyHistory) return null
-              
-              const week1Price = weeklyProduct.weeklyHistory[0]?.price
-              const week2Price = weeklyProduct.weeklyHistory[1]?.price
-              const priceChange = week1Price && week2Price ? week2Price - week1Price : 0
-              const priceChangePercent = week1Price && week2Price ? ((priceChange / week1Price) * 100).toFixed(1) : '0.0'
-              
-              return (
-                <Card className="border-border">
-                  <CardHeader>
-                    <CardTitle className="text-base">{weeklyProduct.name} — August 2026 Weekly Prices</CardTitle>
-                    <CardDescription>
-                      Current month platform direct prices (Week 2 of August - most recent data)
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Current Price */}
-                    <div className="bg-surface-muted border border-border rounded-lg p-6 text-center">
-                      <p className="text-xs font-mono text-muted-foreground mb-2 uppercase tracking-wide">
-                        {weeklyProduct.name} — Platform Direct Price (Week 2)
-                      </p>
-                      <p className="text-4xl font-bold text-primary font-mono">
-                        ETB {weeklyProduct.current_pricing.merkatoRetailerPrice}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">per {weeklyProduct.unit}</p>
-                      <div className="mt-2">
-                        <span className={`text-sm font-semibold ${priceChange >= 0 ? 'text-error' : 'text-success'}`}>
-                          {priceChange >= 0 ? '↑' : '↓'} ETB {Math.abs(priceChange)} ({priceChangePercent}%)
-                        </span>
-                        <span className="text-xs text-muted-foreground ml-2">vs Week 1</span>
-                      </div>
-                    </div>
+          const isCurrentWeek = info.hasCurrentWeekPrice
+          const weekNum = isCurrentWeek ? info.currentWeekNumber : info.latestAvailableWeekNumber
+          const weekItem = selectedProduct.weeklyHistory.find((w: any) => w.weekNumber === weekNum)
+          const displayPrice = weekItem?.price ?? selectedProduct.current_pricing.platformDirectPrice
 
-                    {/* Weekly Chart */}
-                    <div>
-                      <p className="text-sm font-semibold text-foreground mb-3">
-                        August 2026 Weekly Price Trend (4 weeks)
-                      </p>
-                      <ResponsiveContainer width="100%" height={250}>
-                        <LineChart
-                          data={weeklyProduct.weeklyHistory}
-                          margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                          <XAxis
-                            dataKey="week"
-                            tick={{ fontSize: 10, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }}
-                          />
-                          <YAxis
-                            tick={{ fontSize: 10, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }}
-                            domain={['dataMin - 10', 'dataMax + 10']}
-                          />
-                          <Tooltip
-                            contentStyle={{
-                              background: 'var(--card)',
-                              border: '1px solid var(--border)',
-                              borderRadius: '6px',
-                              fontSize: '12px',
-                              fontFamily: 'IBM Plex Mono',
-                            }}
-                            formatter={(val) => val ? [`ETB ${val}`, 'Platform Price'] : ['No data yet', '']}
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="price"
-                            stroke="var(--primary)"
-                            strokeWidth={2.5}
-                            dot={{ r: 4, fill: 'var(--primary)' }}
-                            activeDot={{ r: 6 }}
-                            connectNulls={false}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
+          const labelText = isCurrentWeek
+            ? `This Week's Price (Week ${weekNum})`
+            : `Recent Week Price (Week ${weekNum})`
 
-                    {/* Info Note */}
-                    <div className="bg-info-bg border border-info/20 rounded-md p-3 text-xs text-muted-foreground">
-                      <AlertCircle className="w-4 h-4 text-info inline mr-2" />
-                      <strong className="text-foreground">Note:</strong> Currently showing Week 1-2 data (latest available). 
-                      Week 3 and Week 4 prices will be added by admin as the month progresses. 
-                      For historical analysis with 2-year data and loss calculations, select the "4 Main Products Analysis" view above.
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })()}
-          </>
-        )}
+          return (
+            <Card className="border-primary/40 bg-primary-subtle/20 shadow-sm">
+              <CardContent className="p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs sm:text-sm font-mono font-bold text-primary uppercase tracking-wide">
+                    {labelText} — {selectedProduct.name} {selectedProduct.brandName ? `(${selectedProduct.brandName})` : ''}
+                  </p>
+                  <p className="text-3xl sm:text-4xl font-black text-primary font-mono mt-1">
+                    ETB {displayPrice ? Number(displayPrice).toLocaleString() : 'N/A'}
+                  </p>
+                  {!isCurrentWeek && (
+                    <p className="text-[11px] font-mono text-muted-foreground mt-0.5">
+                      Week {info.currentWeekNumber} price not published yet. Displaying latest available price from Week {weekNum}.
+                    </p>
+                  )}
+                </div>
+                <span className="text-xs sm:text-sm font-mono text-muted-foreground">
+                  Per {selectedProduct.unit || 'unit'}
+                </span>
+              </CardContent>
+            </Card>
+          )
+        })()}
 
-        {/* Main 4 Products Analysis View */}
-        {view === 'main' && (
-          <>
-            {/* Product Selector */}
-            <div className="flex flex-wrap gap-2">
-              {productsFromRedux.map((product) => (
-                <Button
-                  key={product.name}
-                  size="sm"
-                  variant={selectedProduct === product.name ? 'default' : 'outline'}
-                  onClick={() => setSelectedProduct(product.name)}
-                  className="text-xs"
-                >
-                  {product.name}
-                </Button>
-              ))}
-            </div>
-
-        {/* Section 1: Current Week Platform Direct Price */}
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle className="text-base">Current Week Platform Direct Price</CardTitle>
-            <CardDescription>
-              Latest direct purchase pricing from our platform — This week (August 2026)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Current Price Display */}
-            <div className="bg-surface-muted border border-border rounded-lg p-6 text-center">
-              <p className="text-xs font-mono text-muted-foreground mb-2 uppercase tracking-wide">
-                {selectedProduct} — Platform Direct Price
-              </p>
-              <p className="text-4xl font-bold text-primary font-mono">
-                ETB {selectedProductData.current_pricing.merkatoRetailerPrice}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">per unit</p>
-            </div>
-
-            {/* Weekly Trend Chart */}
-            <div>
-              <p className="text-sm font-semibold text-foreground mb-3">
-                August 2026 Weekly Trend (4 weeks, Platform Direct Prices)
-              </p>
-              <ResponsiveContainer width="100%" height={200}>
-                <LineChart
-                  data={selectedProductData.weeklyHistory || []}
-                  margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-                >
+        {/* 2. Current Month Spot Prices Card */}
+        {selectedProduct && (
+          <Card className="border-border shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg sm:text-xl font-bold flex items-center gap-2">
+                <Clock className="w-5 h-5 text-primary" />
+                Current Month Spot Prices — {selectedProduct.name}
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm text-muted-foreground font-medium">
+                Weekly spot prices entered by admin (real-time platform direct prices).
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={selectedProduct.weeklyHistory} margin={{ top: 10, right: 35, left: 10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis
-                    dataKey="week"
-                    tick={{ fontSize: 10, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }}
-                  />
+                  <XAxis dataKey="week" tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }} />
                   <YAxis
-                    tick={{ fontSize: 10, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }}
-                    domain={['dataMin - 10', 'dataMax + 10']}
+                    tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }}
+                    domain={[(dataMin: number) => Math.max(0, Math.floor(dataMin - 2)), (dataMax: number) => Math.ceil(dataMax + 2)]}
                   />
                   <Tooltip
                     contentStyle={{
                       background: 'var(--card)',
                       border: '1px solid var(--border)',
-                      borderRadius: '6px',
-                      fontSize: '12px',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: 600,
                       fontFamily: 'IBM Plex Mono',
                     }}
-                    formatter={(val) => val ? [`ETB ${val}`, 'Platform Price'] : ['No data yet', '']}
+                    formatter={(val) => (val ? [`ETB ${val}`, "This Week's Direct Price"] : ['Not entered yet', ''])}
                   />
                   <Line
                     type="monotone"
                     dataKey="price"
                     stroke="var(--primary)"
-                    strokeWidth={2.5}
-                    dot={{ r: 4, fill: 'var(--primary)' }}
-                    activeDot={{ r: 6 }}
+                    strokeWidth={3}
+                    dot={{ r: 6, fill: 'var(--primary)' }}
+                    activeDot={{ r: 8, fill: 'var(--primary)' }}
                     connectNulls={false}
                   />
                 </LineChart>
               </ResponsiveContainer>
-              <p className="text-xs text-muted-foreground mt-2">
-                Note: Week 3 and Week 4 data will be added by admin as they become available (currently Week 2)
-              </p>
-            </div>
+            </CardContent>
+          </Card>
+        )}
 
-            <div className="bg-info-bg border border-info/20 rounded-md p-3 text-xs text-muted-foreground">
-              <AlertCircle className="w-4 h-4 text-info inline mr-2" />
-              <strong className="text-foreground">Note:</strong> These prices represent our platform's direct purchase pricing. 
-              Final Basket Prices are typically even lower and shown on completed orders.
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Section 2: Multi-Year Analysis */}
-        <Card className="border-border">
-          <CardHeader>
-            <div className="flex items-center justify-between flex-wrap gap-2">
+        {/* 3. Bi-Monthly Historical Analysis Section — Scrollable & Responsive */}
+        {selectedProduct && hasBiMonthlyData ? (
+          <Card className="border-border shadow-sm">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4">
               <div>
-                <CardTitle className="text-base">Bi-Monthly Price Analysis — {selectedYear}</CardTitle>
-                <CardDescription>
-                  Historical Merkato retailer price ranges and volatility patterns
+                <CardTitle className="text-lg sm:text-xl font-bold flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-primary" />
+                  Bi-Monthly Price Analysis — {selectedYear}
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-muted-foreground font-medium mt-0.5">
+                  Historical price ranges starting from September–October through July–August.
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="text-xs" disabled>
-                  {selectedYear}
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Bi-Monthly Chart with Shaded Error Bands */}
-            <div>
-              <ResponsiveContainer width="100%" height={350}>
-                <AreaChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
-                  <defs>
-                    {/* Extreme volatility band gradient */}
-                    <linearGradient id="volatilityBand" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--error)" stopOpacity={0.1} />
-                      <stop offset="95%" stopColor="var(--error)" stopOpacity={0.05} />
-                    </linearGradient>
-                    {/* Normal price range gradient */}
-                    <linearGradient id="priceBand" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0.15} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis
-                    dataKey="period"
-                    tick={{ fontSize: 10, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 10, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: 'var(--card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '6px',
-                      fontSize: '11px',
-                      fontFamily: 'IBM Plex Mono',
-                    }}
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        const data = payload[0].payload
-                        return (
-                          <div className="bg-card border border-border rounded-md p-3 space-y-1">
-                            <p className="font-semibold text-foreground">{data.period}</p>
-                            <p className="text-xs">
-                              <span className="text-muted-foreground">Midpoint:</span>{' '}
-                              <span className="font-bold text-primary">ETB {data.midpoint.toFixed(0)}</span>
-                            </p>
-                            <p className="text-xs">
-                              <span className="text-muted-foreground">Normal Range:</span>{' '}
-                              <span className="font-semibold">ETB {data.price_lower_bound} - {data.price_upper_bound}</span>
-                            </p>
-                            <p className="text-xs">
-                              <span className="text-muted-foreground">Max Volatility:</span>{' '}
-                              <span className="font-semibold text-error">ETB {data.max_volatility.toFixed(0)}</span>
-                            </p>
-                            <p className="text-xs">
-                              <span className="text-muted-foreground">Min Volatility:</span>{' '}
-                              <span className="font-semibold text-success">ETB {data.min_volatility.toFixed(0)}</span>
-                            </p>
-                          </div>
-                        )
-                      }
-                      return null
-                    }}
-                  />
-                  <Legend
-                    wrapperStyle={{ fontSize: '11px' }}
-                    formatter={(value: string) => {
-                      if (value === 'max_volatility') return 'Extreme Volatility Band'
-                      if (value === 'price_upper_bound') return 'Normal Price Range'
-                      if (value === 'midpoint') return 'Average Trend'
-                      return value
-                    }}
-                  />
-                  
-                  {/* Extreme volatility band (lightest) */}
-                  <Area
-                    type="monotone"
-                    dataKey="max_volatility"
-                    stackId="1"
-                    stroke="none"
-                    fill="url(#volatilityBand)"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="min_volatility"
-                    stackId="2"
-                    stroke="none"
-                    fill="url(#volatilityBand)"
-                  />
-                  
-                  {/* Normal price range (darker) */}
-                  <Area
-                    type="monotone"
-                    dataKey="price_upper_bound"
-                    stroke="var(--primary)"
-                    strokeWidth={1}
-                    strokeOpacity={0.5}
-                    fill="url(#priceBand)"
-                    fillOpacity={1}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="price_lower_bound"
-                    stroke="var(--primary)"
-                    strokeWidth={1}
-                    strokeOpacity={0.5}
-                    fill="var(--card)"
-                  />
-                  
-                  {/* Midpoint trend line */}
-                  <Line
-                    type="monotone"
-                    dataKey="midpoint"
-                    stroke="var(--primary)"
-                    strokeWidth={3}
-                    dot={{ r: 4, fill: 'var(--primary)' }}
-                    activeDot={{ r: 6 }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
 
-            {/* Legend Explanation */}
-            <div className="grid sm:grid-cols-3 gap-3 text-xs">
-              <div className="bg-surface-muted border border-border rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-3 h-3 rounded-full bg-primary"></div>
-                  <p className="font-semibold text-foreground">Average Trend</p>
+              {/* Year Switcher Dropdown */}
+              {availableYears.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-mono font-bold text-muted-foreground">Year:</span>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(Number(e.target.value))}
+                    className="px-3 py-1.5 bg-background border border-border rounded-lg text-xs sm:text-sm font-mono font-bold text-foreground focus:outline-none"
+                  >
+                    {availableYears.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <p className="text-muted-foreground">Midpoint of bi-monthly price range</p>
-              </div>
-              <div className="bg-surface-muted border border-border rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-3 h-3 rounded bg-primary opacity-30"></div>
-                  <p className="font-semibold text-foreground">Normal Range</p>
-                </div>
-                <p className="text-muted-foreground">Expected price band (min-max)</p>
-              </div>
-              <div className="bg-surface-muted border border-border rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-3 h-3 rounded bg-error opacity-10"></div>
-                  <p className="font-semibold text-foreground">Volatility Band</p>
-                </div>
-                <p className="text-muted-foreground">Worst-case price spikes/drops</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              )}
+            </CardHeader>
 
-        {/* Capital Loss Analysis Callout */}
-        <Card className="border-error/30 bg-error-bg/10">
-          <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <CardContent className="space-y-6">
+              {/* Range Chart - Horizontally Scrollable on Mobile to Prevent Squishing */}
+              <div className="overflow-x-auto pb-2">
+                <div className="min-w-[620px]">
+                  <p className="text-xs sm:text-sm font-mono font-bold text-muted-foreground mb-3 uppercase tracking-wider">
+                    Average Price Range (ETB {selectedYear})
+                  </p>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart data={biMonthlyChartData} margin={{ top: 10, right: 35, left: 10, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis dataKey="period" tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }} />
+                      <YAxis tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }} domain={['dataMin - 20', 'dataMax + 20']} />
+                      <Tooltip
+                        contentStyle={{
+                          background: 'var(--card)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          fontFamily: 'IBM Plex Mono',
+                        }}
+                        formatter={(val: any, name: string) => [
+                          `ETB ${val}`,
+                          name === 'minPrice' ? 'Min Price' : name === 'maxPrice' ? 'Max Price' : 'Avg Price',
+                        ]}
+                      />
+                      <Area type="monotone" dataKey="maxPrice" stroke="var(--primary)" fill="var(--primary-subtle)" fillOpacity={0.4} />
+                      <Area type="monotone" dataKey="minPrice" stroke="var(--primary)" fill="#ffffff" fillOpacity={0.8} />
+                      <Line type="monotone" dataKey="avgPrice" stroke="var(--primary)" strokeWidth={3} dot={{ r: 5 }} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Range Table - Horizontally Scrollable on Small Screens */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs sm:text-sm font-mono border-collapse min-w-[550px]">
+                  <thead>
+                    <tr className="border-b border-border text-muted-foreground font-bold uppercase tracking-wider">
+                      <th className="py-3 px-3">Period</th>
+                      <th className="py-3 px-3">Avg Price Range</th>
+                      <th className="py-3 px-3">Weekly Increase Range</th>
+                      <th className="py-3 px-3">Weekly Discount Range</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {biMonthlyForYear.map((bm) => (
+                      <tr key={bm.period} className="hover:bg-surface-muted/50">
+                        <td className="py-3.5 px-3 font-bold text-foreground">{bm.period}</td>
+                        <td className="py-3.5 px-3 text-primary font-bold">
+                          ETB {bm.average_price_etb.min} → ETB {bm.average_price_etb.max}
+                        </td>
+                        <td className="py-3.5 px-3 text-error font-bold">
+                          ETB {bm.weekly_increase_etb.min} → ETB {bm.weekly_increase_etb.max}
+                        </td>
+                        <td className="py-3.5 px-3 text-success font-bold">
+                          ETB {bm.weekly_discount_etb.min} → ETB {bm.weekly_discount_etb.max}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          /* Clean Empty Notice if No Bi-Monthly Historical Data Exists */
+          <div className="bg-surface-muted/60 border border-border rounded-xl p-6 text-center">
+            <p className="text-xs sm:text-sm font-bold text-muted-foreground font-mono">
+              There is no bi-monthly historical price data available for {selectedProduct?.name || 'this product'}.
+            </p>
+          </div>
+        )}
+
+        {/* 4. Capital Loss Analysis Dedicated Section (Moved to Bottom) */}
+        <Card className="border-error/30 bg-error-bg/5 shadow-sm">
+          <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-error shrink-0" />
-                <h3 className="font-semibold text-foreground">500 Companies Capital Loss Analysis</h3>
+                <AlertTriangle className="w-5 h-5 text-error" />
+                <h3 className="text-base sm:text-lg font-bold text-foreground">Capital Loss & Procurement Waste Analysis</h3>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Discover how Ethiopian organizations lose an estimated ETB {((capitalLossFromRedux?.totalCapitalWasted || 33000000) / 1000000).toFixed(0)}M annually due to poor procurement timing and price volatility.
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl font-medium">
+                Discover how poor procurement timing and purchasing during market peaks leads to an estimated 
+                <strong className="text-foreground font-bold"> ETB 33M+ in annual financial loss</strong> across 500 Ethiopian organizations.
               </p>
             </div>
+
             <Link to="/dashboard/company-loss-analysis" className="shrink-0">
-              <Button size="sm" className="bg-error text-white hover:bg-error/90 text-xs flex items-center gap-1.5">
-                View Loss Analysis
-                <ArrowRight className="w-3.5 h-3.5" />
+              <Button size="sm" className="bg-error text-white hover:bg-error/90 text-xs sm:text-sm font-bold gap-2">
+                View Capital Loss Breakdown
+                <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
           </CardContent>
         </Card>
-          </>
-        )}
       </div>
     </DashboardLayout>
   )

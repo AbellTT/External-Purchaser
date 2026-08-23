@@ -1,6 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { AdminOrganization, AdminSupplier, Order, Basket } from '@/types/api'
+import { adminApi } from '@/lib/adminApi'
 import mockBasketsData from '@/data/baskets/basketsList.json'
 
 // ==================== STATE INTERFACE ====================
@@ -161,20 +162,32 @@ const initialOrders: Order[] = [
 
 const initialState: AdminState = {
   stats: {
-    totalGmvEtb: 4250000,
-    totalCapitalSavedEtb: 780000,
-    activeBasketsCount: (mockBasketsData as any)?.data?.baskets?.length || 4,
-    pendingOrdersCount: 2,
-    pendingApprovalsCount: 2,
-    totalOrganizationsCount: 4,
+    totalGmvEtb: 0,
+    totalCapitalSavedEtb: 0,
+    activeBasketsCount: 0,
+    pendingOrdersCount: 0,
+    pendingApprovalsCount: 0,
+    totalOrganizationsCount: 0,
   },
-  organizations: initialOrganizations,
+  organizations: [],
   suppliers: initialSuppliers,
   baskets: (mockBasketsData as any)?.data?.baskets || [],
-  orders: initialOrders,
+  orders: [],
   loading: false,
   error: null,
 }
+
+export const fetchAdminOverview = createAsyncThunk(
+  'admin/fetchOverview',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await adminApi.get('/organizations/admin/overview/')
+      return response.data.data
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.error || 'Failed to fetch admin overview.')
+    }
+  }
+)
 
 // ==================== SLICE ====================
 
@@ -294,6 +307,22 @@ const adminSlice = createSlice({
       }
       state.suppliers.unshift(newSupplier)
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchAdminOverview.pending, (state) => {
+      state.loading = true
+      state.error = null
+    })
+    builder.addCase(fetchAdminOverview.fulfilled, (state, action) => {
+      state.loading = false
+      state.stats = action.payload.stats || state.stats
+      state.organizations = action.payload.pendingOrganizations || []
+      state.orders = action.payload.recentOrders || []
+    })
+    builder.addCase(fetchAdminOverview.rejected, (state, action) => {
+      state.loading = false
+      state.error = action.payload as string
+    })
   },
 })
 

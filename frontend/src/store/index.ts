@@ -11,6 +11,9 @@ import adminReducer from './slices/adminSlice'
 import adminAuthReducer from './adminSlices/adminAuthSlice'
 import adminProductsPricingReducer from './adminSlices/productsPricingSlice'
 import adminOrdersReducer from './adminSlices/adminOrdersSlice'
+import adminBasketsReducer from './adminSlices/adminBasketsSlice'
+import adminOrganizationsReducer from './adminSlices/adminOrganizationsSlice'
+import adminMarketDataReducer from './adminSlices/adminMarketDataSlice'
 import { setStoreReference } from '@/lib/api'
 import { setAdminStoreReference } from '@/lib/adminApi'
 
@@ -29,6 +32,9 @@ export const store = configureStore({
     admin: adminReducer,
     adminProductsPricing: adminProductsPricingReducer,
     adminOrders: adminOrdersReducer,
+    adminBaskets: adminBasketsReducer,
+    adminOrganizations: adminOrganizationsReducer,
+    adminMarketData: adminMarketDataReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

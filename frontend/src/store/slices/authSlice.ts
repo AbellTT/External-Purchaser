@@ -8,6 +8,7 @@ import type {
   RefreshTokenResponse,
 } from '@/types/api'
 import { api } from '@/lib/api'
+import { clearNotifications } from '@/store/slices/notificationsSlice'
 
 
 // ==================== LOCALSTORAGE HELPERS ====================
@@ -86,7 +87,11 @@ export const login = createAsyncThunk<AuthResponse['data'], LoginRequest>(
       const response = await api.post<AuthResponse>('/auth/login', credentials)
       return response.data.data
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Login failed')
+      const errorMsg =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        'Invalid email or password. Please check your credentials.'
+      return rejectWithValue(errorMsg)
     }
   }
 )
@@ -141,13 +146,13 @@ export const refreshToken = createAsyncThunk<
  */
 export const logout = createAsyncThunk<void, void>(
   'auth/logout',
-  async () => {
+  async (_, { dispatch }) => {
     try {
-      // Optional: Call backend to blacklist refresh token
       await api.post('/auth/logout')
     } catch (error) {
-      // Continue with logout even if API call fails
       console.error('Logout API call failed:', error)
+    } finally {
+      dispatch(clearNotifications())
     }
   }
 )
@@ -190,6 +195,21 @@ export const updateProfile = createAsyncThunk<User, Partial<User>, {rejectValue:
         error.response?.data?.message ||
         'Profile update failed'
       )
+    }
+  }
+)
+
+/**
+ * Fetch current user profile
+ */
+export const getCurrentUser = createAsyncThunk<User, void, { rejectValue: string }>(
+  'auth/getCurrentUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get<{ success: boolean; data: User }>('/auth/me')
+      return response.data.data
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error || 'Failed to fetch current user')
     }
   }
 )
@@ -357,6 +377,13 @@ const authSlice = createSlice({
       })
       .addCase(updateProfile.rejected, (state, action) => {
         state.error = action.payload as string
+      })
+
+    // ===== GET CURRENT USER =====
+    builder
+      .addCase(getCurrentUser.fulfilled, (state, action) => {
+        state.user = action.payload
+        saveUserToStorage(action.payload)
       })
   },
 })

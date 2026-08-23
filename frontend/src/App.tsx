@@ -28,9 +28,9 @@ import { AdminOrdersPage } from '@/pages/admin/AdminOrdersPage'
 import { AdminProductsPricingPage } from '@/pages/admin/AdminProductsPricingPage'
 import { AdminOrganizationsPage } from '@/pages/admin/AdminOrganizationsPage'
 import { AdminMarketDataPage } from '@/pages/admin/AdminMarketDataPage'
-import { AdminSuppliersPage } from '@/pages/admin/AdminSuppliersPage'
 import { AdminProtectedRoute } from '@/components/providers/AdminProtectedRoute'
 import { AdminBasketHistoryPage } from '@/pages/admin/AdminBasketHistoryPage'
+import { AdminTINVerificationPage } from '@/pages/admin/AdminTINVerificationPage'
 
 
 function RootLayout() {
@@ -167,6 +167,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/dashboard/company-loss"
+            element={
+              <ProtectedRoute>
+                <CompanyLossAnalysisPage />
+              </ProtectedRoute>
+            }
+          />
 
 
           {/* =====================================================
@@ -247,10 +255,10 @@ function App() {
           />
 
           <Route
-            path="/admin/suppliers"
+            path="/admin/tin-verification"
             element={
               <AdminProtectedRoute>
-                <AdminSuppliersPage />
+                <AdminTINVerificationPage />
               </AdminProtectedRoute>
             }
           />

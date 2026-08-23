@@ -368,6 +368,46 @@ export function ProfilePage() {
         </div>
 
         <form onSubmit={handleSave} className="space-y-6">
+          {/* Verification Status Card */}
+          <Card className="border-border overflow-hidden">
+            <CardContent className="p-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold text-foreground">Verification Status</h3>
+                      {currentUser?.verificationStatus === 'approved' && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-success/15 text-success border border-success/30">
+                          Verified & Approved
+                        </span>
+                      )}
+                      {(currentUser?.verificationStatus === 'pending' || !currentUser?.verificationStatus) && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-warning/15 text-warning border border-warning/30">
+                          Pending Verification
+                        </span>
+                      )}
+                      {currentUser?.verificationStatus === 'suspended' && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-destructive/15 text-destructive border border-destructive/30">
+                          Registration Rejected
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {currentUser?.verificationStatus === 'approved'
+                        ? 'Your organization TIN credentials have been verified by platform admins. You have full access to direct purchases and basket pooling.'
+                        : currentUser?.verificationStatus === 'suspended'
+                        ? 'Your organization verification was rejected. Please update your TIN credentials or contact support.'
+                        : 'Your organization registration is currently undergoing admin verification. You can view catalog prices while pending review.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Organization Details */}
           <Card className="border-border">
             <CardHeader>

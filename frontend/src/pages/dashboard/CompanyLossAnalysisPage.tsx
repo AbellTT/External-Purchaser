@@ -8,18 +8,20 @@ import {
 } from 'recharts'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
-  fetchMarketData,
+  fetchMarketIntelligence,
   selectCapitalLossAnalysis,
   selectMarketIntelligenceLoading,
 } from '@/store/slices/marketIntelligenceSlice'
+import { useOrgWebSocket } from '@/lib/useOrgWebSocket'
 
 export function CompanyLossAnalysisPage() {
+  useOrgWebSocket()
   const dispatch = useAppDispatch()
   const capitalLossAnalysis = useAppSelector(selectCapitalLossAnalysis)
   const loading = useAppSelector(selectMarketIntelligenceLoading)
 
   useEffect(() => {
-    dispatch(fetchMarketData())
+    dispatch(fetchMarketIntelligence())
   }, [dispatch])
 
   // Fallback defaults if state is initializing

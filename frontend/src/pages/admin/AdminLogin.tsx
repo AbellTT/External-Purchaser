@@ -1,19 +1,28 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ShieldAlert, KeyRound, Mail, ArrowRight, Lock } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useAppDispatch } from '@/store/hooks'
-import { adminLogin } from '@/store/adminSlices/adminAuthSlice'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { adminLogin, selectAdminUser } from '@/store/adminSlices/adminAuthSlice'
 
 export function AdminLogin() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+  const adminUser = useAppSelector(selectAdminUser)
 
   const [email, setEmail] = useState('admin@babi.et')
   const [password, setPassword] = useState('admin123')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  // If admin is already authenticated (e.g. pressed browser Back from /admin),
+  // redirect back to admin dashboard immediately.
+  useEffect(() => {
+    if (adminUser) {
+      navigate('/admin', { replace: true })
+    }
+  }, [adminUser, navigate])
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,7 +32,9 @@ export function AdminLogin() {
     try {
       await dispatch(adminLogin({ email: email.trim(), password: password.trim() })).unwrap()
       setLoading(false)
-      navigate('/admin')
+      // replace:true removes /admin/login from the history stack so Back
+      // from the admin dashboard does NOT return to the login form.
+      navigate('/admin', { replace: true })
     } catch (err: any) {
       setError(typeof err === 'string' ? err : 'Invalid admin email or password')
       setLoading(false)

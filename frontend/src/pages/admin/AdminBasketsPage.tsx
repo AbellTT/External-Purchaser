@@ -1,730 +1,932 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import {
   ShoppingBag,
   Plus,
-  Clock,
-  CheckCircle,
-  XCircle,
-  History,
-  Users,
+  Search,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
-  ChevronUp,
-  X,
+  RefreshCw,
+  CheckCircle2,
+  Lock,
+  XCircle,
+  Users,
+  Calendar,
+  Layers,
+  Truck,
   AlertTriangle,
-  Info,
-  MapPin,
-  CalendarDays,
 } from 'lucide-react'
+import { toast } from 'sonner'
+import { adminApi } from '@/lib/adminApi'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
-  selectActiveBaskets,
-  selectHistoryBaskets,
-  createBasket,
-  updateBasketStatus,
-  fulfillBasket,
-} from '@/store/slices/adminSlice'
-import type { Basket } from '@/types/api'
+  selectAdminAccessToken,
+  selectAdminAuthLoading,
+  selectIsAdminAuthenticated,
+  selectIsAdminInitialized,
+} from '@/store/adminSlices/adminAuthSlice'
+import {
+  fetchAdminBaskets,
+  createAdminBasket,
+  closeAdminBasket,
+  cancelAdminBasket,
+  updateAdminBasketDelivery,
+  setFilterStatus,
+  setFilterDuration,
+  selectAdminBaskets,
+  selectAdminBasketsSummary,
+  selectAdminBasketsPagination,
+  selectAdminBasketsLoading,
+  selectAdminBasketsFilterStatus,
+  selectAdminBasketsFilterDuration,
+} from '@/store/adminSlices/adminBasketsSlice'
+import {
+  selectProductsPricingProducts,
+} from '@/store/adminSlices/productsPricingSlice'
 
-const PAGE_SIZE = 5
+const DURATION_LABELS: Record<string, string> = {
+  WEEKLY: 'Weekly Pool',
+  MONTHLY: 'Monthly Pool',
+  SIX_MONTH: '6-Month Pool',
+}
+
+const STATUS_STYLES: Record<string, string> = {
+  OPEN: 'border-[#238636] bg-[#238636]/10 text-[#3fb950]',
+  COMPLETED: 'border-[#1f6beb] bg-[#1f6beb]/10 text-[#58a6ff]',
+  CLOSED: 'border-[#8b949e] bg-[#8b949e]/10 text-[#8b949e]',
+  DRAFT: 'border-[#d29922] bg-[#d29922]/10 text-[#d29922]',
+  CANCELLED: 'border-[#da3633] bg-[#da3633]/10 text-[#f85149]',
+}
 
 export function AdminBasketsPage() {
   const dispatch = useAppDispatch()
-  const activeBaskets = useAppSelector(selectActiveBaskets)
-  const historyBaskets = useAppSelector(selectHistoryBaskets)
+  const token = useAppSelector(selectAdminAccessToken)
+  const isAuthenticated = useAppSelector(selectIsAdminAuthenticated)
+  const authLoading = useAppSelector(selectAdminAuthLoading)
+  const isInitialized = useAppSelector(selectIsAdminInitialized)
 
-  // Pagination for active list
-  const [activePage, setActivePage] = useState(1)
-  const totalActivePages = Math.max(1, Math.ceil(activeBaskets.length / PAGE_SIZE))
-  const paginatedActive = activeBaskets.slice((activePage - 1) * PAGE_SIZE, activePage * PAGE_SIZE)
+  const baskets = useAppSelector(selectAdminBaskets)
+  const summary = useAppSelector(selectAdminBasketsSummary)
+  const pagination = useAppSelector(selectAdminBasketsPagination)
+  const loading = useAppSelector(selectAdminBasketsLoading)
+  const filterStatus = useAppSelector(selectAdminBasketsFilterStatus)
+  const filterDuration = useAppSelector(selectAdminBasketsFilterDuration)
+  const catalogProducts = useAppSelector(selectProductsPricingProducts)
 
-  // Expanded participant panels
-  const [expandedBaskets, setExpandedBaskets] = useState<Set<string>>(new Set())
-  const toggleExpand = (basketId: string) =>
-    setExpandedBaskets((prev) => {
-      const next = new Set(prev)
-      next.has(basketId) ? next.delete(basketId) : next.add(basketId)
-      return next
-    })
+  const [searchQuery, setSearchQuery] = useState('')
 
-  // Modals
+  // Create Modal State
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [fulfillTarget, setFulfillTarget] = useState<Basket | null>(null)
-
-  // Create basket form
   const [basketName, setBasketName] = useState('')
-  const [basketType, setBasketType] = useState<'weekly' | 'monthly' | '6-month'>('monthly')
-  const [productName, setProductName] = useState('Siner Line A4 Paper')
-  const [brandName, setBrandName] = useState('Siner Line')
-  const [merkatoPrice, setMerkatoPrice] = useState(675)
-  const [regularPrice, setRegularPrice] = useState(700)
-  const [targetQty, setTargetQty] = useState(1000)
+  const [durationType, setDurationType] = useState('WEEKLY')
+  const [targetQuantity, setTargetQuantity] = useState('100')
+  const [selectedProductId, setSelectedProductId] = useState('')
+  const [selectedBrandId, setSelectedBrandId] = useState('')
+  const [publishImmediately, setPublishImmediately] = useState(true)
 
-  // Fulfill basket modal
-  const [fulfillPlatformPrice, setFulfillPlatformPrice] = useState(0)
-  const [fulfillSupplierCost, setFulfillSupplierCost] = useState(0)
+  // Fulfill/Close Modal State
+  const [fulfillBasketId, setFulfillBasketId] = useState<number | null>(null)
+  const [fulfillBasketName, setFulfillBasketName] = useState('')
+  const [babiPlatformPriceInput, setBabiPlatformPriceInput] = useState('')
+  const [supplierCostInput, setSupplierCostInput] = useState('')
 
-  const handleCreateBasket = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!basketName.trim()) return
+  // Delivery Modal State
+  const [deliveryBasket, setDeliveryBasket] = useState<any | null>(null)
+  const [deliveryDate, setDeliveryDate] = useState('')
+  const [carrierName, setCarrierName] = useState('')
+  const [trackingNumber, setTrackingNumber] = useState('')
+  const [deliveryNotes, setDeliveryNotes] = useState('')
+  const [deliveryStatus, setDeliveryStatus] = useState('SCHEDULED')
 
-    dispatch(
-      createBasket({
-        name: basketName,
-        type: basketType,
-        brand: {
-          brandId: `b_${Date.now()}`,
-          brandName,
-          productId: `p_${Date.now()}`,
-          productName,
-          productUnit: 'ream',
-          brandImageUrl: '',
-        },
-        pricing: {
-          basketPrice: 0, // Will be filled on fulfillment
-          merkato_retailer_price: Number(merkatoPrice),
-          regular_stationary_market_price: Number(regularPrice),
-          babiPlatformPrice: null,
-          supplierCost: null,
-        },
-        participation: {
-          participants: [],
-          totalParticipants: 0,
-          totalCommitment: 0,
-          currentCommitment: 0,
-          minCommitment: 100,
-          maxCommitment: Number(targetQty),
-        },
-      })
-    )
+  // Cancel Confirmation Custom Dialog State
+  const [cancelConfirmTarget, setCancelConfirmTarget] = useState<{ id: number; name: string } | null>(null)
 
-    setBasketName('')
-    setProductName('Siner Line A4 Paper')
-    setBrandName('Siner Line')
-    setMerkatoPrice(675)
-    setRegularPrice(700)
-    setTargetQty(1000)
-    setShowCreateModal(false)
+  const hasFetched = useRef(false)
+  const authReady = isInitialized && isAuthenticated && !!token
+
+  const [allProductsList, setAllProductsList] = useState<any[]>([])
+
+  const loadData = useCallback(
+    (page = 1, silent = false) => {
+      if (!authReady) return
+      dispatch(
+        fetchAdminBaskets({
+          status: filterStatus,
+          duration_type: filterDuration,
+          search: searchQuery,
+          page,
+          silent,
+        })
+      )
+      adminApi
+        .get('/products/?pageSize=100')
+        .then((res) => {
+          if (res.data?.data?.products) {
+            setAllProductsList(res.data.data.products)
+          }
+        })
+        .catch(() => {})
+    },
+    [dispatch, authReady, filterStatus, filterDuration, searchQuery]
+  )
+
+  useEffect(() => {
+    if (!authReady) return
+    if (!hasFetched.current) {
+      hasFetched.current = true
+      loadData(1)
+    }
+  }, [authReady, loadData])
+
+  useEffect(() => {
+    if (!authReady) return
+    loadData(1)
+  }, [filterStatus, filterDuration, authReady, loadData])
+
+  // Debounced search
+  useEffect(() => {
+    if (!authReady) return
+    const timer = setTimeout(() => {
+      loadData(1)
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [searchQuery, authReady, loadData])
+
+  // Selected product object
+  const currentProduct = allProductsList.find(
+    (p) => String(p.id) === String(selectedProductId)
+  )
+  const availableBrands = currentProduct?.brands || []
+  const currentBrand = availableBrands.find(
+    (b) => String(b.id) === String(selectedBrandId)
+  )
+
+  const autoMerkatoPrice = currentBrand?.merkatoRetailerPrice ?? currentProduct?.merkatoRetailerPrice ?? 0
+  const autoRegularPrice = currentBrand?.regularMarketPrice ?? currentProduct?.regularMarketPrice ?? 0
+
+  const handleProductChange = (prodId: string) => {
+    setSelectedProductId(prodId)
+    const prod = catalogProducts.find((p) => String(p.id) === String(prodId))
+    if (prod && prod.brands && prod.brands.length > 0) {
+      setSelectedBrandId(String(prod.brands[0].id))
+    } else {
+      setSelectedBrandId('')
+    }
   }
 
-  const openFulfillModal = (basket: Basket) => {
-    setFulfillTarget(basket)
-    setFulfillPlatformPrice(basket.pricing.babiPlatformPrice ?? 0)
-    setFulfillSupplierCost(basket.pricing.supplierCost ?? 0)
+  const handleCreateBasket = async () => {
+    if (!basketName.trim()) {
+      toast.error('Please enter a basket name.')
+      return
+    }
+    if (!selectedProductId || !selectedBrandId) {
+      toast.error('Please select both a Product and a Brand.')
+      return
+    }
+    const tQty = parseInt(targetQuantity, 10)
+    if (isNaN(tQty) || tQty <= 0) {
+      toast.error('Please enter a valid target commitment quantity.')
+      return
+    }
+
+    try {
+      const res = await dispatch(
+        createAdminBasket({
+          name: basketName.trim(),
+          durationType,
+          targetQuantity: tQty,
+          productId: selectedProductId,
+          brandId: selectedBrandId,
+          publish: publishImmediately,
+        })
+      ).unwrap()
+
+      toast.success(res.message || 'Basket created successfully!')
+      setShowCreateModal(false)
+      setBasketName('')
+      setSelectedProductId('')
+      setSelectedBrandId('')
+      setTargetQuantity('100')
+      loadData(1)
+    } catch (err: any) {
+      toast.error(typeof err === 'string' ? err : 'Failed to create basket.')
+    }
   }
 
-  const handleFulfillSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!fulfillTarget) return
+  const handleOpenFulfillModal = (b: any) => {
+    setFulfillBasketId(b.id)
+    setFulfillBasketName(b.name)
+    setBabiPlatformPriceInput(b.babiPlatformPrice ? String(b.babiPlatformPrice) : '')
+    setSupplierCostInput(b.supplierCost ? String(b.supplierCost) : '')
+  }
 
-    dispatch(
-      fulfillBasket({
-        basketId: fulfillTarget.id,
-        babiPlatformPrice: Number(fulfillPlatformPrice),
-        supplierCost: Number(fulfillSupplierCost),
-      })
+  const handleFulfillSubmit = async () => {
+    if (!fulfillBasketId) return
+    const bPrice = parseFloat(babiPlatformPriceInput)
+    const sCost = parseFloat(supplierCostInput)
+
+    if (isNaN(bPrice) || bPrice <= 0 || isNaN(sCost) || sCost <= 0) {
+      toast.error('Please enter valid positive amounts for Babi Platform Price and Supplier Cost.')
+      return
+    }
+
+    try {
+      const res = await dispatch(
+        closeAdminBasket({
+          basketId: fulfillBasketId,
+          babiPlatformPrice: bPrice,
+          supplierCost: sCost,
+        })
+      ).unwrap()
+
+      toast.success(res.message || 'Basket fulfilled and completed!')
+      setFulfillBasketId(null)
+      loadData(pagination.currentPage)
+    } catch (err: any) {
+      toast.error(typeof err === 'string' ? err : 'Failed to fulfill basket.')
+    }
+  }
+
+  const handleConfirmCancel = async () => {
+    if (!cancelConfirmTarget) return
+    try {
+      const res = await dispatch(cancelAdminBasket(cancelConfirmTarget.id)).unwrap()
+      toast.success(res.message || 'Basket cancelled.')
+      setCancelConfirmTarget(null)
+      loadData(pagination.currentPage)
+    } catch (err: any) {
+      toast.error(typeof err === 'string' ? err : 'Failed to cancel basket.')
+    }
+  }
+
+  const handleOpenDeliveryModal = (b: any) => {
+    setDeliveryBasket(b)
+    setDeliveryDate(b.deliveryDate || '')
+    setCarrierName(b.carrierName || '')
+    setTrackingNumber(b.trackingNumber || '')
+    setDeliveryNotes(b.deliveryNotes || '')
+    setDeliveryStatus(b.deliveryStatus || 'SCHEDULED')
+  }
+
+  const handleDeliverySubmit = async () => {
+    if (!deliveryBasket) return
+    try {
+      const res = await dispatch(
+        updateAdminBasketDelivery({
+          basketId: deliveryBasket.id,
+          deliveryDate,
+          carrierName,
+          trackingNumber,
+          deliveryNotes,
+          deliveryStatus,
+        })
+      ).unwrap()
+
+      toast.success(res.message || 'Delivery details updated successfully!')
+      setDeliveryBasket(null)
+      loadData(pagination.currentPage)
+    } catch (err: any) {
+      toast.error(typeof err === 'string' ? err : 'Failed to update delivery details.')
+    }
+  }
+
+  if (authLoading || !isInitialized) {
+    return (
+      <AdminLayout activePage="baskets">
+        <div className="p-8 text-[#8b949e] font-mono text-sm">Loading admin authorization...</div>
+      </AdminLayout>
     )
+  }
 
-    setFulfillTarget(null)
+  if (!isAuthenticated) {
+    return (
+      <AdminLayout activePage="baskets">
+        <div className="p-8 text-[#f85149] font-mono text-sm">Access Denied. Please log in as Admin.</div>
+      </AdminLayout>
+    )
   }
 
   return (
-    <AdminLayout>
-      <div className="max-w-6xl mx-auto space-y-6">
-
-        {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <AdminLayout activePage="baskets">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+        {/* Header Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-blue-400" />
-              Basket Management & Control
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#f0f6fc] flex items-center gap-2.5">
+              <ShoppingBag className="w-6 h-6 text-[#2f81f7]" />
+              Basket Control & Procurement
             </h1>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Launch and manage active collective procurement baskets. Completed and cancelled baskets are in history.
+            <p className="text-xs sm:text-sm text-[#8b949e] mt-1">
+              Create pooled procurement baskets, monitor real-time commitments, and fulfill final wholesale pricing.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link to="/admin/baskets/history">
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-xs border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white gap-1.5"
-              >
-                <History className="w-4 h-4 text-slate-400" />
-                View History
-                {historyBaskets.length > 0 && (
-                  <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-700 text-slate-200">
-                    {historyBaskets.length}
-                  </span>
-                )}
-              </Button>
-            </Link>
+          <div className="flex items-center gap-2.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadData(pagination.currentPage)}
+              className="border-[#30363d] !bg-transparent text-[#f0f6fc] hover:!bg-white/10 hover:!text-[#f0f6fc] text-xs h-9 gap-1.5"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
 
             <Button
               onClick={() => setShowCreateModal(true)}
               size="sm"
-              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold gap-1.5 shadow-sm"
+              className="bg-[#238636] hover:bg-[#2ea043] text-white text-xs h-9 gap-1.5 font-semibold"
             >
               <Plus className="w-4 h-4" />
-              Launch New Basket
+              Create Basket
             </Button>
           </div>
         </div>
 
-        {/* Pricing Notice Banner */}
-        <Card className="border-blue-500/30 bg-blue-500/5">
-          <CardContent className="p-3.5 flex items-start gap-3">
-            <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-            <p className="text-xs text-slate-400 leading-relaxed">
-              <span className="text-blue-400 font-semibold">Babi Platform Price & Supplier Cost</span> are entered only{' '}
-              <strong className="text-slate-200">when you lock and fulfill a basket</strong> (once it reaches 100% or you manually close it).
-              These are auto-surfaced to users in their basket history and capital analysis.
-            </p>
-          </CardContent>
-        </Card>
+        {/* Summary Metrics Bar */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Card className="bg-[#161b22] border-[#30363d]">
+            <CardContent className="p-3.5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-mono text-[#8b949e]">Total Baskets</p>
+                <p className="text-lg font-bold font-mono text-[#f0f6fc] mt-0.5">{summary.total}</p>
+              </div>
+              <Layers className="w-5 h-5 text-[#8b949e]" />
+            </CardContent>
+          </Card>
 
-        {/* Active Baskets Header */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Active Baskets
-            <Badge variant="outline" className="bg-slate-800 border-slate-700 text-slate-300 font-mono text-[10px]">
-              {activeBaskets.length}
-            </Badge>
-          </h2>
-          <span className="text-xs text-slate-500 font-mono">
-            Page {activePage} of {totalActivePages}
-          </span>
+          <Card className="bg-[#161b22] border-[#30363d]">
+            <CardContent className="p-3.5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-mono text-[#8b949e]">Active Open</p>
+                <p className="text-lg font-bold font-mono text-[#3fb950] mt-0.5">{summary.open}</p>
+              </div>
+              <ShoppingBag className="w-5 h-5 text-[#3fb950]" />
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#161b22] border-[#30363d]">
+            <CardContent className="p-3.5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-mono text-[#8b949e]">Fulfilled / Completed</p>
+                <p className="text-lg font-bold font-mono text-[#58a6ff] mt-0.5">{summary.completed}</p>
+              </div>
+              <CheckCircle2 className="w-5 h-5 text-[#58a6ff]" />
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#161b22] border-[#30363d]">
+            <CardContent className="p-3.5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-mono text-[#8b949e]">Drafts / Cancelled</p>
+                <p className="text-lg font-bold font-mono text-[#d29922] mt-0.5">
+                  {summary.draft + summary.cancelled}
+                </p>
+              </div>
+              <XCircle className="w-5 h-5 text-[#d29922]" />
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Active Baskets List */}
-        {paginatedActive.length === 0 ? (
-          <Card className="border-dashed border-slate-800 bg-slate-900/50">
+        {/* Filter & Search Controls */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#161b22] p-3 rounded-lg border border-[#30363d]">
+          {/* Search Box */}
+          <div className="relative w-full md:w-64">
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#8b949e]" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search basket or product..."
+              className="w-full pl-9 pr-3 py-2 bg-[#0d1117] border border-[#30363d] rounded text-sm text-[#f0f6fc] placeholder-[#8b949e] focus:outline-none focus:border-[#f0f6fc]"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+            {/* Duration Type Filter Switch */}
+            <div className="flex items-center gap-1.5 bg-[#0d1117] p-1 rounded border border-[#30363d]">
+              <span className="text-[11px] font-mono text-[#8b949e] px-1">Duration:</span>
+              {['ALL', 'WEEKLY', 'MONTHLY', 'SIX_MONTH'].map((dur) => (
+                <button
+                  key={dur}
+                  onClick={() => dispatch(setFilterDuration(dur))}
+                  className={`px-2.5 py-1 text-xs font-mono rounded transition-colors ${
+                    filterDuration === dur
+                      ? 'bg-[#21262d] text-[#f0f6fc] font-bold border border-[#30363d]'
+                      : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                  }`}
+                >
+                  {dur === 'ALL' ? 'All' : dur === 'SIX_MONTH' ? '6-Month' : dur.charAt(0) + dur.slice(1).toLowerCase()}
+                </button>
+              ))}
+            </div>
+
+            {/* Status Filter Switch */}
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="text-xs font-mono text-[#8b949e] mr-1 hidden sm:inline">Status:</span>
+              {['all', 'OPEN', 'COMPLETED', 'CANCELLED'].map((st) => (
+                <button
+                  key={st}
+                  onClick={() => dispatch(setFilterStatus(st))}
+                  className={`px-2.5 py-1 text-xs font-mono rounded transition-colors ${
+                    filterStatus === st
+                      ? 'bg-[#238636] text-white font-bold'
+                      : 'bg-[#0d1117] text-[#8b949e] hover:text-[#f0f6fc] border border-[#30363d]'
+                  }`}
+                >
+                  {st === 'all' ? 'All' : st}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Baskets Grid */}
+        {loading && baskets.length === 0 ? (
+          <div className="p-12 text-center text-[#8b949e] font-mono text-sm">
+            Loading baskets...
+          </div>
+        ) : baskets.length === 0 ? (
+          <Card className="bg-[#161b22] border-[#30363d]">
             <CardContent className="p-12 text-center">
-              <ShoppingBag className="w-10 h-10 text-slate-700 mx-auto mb-3" />
-              <p className="text-slate-400 text-sm font-semibold">No active baskets</p>
-              <p className="text-slate-500 text-xs mt-1">Launch a new basket to start collective procurement</p>
+              <ShoppingBag className="w-12 h-12 text-[#8b949e] mx-auto mb-3 opacity-40" />
+              <p className="text-sm font-semibold text-[#f0f6fc]">No procurement baskets found.</p>
+              <p className="text-xs text-[#8b949e] mt-1">
+                Try clearing search or filters, or click "Create Basket" to launch a new pool.
+              </p>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
-            {paginatedActive.map((b) => {
-              const fillPercentage = Math.min(
-                100,
-                Math.round((b.participation.currentCommitment / b.participation.maxCommitment) * 100)
-              )
-              const isFull = fillPercentage >= 100
+          <div className="grid grid-cols-1 gap-4">
+            {baskets.map((b) => {
+              const statusClass = STATUS_STYLES[b.status] || STATUS_STYLES.CLOSED
 
               return (
-                <Card key={b.id} className="border-slate-800 bg-slate-900 overflow-hidden">
-                  <CardContent className="p-5 sm:p-6 space-y-4">
-                    {/* Top Row */}
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <Card key={b.id} className="bg-[#161b22] border-[#30363d] hover:border-[#8b949e]/40 transition-colors">
+                  <CardContent className="p-5 space-y-4">
+                    {/* Header line */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-3">
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-bold text-base text-white">{b.name}</h3>
-                          <Badge
-                            variant="outline"
-                            className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px] uppercase"
-                          >
-                            {b.type}
+                          <h3 className="text-base sm:text-lg font-bold text-[#f0f6fc]">{b.name}</h3>
+                          <Badge variant="outline" className="text-xs border-[#30363d] text-[#8b949e] font-mono">
+                            {DURATION_LABELS[b.durationType] || b.durationType}
                           </Badge>
-                          {isFull && (
-                            <Badge
-                              variant="outline"
-                              className="bg-amber-500/10 text-amber-400 border-amber-500/30 text-[10px] animate-pulse"
-                            >
-                              100% — Ready to Fulfill!
-                            </Badge>
-                          )}
+                          <Badge className={`text-xs font-semibold ${statusClass}`}>
+                            {b.status}
+                          </Badge>
                         </div>
-                        <p className="text-xs text-slate-400 font-mono mt-0.5">
-                          {b.basketNumber} • {b.brand.productName} ({b.brand.brandName})
+                        <p className="text-xs text-[#8b949e] mt-1">
+                          Product: <strong className="text-[#f0f6fc]">{b.productName}</strong> · Brand:{' '}
+                          <strong className="text-[#f0f6fc]">{b.brandName}</strong>
                         </p>
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Button
-                          size="sm"
-                          onClick={() => openFulfillModal(b)}
-                          className={`text-xs gap-1.5 font-semibold ${
-                            isFull
-                              ? 'bg-amber-500 hover:bg-amber-400 text-slate-950'
-                              : 'bg-emerald-600/80 hover:bg-emerald-600 text-white'
-                          }`}
-                        >
-                          <CheckCircle className="w-3.5 h-3.5" />
-                          Lock & Fulfill
-                        </Button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {b.status === 'OPEN' && (
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => handleOpenFulfillModal(b)}
+                              className="bg-[#1f6beb] hover:bg-[#388bfd] text-white text-xs h-8 gap-1 font-semibold"
+                            >
+                              <Lock className="w-3.5 h-3.5" />
+                              Lock & Fulfill
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setCancelConfirmTarget({ id: b.id, name: b.name })}
+                              className="border-[#da3633]/40 !bg-transparent text-[#f85149] hover:!bg-[#da3633]/10 text-xs h-8 gap-1"
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                              Cancel
+                            </Button>
+                          </>
+                        )}
 
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            dispatch(updateBasketStatus({ basketId: b.id, status: 'cancelled' }))
-                          }
-                          className="text-xs border-red-500/30 text-red-400 bg-red-500/10 hover:bg-red-500/20"
-                        >
-                          <XCircle className="w-3.5 h-3.5 mr-1" /> Cancel
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Stats Row */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-950 p-3.5 rounded border border-slate-800">
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-mono uppercase">Merkato Price</p>
-                        <p className="text-sm font-bold text-slate-300 font-mono line-through">
-                          ETB {b.pricing.merkato_retailer_price}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-mono uppercase">Regular Market</p>
-                        <p className="text-sm font-bold text-slate-400 font-mono line-through">
-                          ETB {b.pricing.regular_stationary_market_price}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-mono uppercase">Pooled Volume</p>
-                        <p className="text-sm font-bold text-white font-mono">
-                          {b.participation.currentCommitment} / {b.participation.maxCommitment}{' '}
-                          <span className="text-slate-400 text-xs">{b.brand.productUnit}s</span>
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-mono uppercase flex items-center gap-1">
-                          <Users className="w-3 h-3" /> Participants
-                        </p>
-                        <p className="text-sm font-bold text-blue-400 font-mono">
-                          {b.participation.totalParticipants}
-                        </p>
+                        {b.status === 'COMPLETED' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleOpenDeliveryModal(b)}
+                            className="border-[#1f6beb]/40 !bg-transparent text-[#58a6ff] hover:!bg-[#1f6beb]/10 text-xs h-8 gap-1 font-semibold"
+                          >
+                            <Truck className="w-3.5 h-3.5" />
+                            {b.deliveryDate ? 'Edit Logistics' : 'Add Delivery Details'}
+                          </Button>
+                        )}
                       </div>
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between text-[11px] font-mono">
-                        <span className="text-slate-400 flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5" />
-                          {b.timeline.deliveryDate} ({b.timeline.daysRemaining} days left)
+                    <div className="space-y-1.5 bg-[#0d1117] p-3 rounded border border-[#30363d]">
+                      <div className="flex justify-between items-center text-xs font-mono">
+                        <span className="text-[#8b949e] flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-[#2f81f7]" />
+                          Pooled Quantity: <strong className="text-[#f0f6fc]">{b.currentQuantity}</strong> / {b.targetQuantity} units
                         </span>
-                        <span
-                          className={`font-bold ${
-                            isFull ? 'text-amber-400' : fillPercentage >= 75 ? 'text-emerald-400' : 'text-slate-300'
-                          }`}
-                        >
-                          {fillPercentage}% filled
-                        </span>
+                        <span className="font-bold text-[#2f81f7]">{b.progressPercentage}%</span>
                       </div>
-                      <div className="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+
+                      <div className="w-full bg-[#161b22] h-2 rounded-full overflow-hidden border border-[#30363d]">
                         <div
-                          className={`h-full rounded-full transition-all ${
-                            isFull ? 'bg-amber-400' : fillPercentage >= 75 ? 'bg-emerald-500' : 'bg-blue-500'
-                          }`}
-                          style={{ width: `${fillPercentage}%` }}
+                          className="bg-[#2f81f7] h-full transition-all duration-300"
+                          style={{ width: `${Math.min(b.progressPercentage, 100)}%` }}
                         />
                       </div>
                     </div>
 
-                    {/* Participants Panel Toggle */}
-                    <div className="border-t border-slate-800 pt-3">
-                      <button
-                        onClick={() => toggleExpand(b.id)}
-                        className="flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-colors font-medium"
-                      >
-                        <Users className="w-3.5 h-3.5 text-blue-400" />
-                        {b.participation.participants.length} Participating Organization{b.participation.participants.length !== 1 ? 's' : ''}
-                        {expandedBaskets.has(b.id) ? (
-                          <ChevronUp className="w-3.5 h-3.5" />
-                        ) : (
-                          <ChevronDown className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-
-                      {expandedBaskets.has(b.id) && (
-                        <div className="mt-3 space-y-2">
-                          {b.participation.participants.length === 0 ? (
-                            <p className="text-xs text-slate-500 italic px-1">No organizations have joined yet.</p>
-                          ) : (
-                            b.participation.participants.map((p, idx) => (
-                              <div
-                                key={idx}
-                                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 bg-slate-950 rounded border border-slate-800"
-                              >
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-semibold text-white truncate">{p.organizationName}</p>
-                                  {p.address && (
-                                    <p className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
-                                      <MapPin className="w-3 h-3 shrink-0" />
-                                      {p.address}
-                                    </p>
-                                  )}
-                                  <p className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
-                                    <CalendarDays className="w-3 h-3 shrink-0" />
-                                    Joined {new Date(p.joinedDate).toLocaleDateString('en-ET', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                  </p>
-                                </div>
-                                <div className="shrink-0 text-right">
-                                  <p className="text-[10px] text-slate-400 font-mono">Committed</p>
-                                  <p className="text-sm font-bold text-emerald-400 font-mono">
-                                    {p.commitment.toLocaleString()}
-                                    <span className="text-slate-500 text-[10px] ml-1">{b.brand.productUnit}s</span>
-                                  </p>
-                                </div>
-                              </div>
-                            ))
-                          )}
+                    {/* Participating Organizations Container Box */}
+                    {b.participants && b.participants.length > 0 && (
+                      <div className="bg-[#0d1117] p-3 rounded-lg border border-[#30363d] space-y-2">
+                        <span className="text-xs font-mono font-semibold text-[#8b949e] block uppercase tracking-wider">
+                          Participating Institutional Organizations ({b.participants.length}):
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          {b.participants.map((p, pIdx) => (
+                            <Badge
+                              key={pIdx}
+                              variant="outline"
+                              className="bg-[#161b22] border-[#30363d] text-[#f0f6fc] text-xs font-mono py-1 px-2.5"
+                            >
+                              {p.organizationName || p.userName} ({p.committed_quantity} units)
+                            </Badge>
+                          ))}
                         </div>
-                      )}
+                      </div>
+                    )}
+
+                    {/* Pricing Benchmark Info */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono p-3 bg-[#0d1117] rounded border border-[#30363d]">
+                      <div>
+                        <span className="text-[#8b949e] block text-[10px]">Merkato Retail Price:</span>
+                        <span className="text-[#f0f6fc] font-semibold">ETB {b.merkatoRetailerPrice?.toLocaleString()}</span>
+                      </div>
+                      <div>
+                        <span className="text-[#8b949e] block text-[10px]">Regular Market Price:</span>
+                        <span className="text-[#f0f6fc] font-semibold">ETB {b.regularMarketPrice?.toLocaleString()}</span>
+                      </div>
+                      <div>
+                        <span className="text-[#8b949e] block text-[10px]">Platform Basket Price:</span>
+                        <span className="text-[#3fb950] font-bold">
+                          {b.babiPlatformPrice ? `ETB ${b.babiPlatformPrice.toLocaleString()}` : 'Pending Fulfill'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[#8b949e] block text-[10px]">Supplier Cost:</span>
+                        <span className="text-[#58a6ff] font-semibold">
+                          {b.supplierCost ? `ETB ${b.supplierCost.toLocaleString()}` : 'Pending Fulfill'}
+                        </span>
+                      </div>
                     </div>
+
+                    {/* Delivery Logistics Banner (If available) */}
+                    {b.deliveryDate && (
+                      <div className="bg-[#1f6beb]/10 border border-[#1f6beb]/30 p-3 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
+                        <div className="flex items-center gap-2 text-[#58a6ff]">
+                          <Truck className="w-4 h-4" />
+                          <span>
+                            <strong>Carrier:</strong> {b.carrierName || 'Platform Freight'} · <strong>Status:</strong>{' '}
+                            {b.deliveryStatus}
+                          </span>
+                        </div>
+                        <div className="text-[#8b949e]">
+                          <strong>Est. Date:</strong> {b.deliveryDate} {b.trackingNumber && `· Tracking #: ${b.trackingNumber}`}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )
             })}
-
-            {/* Active Baskets Pagination */}
-            {totalActivePages > 1 && (
-              <div className="flex items-center justify-center gap-2 pt-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={activePage === 1}
-                  onClick={() => setActivePage((p) => Math.max(1, p - 1))}
-                  className="text-xs border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 disabled:opacity-40"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-
-                {Array.from({ length: totalActivePages }, (_, i) => i + 1).map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => setActivePage(n)}
-                    className={`w-7 h-7 rounded text-xs font-mono font-medium transition-colors ${
-                      activePage === n
-                        ? 'bg-blue-600 text-white font-bold'
-                        : 'bg-slate-950 text-slate-400 hover:bg-slate-800 hover:text-white'
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={activePage === totalActivePages}
-                  onClick={() => setActivePage((p) => Math.min(totalActivePages, p + 1))}
-                  className="text-xs border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 disabled:opacity-40"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
           </div>
         )}
 
-        {/* Quick History Link Footer */}
-        {historyBaskets.length > 0 && (
-          <Card className="border-slate-800 bg-slate-900/60">
-            <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-sm text-slate-300">
-                <History className="w-4 h-4 text-slate-400" />
-                <span>
-                  <strong className="text-white">{historyBaskets.length}</strong> completed/cancelled baskets in history
-                </span>
-              </div>
-              <Link to="/admin/baskets/history">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-xs border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 gap-1.5"
-                >
-                  <History className="w-3.5 h-3.5" />
-                  Open Basket History
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        )}
+        {/* Server-Side Pagination Bar */}
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-[#30363d] pt-4">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={pagination.currentPage <= 1}
+              onClick={() => loadData(pagination.currentPage - 1)}
+              className="border-[#30363d] text-[#f0f6fc] hover:bg-white/10 text-xs gap-1"
+            >
+              <ChevronLeft className="w-4 h-4" /> Previous
+            </Button>
 
-        {/* Create Basket Modal */}
-        {showCreateModal && (
-          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-            <Card className="w-full max-w-lg border-slate-800 bg-slate-900 shadow-2xl my-auto">
-              <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800 pb-4">
-                <div>
-                  <CardTitle className="text-base text-white flex items-center gap-2">
-                    <ShoppingBag className="w-5 h-5 text-blue-400" />
-                    Launch New Procurement Basket
-                  </CardTitle>
-                  <CardDescription className="text-xs text-slate-400">
-                    Configure pooling parameters for institutions to join and commit volume
-                  </CardDescription>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowCreateModal(false)}
-                  className="text-slate-400 hover:text-white"
-                >
-                  <X className="w-5 h-5" />
-                </Button>
-              </CardHeader>
+            <span className="text-xs text-[#8b949e] font-mono">
+              Page {pagination.currentPage} of {pagination.totalPages} ({pagination.totalBaskets} total pools)
+            </span>
 
-              <CardContent className="p-4 sm:p-6">
-                <form onSubmit={handleCreateBasket} className="space-y-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-slate-300">Basket Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={basketName}
-                      onChange={(e) => setBasketName(e.target.value)}
-                      placeholder="e.g. Q3 University Paper Bulk Basket"
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-300">Duration Type</label>
-                      <select
-                        value={basketType}
-                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                          setBasketType(e.target.value as 'weekly' | 'monthly' | '6-month')
-                        }
-                        className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded text-xs text-white focus:outline-none focus:border-blue-500"
-                      >
-                        <option value="weekly">Weekly Spot Basket</option>
-                        <option value="monthly">Monthly Standing Basket</option>
-                        <option value="6-month">6-Month Strategic Basket</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-300">Target Commitment (qty)</label>
-                      <input
-                        type="number"
-                        required
-                        value={targetQty}
-                        onChange={(e) => setTargetQty(Number(e.target.value))}
-                        className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded text-xs text-white font-mono focus:outline-none focus:border-blue-500"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-300">Product Name</label>
-                      <input
-                        type="text"
-                        required
-                        value={productName}
-                        onChange={(e) => setProductName(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded text-xs text-white focus:outline-none focus:border-blue-500"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-300">Brand Name</label>
-                      <input
-                        type="text"
-                        required
-                        value={brandName}
-                        onChange={(e) => setBrandName(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded text-xs text-white focus:outline-none focus:border-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Market Benchmarks only — NOT basket or platform price */}
-                  <div className="border-t border-slate-800 pt-3 space-y-2">
-                    <p className="text-xs font-semibold text-slate-300">
-                      Market Reference Prices{' '}
-                      <span className="text-slate-500 font-normal">(shown to users for comparison)</span>
-                    </p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-400">Merkato Retail Price (ETB)</label>
-                        <input
-                          type="number"
-                          required
-                          value={merkatoPrice}
-                          onChange={(e) => setMerkatoPrice(Number(e.target.value))}
-                          className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded text-xs text-white font-mono focus:outline-none focus:border-blue-500"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-400">Regular Market Price (ETB)</label>
-                        <input
-                          type="number"
-                          required
-                          value={regularPrice}
-                          onChange={(e) => setRegularPrice(Number(e.target.value))}
-                          className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded text-xs text-white font-mono focus:outline-none focus:border-blue-500"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Info note */}
-                    <div className="flex items-start gap-2 p-2.5 rounded bg-amber-500/5 border border-amber-500/20 mt-1">
-                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                      <p className="text-[11px] text-slate-400">
-                        <span className="text-amber-400 font-semibold">Platform Price & Supplier Cost</span> will be entered
-                        when you <strong className="text-slate-300">Lock & Fulfill</strong> the basket.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 pt-2 justify-end">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowCreateModal(false)}
-                      className="text-xs border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      size="sm"
-                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs"
-                    >
-                      Publish Basket
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Lock & Fulfill Modal */}
-        {fulfillTarget && (
-          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-            <Card className="w-full max-w-md border-amber-500/40 bg-slate-900 shadow-2xl my-auto">
-              <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800 pb-4">
-                <div>
-                  <CardTitle className="text-base text-white flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-amber-400" />
-                    Lock & Fulfill Basket
-                  </CardTitle>
-                  <CardDescription className="text-xs text-slate-400">
-                    {fulfillTarget.name}
-                  </CardDescription>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setFulfillTarget(null)}
-                  className="text-slate-400 hover:text-white"
-                >
-                  <X className="w-5 h-5" />
-                </Button>
-              </CardHeader>
-
-              <CardContent className="p-4 sm:p-6">
-                <form onSubmit={handleFulfillSubmit} className="space-y-5">
-                  {/* Summary */}
-                  <div className="bg-slate-950 p-3 rounded border border-slate-800 space-y-1.5 text-xs font-mono">
-                    <div className="flex justify-between text-slate-400">
-                      <span>Product:</span>
-                      <span className="text-slate-200">
-                        {fulfillTarget.brand.productName} ({fulfillTarget.brand.brandName})
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-slate-400">
-                      <span>Pool Fill:</span>
-                      <span className="text-emerald-400 font-bold">
-                        {fulfillTarget.participation.currentCommitment} /{' '}
-                        {fulfillTarget.participation.maxCommitment} {fulfillTarget.brand.productUnit}s
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-slate-400">
-                      <span>Participants:</span>
-                      <span className="text-white">{fulfillTarget.participation.totalParticipants} organizations</span>
-                    </div>
-                  </div>
-
-                  {/* Platform Price & Supplier Cost */}
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-blue-400">
-                        Babi Platform Price (ETB / {fulfillTarget.brand.productUnit})
-                      </label>
-                      <p className="text-[11px] text-slate-400 leading-relaxed">
-                        The tiered bulk price after platform profit — shown to users in basket history & capital analysis.
-                      </p>
-                      <input
-                        type="number"
-                        required
-                        min={1}
-                        value={fulfillPlatformPrice || ''}
-                        onChange={(e) => setFulfillPlatformPrice(Number(e.target.value))}
-                        placeholder="e.g. 520"
-                        className="w-full px-3 py-2.5 bg-slate-950 border border-blue-500/50 rounded text-sm text-blue-400 font-bold font-mono focus:outline-none focus:border-blue-400"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-purple-400">
-                        Supplier Wholesale Cost (ETB / {fulfillTarget.brand.productUnit})
-                      </label>
-                      <p className="text-[11px] text-slate-400 leading-relaxed">
-                        Actual negotiated cost from Merkato supplier — shown in capital analysis as supplier cost.
-                      </p>
-                      <input
-                        type="number"
-                        required
-                        min={1}
-                        value={fulfillSupplierCost || ''}
-                        onChange={(e) => setFulfillSupplierCost(Number(e.target.value))}
-                        placeholder="e.g. 490"
-                        className="w-full px-3 py-2.5 bg-slate-950 border border-purple-500/50 rounded text-sm text-purple-400 font-bold font-mono focus:outline-none focus:border-purple-400"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-2 p-2.5 rounded bg-amber-500/5 border border-amber-500/20">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-amber-300">
-                      This action is <strong>permanent</strong>. The basket will be locked, moved to history, and pricing
-                      will be published to all participant organizations.
-                    </p>
-                  </div>
-
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setFulfillTarget(null)}
-                      className="text-xs border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      size="sm"
-                      className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs gap-1.5"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      Confirm & Fulfill
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={pagination.currentPage >= pagination.totalPages}
+              onClick={() => loadData(pagination.currentPage + 1)}
+              className="border-[#30363d] text-[#f0f6fc] hover:bg-white/10 text-xs gap-1"
+            >
+              Next <ChevronRight className="w-4 h-4" />
+            </Button>
           </div>
         )}
       </div>
+
+      {/* CREATE BASKET MODAL */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="bg-[#161b22] border border-[#30363d] rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+              <h2 className="text-lg font-bold text-[#f0f6fc] flex items-center gap-2">
+                <Plus className="w-5 h-5 text-[#238636]" />
+                Create Procurement Basket
+              </h2>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="text-[#8b949e] hover:text-[#f0f6fc] text-xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="space-y-3 font-mono text-xs">
+              <div>
+                <label className="text-[#8b949e] block mb-1">Basket Name *</label>
+                <input
+                  type="text"
+                  value={basketName}
+                  onChange={(e) => setBasketName(e.target.value)}
+                  placeholder="e.g. Q3 High-Volume Paper Ream Consortium"
+                  className="w-full px-3 py-2 bg-[#0d1117] border border-[#30363d] rounded text-[#f0f6fc] focus:outline-none focus:border-[#2f81f7]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[#8b949e] block mb-1">Duration Type *</label>
+                  <select
+                    value={durationType}
+                    onChange={(e) => setDurationType(e.target.value)}
+                    className="w-full px-3 py-2 bg-[#0d1117] border border-[#30363d] rounded text-[#f0f6fc] focus:outline-none focus:border-[#2f81f7]"
+                  >
+                    <option value="WEEKLY">Weekly Pool</option>
+                    <option value="MONTHLY">Monthly Pool</option>
+                    <option value="SIX_MONTH">6-Month Consortium</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[#8b949e] block mb-1">Target Commitment Qty *</label>
+                  <input
+                    type="number"
+                    value={targetQuantity}
+                    onChange={(e) => setTargetQuantity(e.target.value)}
+                    className="w-full px-3 py-2 bg-[#0d1117] border border-[#30363d] rounded text-[#f0f6fc] focus:outline-none focus:border-[#2f81f7]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[#8b949e] block mb-1">Catalog Product *</label>
+                <select
+                  value={selectedProductId}
+                  onChange={(e) => handleProductChange(e.target.value)}
+                  className="w-full px-3 py-2 bg-[#0d1117] border border-[#30363d] rounded text-[#f0f6fc] focus:outline-none focus:border-[#2f81f7]"
+                >
+                  <option value="">-- Select Catalog Product --</option>
+                  {allProductsList.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.unitOfMeasure || 'unit'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[#8b949e] block mb-1">Product Brand *</label>
+                <select
+                  value={selectedBrandId}
+                  onChange={(e) => setSelectedBrandId(e.target.value)}
+                  disabled={!selectedProductId || availableBrands.length === 0}
+                  className="w-full px-3 py-2 bg-[#0d1117] border border-[#30363d] rounded text-[#f0f6fc] focus:outline-none focus:border-[#2f81f7] disabled:opacity-50"
+                >
+                  <option value="">-- Select Brand --</option>
+                  {availableBrands.map((b: any) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedBrandId && (
+                <div className="p-3 bg-[#0d1117] border border-[#30363d] rounded text-xs space-y-1">
+                  <span className="text-[#3fb950] font-bold block">Auto-Filled Benchmark Prices:</span>
+                  <div className="flex justify-between text-[#8b949e]">
+                    <span>Merkato Retail Price:</span>
+                    <strong className="text-[#f0f6fc]">ETB {autoMerkatoPrice.toLocaleString()}</strong>
+                  </div>
+                  <div className="flex justify-between text-[#8b949e]">
+                    <span>Regular Market Price:</span>
+                    <strong className="text-[#f0f6fc]">ETB {autoRegularPrice.toLocaleString()}</strong>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-[#30363d] pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCreateModal(false)}
+                className="border-[#30363d] !bg-transparent !text-[#f0f6fc] hover:!bg-white/10 hover:!text-[#f0f6fc] text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateBasket}
+                size="sm"
+                className="bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-semibold"
+              >
+                Create & Launch Pool
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LOCK & FULFILL MODAL */}
+      {fulfillBasketId && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="bg-[#161b22] border border-[#30363d] rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+              <h2 className="text-lg font-bold text-[#f0f6fc] flex items-center gap-2">
+                <Lock className="w-5 h-5 text-[#1f6beb]" />
+                Fulfill & Complete Basket
+              </h2>
+              <button
+                onClick={() => setFulfillBasketId(null)}
+                className="text-[#8b949e] hover:text-[#f0f6fc] text-xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+
+            <p className="text-xs text-[#8b949e]">
+              Enter the negotiated platform wholesale price for <strong>{fulfillBasketName}</strong>. This will complete the basket and update the Brand record catalog.
+            </p>
+
+            <div className="space-y-3 font-mono text-xs">
+              <div>
+                <label className="text-[#8b949e] block mb-1">Final Babi Platform Price (ETB) *</label>
+                <input
+                  type="number"
+                  value={babiPlatformPriceInput}
+                  onChange={(e) => setBabiPlatformPriceInput(e.target.value)}
+                  placeholder="e.g. 120.00"
+                  className="w-full px-3 py-2 bg-[#0d1117] border border-[#30363d] rounded text-[#f0f6fc] focus:outline-none focus:border-[#1f6beb]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[#8b949e] block mb-1">Supplier Cost Price (ETB) *</label>
+                <input
+                  type="number"
+                  value={supplierCostInput}
+                  onChange={(e) => setSupplierCostInput(e.target.value)}
+                  placeholder="e.g. 105.00"
+                  className="w-full px-3 py-2 bg-[#0d1117] border border-[#30363d] rounded text-[#f0f6fc] focus:outline-none focus:border-[#1f6beb]"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-[#30363d] pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFulfillBasketId(null)}
+                className="border-[#30363d] !bg-transparent !text-[#f0f6fc] hover:!bg-white/10 hover:!text-[#f0f6fc] text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleFulfillSubmit}
+                size="sm"
+                className="bg-[#1f6beb] hover:bg-[#388bfd] text-white text-xs font-semibold"
+              >
+                Fulfill & Complete Pool
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELIVERY DETAILS MODAL */}
+      {deliveryBasket && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="bg-[#161b22] border border-[#30363d] rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+              <h2 className="text-lg font-bold text-[#f0f6fc] flex items-center gap-2">
+                <Truck className="w-5 h-5 text-[#58a6ff]" />
+                Logistics & Delivery Details
+              </h2>
+              <button
+                onClick={() => setDeliveryBasket(null)}
+                className="text-[#8b949e] hover:text-[#f0f6fc] text-xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+
+            <p className="text-xs text-[#8b949e]">
+              Enter shipping & delivery logistics for <strong>{deliveryBasket.name}</strong> to notify participating buyers.
+            </p>
+
+            <div className="space-y-3 font-mono text-xs">
+              <div>
+                <label className="text-[#8b949e] block mb-1">Estimated Delivery Date *</label>
+                <input
+                  type="date"
+                  value={deliveryDate}
+                  onChange={(e) => setDeliveryDate(e.target.value)}
+                  className="w-full px-3 py-2 bg-[#0d1117] border border-[#30363d] rounded text-[#f0f6fc] focus:outline-none focus:border-[#1f6beb]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[#8b949e] block mb-1">Delivery Note</label>
+                <textarea
+                  rows={3}
+                  value={deliveryNotes}
+                  onChange={(e) => setDeliveryNotes(e.target.value)}
+                  placeholder="e.g. Estimated dispatch via direct freight to main campus warehouse."
+                  className="w-full px-3 py-2 bg-[#0d1117] border border-[#30363d] rounded text-[#f0f6fc] focus:outline-none focus:border-[#1f6beb]"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-[#30363d] pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeliveryBasket(null)}
+                className="border-[#30363d] !bg-transparent !text-[#f0f6fc] hover:!bg-white/10 hover:!text-[#f0f6fc] text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeliverySubmit}
+                size="sm"
+                className="bg-[#1f6beb] hover:bg-[#388bfd] text-white text-xs font-semibold"
+              >
+                Save Delivery Info
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CUSTOM CANCEL CONFIRMATION DIALOG (Item 1) */}
+      {cancelConfirmTarget && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="bg-[#161b22] border border-[#da3633]/50 rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center gap-3 border-b border-[#30363d] pb-3 text-[#f85149]">
+              <AlertTriangle className="w-6 h-6 shrink-0" />
+              <h2 className="text-lg font-bold">Confirm Basket Cancellation</h2>
+            </div>
+
+            <p className="text-sm text-[#f0f6fc]">
+              Are you sure you want to cancel <strong className="text-[#f85149]">"{cancelConfirmTarget.name}"</strong>?
+            </p>
+            <p className="text-xs text-[#8b949e]">
+              This action will close the pool immediately and notify participating organizations. This action cannot be undone.
+            </p>
+
+            <div className="flex justify-end gap-2 border-t border-[#30363d] pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCancelConfirmTarget(null)}
+                className="border-[#30363d] !bg-transparent !text-[#f0f6fc] hover:!bg-white/10 hover:!text-[#f0f6fc] text-xs"
+              >
+                Keep Basket
+              </Button>
+              <Button
+                onClick={handleConfirmCancel}
+                size="sm"
+                className="bg-[#da3633] hover:bg-[#b82a28] text-white text-xs font-semibold"
+              >
+                Confirm Cancellation
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   )
 }

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { selectAuthLoading, selectAuthError, clearError, login } from '@/store/slices/authSlice'
+import { selectAuthLoading, selectAuthError, clearError, login, selectIsAuthenticated } from '@/store/slices/authSlice'
 
 export function Login() {
   const [showPassword, setShowPassword] = useState(false)
@@ -17,6 +17,17 @@ export function Login() {
   const dispatch = useAppDispatch()
   const isLoading = useAppSelector(selectAuthLoading)
   const authError = useAppSelector(selectAuthError)
+  const isAuthenticated = useAppSelector(selectIsAuthenticated)
+
+  // If user is already authenticated (e.g. pressed browser Back from /dashboard),
+  // redirect them back into the app immediately. replace:true removes /login from
+  // history so Back cannot return to the login form.
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = (location.state as any)?.from || '/dashboard'
+      navigate(from, { replace: true })
+    }
+  }, [isAuthenticated, navigate, location.state])
 
   // Clear any residual background/refresh errors when visiting login
   useEffect(() => {
@@ -47,7 +58,9 @@ export function Login() {
       })).unwrap()
 
       const from = (location.state as any)?.from || '/dashboard'
-      navigate(from)
+      // replace:true removes /login from the browser history stack so
+      // pressing Back from /dashboard does NOT return to /login.
+      navigate(from, { replace: true })
     } catch (error) {
       console.error('Login failed:', error)
     }

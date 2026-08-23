@@ -1,63 +1,67 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import type { Notification } from '@/types/api'
 import { api } from '@/lib/api'
 
-// ==================== STATE INTERFACE ====================
+// ==================== TYPES ====================
+
+export interface AppNotification {
+  id: string
+  notification_type: string
+  category: 'order' | 'price' | 'basket' | 'account' | 'general'
+  title: string
+  message: string
+  action_url: string
+  is_read: boolean
+  read_at: string | null
+  created_at: string
+}
 
 interface Pagination {
-  currentPage: number
-  totalPages: number
-  totalNotifications: number
+  page: number
   pageSize: number
+  totalItems: number
+  totalPages: number
 }
 
 interface NotificationsState {
-  notifications: Notification[]
+  items: AppNotification[]
   unreadCount: number
   loading: boolean
   error: string | null
   pagination: Pagination
-  filters: {
-    type?: 'basket' | 'order' | 'price_alert' | 'system'
-    read?: boolean
-  }
+  activeFilter: 'all' | 'unread' | 'order' | 'price' | 'basket' | 'account'
 }
 
 const initialState: NotificationsState = {
-  notifications: [],
+  items: [],
   unreadCount: 0,
   loading: false,
   error: null,
-  pagination: { currentPage: 1, totalPages: 1, totalNotifications: 0, pageSize: 10 },
-  filters: {},
+  pagination: { page: 1, pageSize: 10, totalItems: 0, totalPages: 1 },
+  activeFilter: 'all',
 }
 
 // ==================== ASYNC THUNKS ====================
 
-/**
- * Fetch notifications with optional filters
- */
 export const fetchNotifications = createAsyncThunk<
-  { notifications: Notification[]; unreadCount: number; pagination: Pagination },
-  { type?: string; read?: boolean; limit?: number; page?: number } | void
+  { notifications: AppNotification[]; unreadCount: number; page: number; pageSize: number; totalItems: number; totalPages: number },
+  { category?: string; page?: number } | void
 >(
   'notifications/fetchNotifications',
-  async (filters, { rejectWithValue }) => {
+  async (params, { rejectWithValue }) => {
     try {
-      const params = new URLSearchParams()
-      if (filters) {
-        if (filters.type) params.append('type', filters.type)
-        if (filters.read !== undefined) params.append('read', filters.read.toString())
-        if (filters.limit) params.append('limit', filters.limit.toString())
-        if (filters.page) params.append('page', filters.page.toString())
-      }
-
-      const response = await api.get<{ 
+      const category = (params as any)?.category || 'all'
+      const page = (params as any)?.page || 1
+      const response = await api.get<{
         success: boolean
-        data: { notifications: Notification[]; unreadCount: number; pagination: Pagination } 
-      }>(
-        `/notifications?${params.toString()}`
-      )
+        data: {
+          notifications: AppNotification[]
+          unreadCount: number
+          page: number
+          pageSize: number
+          totalItems: number
+          totalPages: number
+        }
+      }>(`/notifications/?category=${category}&page=${page}&pageSize=10`)
       return response.data.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error || 'Failed to fetch notifications')
@@ -65,85 +69,29 @@ export const fetchNotifications = createAsyncThunk<
   }
 )
 
-/**
- * Mark a notification as read
- */
-export const markAsRead = createAsyncThunk<Notification, string>(
-  'notifications/markAsRead',
+export const markOneAsRead = createAsyncThunk<
+  { id: string; unreadCount: number },
+  string
+>(
+  'notifications/markOneAsRead',
   async (notificationId, { rejectWithValue }) => {
     try {
-      const response = await api.patch<{ success: boolean; data: Notification }>(
-        `/notifications/${notificationId}/read`
-      )
-      return response.data.data
+      const response = await api.post<{ success: boolean; unreadCount: number }>(`/notifications/${notificationId}/read/`)
+      return { id: notificationId, unreadCount: response.data.unreadCount }
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error || 'Failed to mark as read')
     }
   }
 )
 
-/**
- * Mark all notifications as read
- */
-export const markAllRead = createAsyncThunk<Notification[]>(
-  'notifications/markAllRead',
+export const markAllAsRead = createAsyncThunk<number>(
+  'notifications/markAllAsRead',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.patch<{ success: boolean; data: Notification[] }>(
-        '/notifications/read-all'
-      )
-      return response.data.data
+      await api.post('/notifications/read-all/')
+      return 0
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error || 'Failed to mark all as read')
-    }
-  }
-)
-
-/**
- * Delete a notification
- */
-export const deleteNotification = createAsyncThunk<string, string>(
-  'notifications/deleteNotification',
-  async (notificationId, { rejectWithValue }) => {
-    try {
-      await api.delete(`/notifications/${notificationId}`)
-      return notificationId
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to delete notification')
-    }
-  }
-)
-
-/**
- * Delete all read notifications
- */
-export const deleteAllRead = createAsyncThunk<string[]>(
-  'notifications/deleteAllRead',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await api.delete<{ success: boolean; data: { deletedIds: string[] } }>(
-        '/notifications/read'
-      )
-      return response.data.data.deletedIds
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to delete read notifications')
-    }
-  }
-)
-
-/**
- * Fetch unread count only (for badge)
- */
-export const fetchUnreadCount = createAsyncThunk<number>(
-  'notifications/fetchUnreadCount',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await api.get<{ success: boolean; data: { count: number } }>(
-        '/notifications/unread-count'
-      )
-      return response.data.data.count
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to fetch unread count')
     }
   }
 )
@@ -154,27 +102,62 @@ const notificationsSlice = createSlice({
   name: 'notifications',
   initialState,
   reducers: {
-    clearNotificationsError: (state) => {
-      state.error = null
+    setActiveFilter: (state, action) => {
+      state.activeFilter = action.payload
+      state.pagination.page = 1
     },
-    setNotificationFilters: (state, action) => {
-      state.filters = { ...state.filters, ...action.payload }
+    setUnreadCount: (state, action) => {
+      state.unreadCount = action.payload
     },
-    clearNotificationFilters: (state) => {
-      state.filters = {}
+    // Clear notifications on user logout / user switch
+    clearNotifications: (state) => {
+      state.items = []
+      state.unreadCount = 0
+      state.pagination = { page: 1, pageSize: 10, totalItems: 0, totalPages: 1 }
     },
-    /**
-     * Add a new notification (for real-time updates via WebSocket/polling)
-     */
-    addNotification: (state, action) => {
-      state.notifications.unshift(action.payload)
-      if (!action.payload.read) {
-        state.unreadCount += 1
+    // Push real-time notification with strict ID deduplication
+    pushRealtimeNotification: (state, action) => {
+      const notif: AppNotification = action.payload.notification
+      if (!notif || !notif.id) return
+
+      const exists = state.items.some(item => String(item.id) === String(notif.id))
+      if (!exists) {
+        state.items.unshift(notif)
+        state.unreadCount = action.payload.unreadCount ?? (state.unreadCount + 1)
+        state.pagination.totalItems += 1
       }
+    },
+    setAllRead: (state) => {
+      state.items = state.items.map(n => ({ ...n, is_read: true }))
+      state.unreadCount = 0
+    },
+    addNotification: (state, action) => {
+      const notif = action.payload
+      if (!notif || !notif.id) return
+      const exists = state.items.some(item => String(item.id) === String(notif.id))
+      if (!exists) {
+        state.items.unshift(notif)
+        if (!notif.is_read) state.unreadCount += 1
+      }
+    },
+    markAsRead: (state, action) => {
+      const item = state.items.find(n => String(n.id) === String(action.payload))
+      if (item && !item.is_read) {
+        item.is_read = true
+        state.unreadCount = Math.max(0, state.unreadCount - 1)
+      }
+    },
+    markAllRead: (state) => {
+      state.items = state.items.map(n => ({ ...n, is_read: true }))
+      state.unreadCount = 0
+    },
+    deleteNotification: (state, action) => {
+      const item = state.items.find(n => String(n.id) === String(action.payload))
+      if (item && !item.is_read) state.unreadCount = Math.max(0, state.unreadCount - 1)
+      state.items = state.items.filter(n => String(n.id) !== String(action.payload))
     },
   },
   extraReducers: (builder) => {
-    // ===== FETCH NOTIFICATIONS =====
     builder
       .addCase(fetchNotifications.pending, (state) => {
         state.loading = true
@@ -182,10 +165,25 @@ const notificationsSlice = createSlice({
       })
       .addCase(fetchNotifications.fulfilled, (state, action) => {
         state.loading = false
-        state.notifications = action.payload.notifications
+        // Deduplicate fetched list cleanly
+        const uniqueItems: AppNotification[] = []
+        const seenIds = new Set<string>()
+
+        for (const item of action.payload.notifications) {
+          const key = String(item.id)
+          if (!seenIds.has(key)) {
+            seenIds.add(key)
+            uniqueItems.push(item)
+          }
+        }
+
+        state.items = uniqueItems
         state.unreadCount = action.payload.unreadCount
-        if (action.payload.pagination) {
-          state.pagination = action.payload.pagination
+        state.pagination = {
+          page: action.payload.page,
+          pageSize: action.payload.pageSize,
+          totalItems: action.payload.totalItems,
+          totalPages: action.payload.totalPages,
         }
         state.error = null
       })
@@ -194,117 +192,48 @@ const notificationsSlice = createSlice({
         state.error = action.payload as string
       })
 
-    // ===== MARK AS READ =====
     builder
-      .addCase(markAsRead.pending, (state) => {
-        state.error = null
-      })
-      .addCase(markAsRead.fulfilled, (state, action) => {
-        // Update notification in the list
-        const index = state.notifications.findIndex(n => n.id === action.payload.id)
-        if (index !== -1) {
-          const wasUnread = !state.notifications[index].read
-          state.notifications[index] = action.payload
-          if (wasUnread && action.payload.read) {
-            state.unreadCount = Math.max(0, state.unreadCount - 1)
-          }
-        }
-        state.error = null
-      })
-      .addCase(markAsRead.rejected, (state, action) => {
-        state.error = action.payload as string
+      .addCase(markOneAsRead.fulfilled, (state, action) => {
+        const item = state.items.find(n => String(n.id) === String(action.payload.id))
+        if (item) item.is_read = true
+        state.unreadCount = action.payload.unreadCount
       })
 
-    // ===== MARK ALL READ =====
     builder
-      .addCase(markAllRead.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(markAllRead.fulfilled, (state, action) => {
-        state.loading = false
-        state.notifications = action.payload
+      .addCase(markAllAsRead.fulfilled, (state) => {
+        state.items = state.items.map(n => ({ ...n, is_read: true }))
         state.unreadCount = 0
-        state.error = null
-      })
-      .addCase(markAllRead.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload as string
-      })
-
-    // ===== DELETE NOTIFICATION =====
-    builder
-      .addCase(deleteNotification.pending, (state) => {
-        state.error = null
-      })
-      .addCase(deleteNotification.fulfilled, (state, action) => {
-        // Find and remove notification
-        const notification = state.notifications.find(n => n.id === action.payload)
-        if (notification && !notification.read) {
-          state.unreadCount = Math.max(0, state.unreadCount - 1)
-        }
-        state.notifications = state.notifications.filter(n => n.id !== action.payload)
-        state.error = null
-      })
-      .addCase(deleteNotification.rejected, (state, action) => {
-        state.error = action.payload as string
-      })
-
-    // ===== DELETE ALL READ =====
-    builder
-      .addCase(deleteAllRead.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(deleteAllRead.fulfilled, (state, action) => {
-        state.loading = false
-        // Remove all deleted notifications
-        state.notifications = state.notifications.filter(
-          n => !action.payload.includes(n.id)
-        )
-        state.error = null
-      })
-      .addCase(deleteAllRead.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload as string
-      })
-
-    // ===== FETCH UNREAD COUNT =====
-    builder
-      .addCase(fetchUnreadCount.fulfilled, (state, action) => {
-        state.unreadCount = action.payload
       })
   },
 })
 
-// ==================== ACTIONS ====================
-
-export const { 
-  clearNotificationsError, 
-  setNotificationFilters, 
-  clearNotificationFilters,
+export const {
+  setActiveFilter,
+  setUnreadCount,
+  clearNotifications,
+  pushRealtimeNotification,
+  setAllRead,
   addNotification,
+  markAsRead,
+  markAllRead,
+  deleteNotification,
 } = notificationsSlice.actions
 
 // ==================== SELECTORS ====================
 
-export const selectNotifications = (state: { notifications: NotificationsState }) => 
-  state.notifications
-export const selectAllNotifications = (state: { notifications: NotificationsState }) => 
-  state.notifications.notifications
-export const selectUnreadNotifications = (state: { notifications: NotificationsState }) => 
-  state.notifications.notifications.filter(n => !n.read)
-export const selectUnreadCount = (state: { notifications: NotificationsState }) => 
+export const selectAllNotifications = (state: { notifications: NotificationsState }) =>
+  state.notifications.items
+export const selectUnreadCount = (state: { notifications: NotificationsState }) =>
   state.notifications.unreadCount
-export const selectNotificationsLoading = (state: { notifications: NotificationsState }) => 
+export const selectNotificationsLoading = (state: { notifications: NotificationsState }) =>
   state.notifications.loading
-export const selectNotificationsError = (state: { notifications: NotificationsState }) => 
-  state.notifications.error
-export const selectNotificationFilters = (state: { notifications: NotificationsState }) => 
-  state.notifications.filters
-export const selectNotificationsPagination = (state: { notifications: NotificationsState }) => 
+export const selectNotificationsPagination = (state: { notifications: NotificationsState }) =>
   state.notifications.pagination
+export const selectActiveFilter = (state: { notifications: NotificationsState }) =>
+  state.notifications.activeFilter
 
-// ==================== EXPORT ====================
+export const selectNotifications = (state: { notifications: NotificationsState }) => state.notifications
+export const selectUnreadNotifications = (state: { notifications: NotificationsState }) =>
+  state.notifications.items.filter(n => !n.is_read)
 
 export default notificationsSlice.reducer

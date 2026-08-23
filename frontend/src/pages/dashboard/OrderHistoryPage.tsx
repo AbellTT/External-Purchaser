@@ -48,25 +48,30 @@ const STATUS_LABELS: Record<string, string> = {
   'pending':          'Pending Confirmation',
   'accepted':         'Order Accepted',
   'out-for-delivery': 'Out for Delivery',
+  'out_for_delivery': 'Out for Delivery',
   'delivered':        'Delivered',
   'cancelled':        'Cancelled',
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  'pending':          'bg-amber-500/10 text-orange-800 border-amber-500/20 dark:text-orange-800',
-  'accepted':         'bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400',
-  'out-for-delivery': 'bg-purple-500/10 text-purple-600 border-purple-500/20 dark:text-purple-400',
-  'delivered':        'bg-success-bg text-success border-success/20',
-  'cancelled':        'bg-error-bg text-error border-error/20',
+  'pending':          'bg-amber-500/10 text-amber-600 border-amber-500/30 dark:text-amber-400',
+  'accepted':         'bg-blue-500/10 text-blue-600 border-blue-500/30 dark:text-blue-400',
+  'out-for-delivery': 'bg-purple-500/10 text-purple-600 border-purple-500/30 dark:text-purple-400',
+  'out_for_delivery': 'bg-purple-500/10 text-purple-600 border-purple-500/30 dark:text-purple-400',
+  'delivered':        'bg-emerald-500/10 text-emerald-600 border-emerald-500/30 dark:text-emerald-400',
+  'cancelled':        'bg-rose-500/10 text-rose-600 border-rose-500/30 dark:text-rose-400',
 }
 
 const STATUS_ICONS: Record<string, any> = {
   'pending':          Calendar,
   'accepted':         CheckCircle2,
   'out-for-delivery': Truck,
+  'out_for_delivery': Truck,
   'delivered':        CheckCircle2,
   'cancelled':        XCircle,
 }
+
+const normalizeStatusKey = (s: string = '') => s.toLowerCase().replace(/_/g, '-')
 
 // ==================== PAGE COMPONENT ====================
 
@@ -147,7 +152,7 @@ export function OrderHistoryPage() {
           <Card className="border-border shadow-sm">
             <CardContent className="p-4 sm:p-5">
               <p className="text-xs sm:text-sm font-mono font-medium text-muted-foreground">Total Spend (Delivered)</p>
-              <p className="text-2xl sm:text-3xl font-bold text-foreground font-mono mt-1.5">
+              <p className="text-2xl sm:text-xl font-bold text-foreground font-mono mt-1.5">
                 ETB {(summaryStats?.totalSpend || 0).toLocaleString()}
               </p>
             </CardContent>
@@ -211,7 +216,8 @@ export function OrderHistoryPage() {
             </Card>
           ) : (
             orders.map((o) => {
-              const StatusIcon = STATUS_ICONS[o.status] || Package
+              const stKey = normalizeStatusKey(o.status)
+              const StatusIcon = STATUS_ICONS[stKey] || Package
               const itemCount = o.items.length
               const firstItem = o.items[0]
 
@@ -223,14 +229,14 @@ export function OrderHistoryPage() {
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${STATUS_STYLES[o.status] || STATUS_STYLES.pending}`}>
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${STATUS_STYLES[stKey] || STATUS_STYLES.pending}`}>
                         <StatusIcon className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <p className="text-base sm:text-lg font-bold text-foreground font-mono">{o.orderNumber}</p>
-                          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_STYLES[o.status] || STATUS_STYLES.pending}`}>
-                            {STATUS_LABELS[o.status] || o.status}
+                          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${STATUS_STYLES[stKey] || STATUS_STYLES.pending}`}>
+                            {STATUS_LABELS[stKey] || o.status}
                           </span>
                         </div>
                         <p className="text-xs sm:text-sm text-muted-foreground">

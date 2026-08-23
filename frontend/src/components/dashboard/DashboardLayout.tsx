@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -20,7 +20,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { logout, selectUser } from '@/store/slices/authSlice'
-import { selectUnreadCount } from '@/store/slices/notificationsSlice'
+import { selectUnreadCount, fetchNotifications } from '@/store/slices/notificationsSlice'
+import { useOrgWebSocket } from '@/lib/useOrgWebSocket'
 
 const NAV_ITEMS = [
   { label: 'Overview',              icon: LayoutDashboard, to: '/dashboard' },
@@ -73,13 +74,33 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       {/* Org Badge */}
       <div className="px-4 py-3 border-b border-sidebar-border">
         <div className="flex items-center gap-2.5 px-3 py-2 rounded-md bg-sidebar-accent/40">
-          <div className="w-7 h-7 rounded bg-sidebar-primary/20 flex items-center justify-center shrink-0">
+          <div className="w-8  h-11 rounded bg-sidebar-primary/20 flex items-center justify-center shrink-0">
             <Building2 className="w-4 h-4 text-sidebar-foreground/80" />
           </div>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 space-y-0.5">
             <p className="text-sm font-semibold text-sidebar-foreground truncate">
               {currentUser?.organizationName || 'Organization'}
             </p>
+            {currentUser?.verificationStatus === 'approved' && (
+            <Badge className="bg-success/10 text-green-300 border-green-300/30 text-[10px] py-0 px-1.5 font-mono font-semibold">
+              Verified
+            </Badge>
+          )}
+
+          {(currentUser?.verificationStatus === 'pending' || !currentUser?.verificationStatus) && (
+            <Badge
+              variant="outline"
+              className="bg-warning/10 text-amber-300 border-amber-300/30 text-[10px] py-0 px-1.5 font-mono font-semibold"
+            >
+              Pending Verification
+            </Badge>
+          )}
+
+          {currentUser?.verificationStatus === 'suspended' && (
+            <Badge className="bg-destructive/20 text-red-300 border-red-300/30 text-[10px] py-0 px-1.5 font-mono font-semibold">
+              Rejected
+            </Badge>
+          )}
           </div>
         </div>
       </div>
@@ -143,8 +164,14 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 }
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
+  useOrgWebSocket()
+  const dispatch = useAppDispatch()
   const [mobileOpen, setMobileOpen] = useState(false)
   const unreadCount = useAppSelector(selectUnreadCount)
+
+  useEffect(() => {
+    dispatch(fetchNotifications({ category: 'all', page: 1 }))
+  }, [])
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">

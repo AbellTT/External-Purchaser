@@ -1,368 +1,234 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import type { Basket, BasketCommitment, CompletedBasket } from '@/types/api'
+import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit'
 import { api } from '@/lib/api'
+import type { RootState } from '@/store'
 
-// ==================== STATE INTERFACE ====================
-
-interface FetchBasketsResponse {
-  activeBaskets: Basket[]
-  openBaskets: Basket[]
-  completedBaskets: Basket[]
+export interface UserBasket {
+  id: number
+  name: string
+  durationType: 'WEEKLY' | 'MONTHLY' | 'SIX_MONTH'
+  status: 'DRAFT' | 'OPEN' | 'CLOSED' | 'COMPLETED' | 'CANCELLED'
+  productName: string
+  productCategory: string
+  unitOfMeasure?: string
+  brandName: string
+  targetQuantity: number
+  currentQuantity: number
+  userCommittedQuantity: number
+  merkatoRetailerPrice: number
+  regularMarketPrice: number
+  babiPlatformPrice?: number | null
+  supplierCost?: number | null
+  progressPercentage: number
+  isTargetReached: boolean
+  publishedAt?: string | null
+  closedAt?: string | null
+  createdAt: string
+  deliveryDate?: string | null
+  carrierName?: string
+  trackingNumber?: string
+  deliveryNotes?: string
+  deliveryStatus?: string
+  participantCount: number
+  participatingOrganizations?: string[]
 }
 
-interface BasketHistoryResponse {
-  baskets: CompletedBasket[]
-  pagination: { currentPage: number; totalPages: number; totalBaskets: number; pageSize: number }
+export interface BasketsPagination {
+  currentPage: number
+  totalPages: number
+  totalBaskets: number
+  pageSize: number
 }
 
 interface BasketsState {
-  activeBaskets: Basket[]
-  openBaskets: Basket[]
-  completedBaskets: Basket[]
-  basketHistory: CompletedBasket[]
-  basketHistoryPagination: { currentPage: number; totalPages: number; totalBaskets: number; pageSize: number }
-  selectedBasket: Basket | null
+  openBaskets: UserBasket[]
+  openPagination: BasketsPagination
+  userActiveBaskets: UserBasket[]
+  activePagination: BasketsPagination
+  userCompletedBaskets: UserBasket[]
+  completedPagination: BasketsPagination
+  platformHistoryBaskets: UserBasket[]
+  historyPagination: BasketsPagination
   loading: boolean
   historyLoading: boolean
+  committing: boolean
   error: string | null
 }
 
+const defaultPagination: BasketsPagination = {
+  currentPage: 1,
+  totalPages: 1,
+  totalBaskets: 0,
+  pageSize: 6,
+}
+
 const initialState: BasketsState = {
-  activeBaskets: [],
   openBaskets: [],
-  completedBaskets: [],
-  basketHistory: [],
-  basketHistoryPagination: { currentPage: 1, totalPages: 1, totalBaskets: 0, pageSize: 10 },
-  selectedBasket: null,
+  openPagination: { ...defaultPagination },
+  userActiveBaskets: [],
+  activePagination: { ...defaultPagination },
+  userCompletedBaskets: [],
+  completedPagination: { ...defaultPagination },
+  platformHistoryBaskets: [],
+  historyPagination: { ...defaultPagination },
   loading: false,
   historyLoading: false,
+  committing: false,
   error: null,
 }
 
-// ==================== ASYNC THUNKS ====================
-
-/**
- * Fetch all active baskets
- */
-export const fetchBaskets = createAsyncThunk<FetchBasketsResponse>(
-  'baskets/fetchBaskets',
-  async (_, { rejectWithValue }) => {
+// Fetch user baskets by tab: 'active', 'open', or 'completed'
+export const fetchUserBaskets = createAsyncThunk(
+  'baskets/fetchUserBaskets',
+  async (
+    {
+      tab = 'open',
+      page = 1,
+      pageSize = 6,
+      search,
+      duration_type,
+      silent = false,
+    }: {
+      tab?: 'active' | 'open' | 'completed'
+      page?: number
+      pageSize?: number
+      search?: string
+      duration_type?: string
+      silent?: boolean
+    },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await api.get<{ success: boolean; data: FetchBasketsResponse }>(
-        '/baskets'
-      )
-      return response.data.data
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to fetch baskets')
+      const params: Record<string, any> = { tab, page, pageSize }
+      if (search && search.trim()) params.search = search.trim()
+      if (duration_type && duration_type !== 'ALL') params.duration_type = duration_type
+
+      const response = await api.get('/baskets/', { params })
+      return { tab, ...response.data.data }
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.error || 'Failed to fetch baskets.')
     }
   }
 )
 
-/**
- * Fetch basket history (completed baskets)
- */
-export const fetchBasketHistory = createAsyncThunk<BasketHistoryResponse, { page?: number } | void>(
-  'baskets/fetchBasketHistory',
-  async (params, { rejectWithValue }) => {
+// Fetch all historical platform baskets (completed, closed, cancelled)
+export const fetchPlatformBasketHistory = createAsyncThunk(
+  'baskets/fetchPlatformBasketHistory',
+  async (
+    {
+      page = 1,
+      pageSize = 6,
+      search,
+      duration_type,
+      silent = false,
+    }: {
+      page?: number
+      pageSize?: number
+      search?: string
+      duration_type?: string
+      silent?: boolean
+    } = {},
+    { rejectWithValue }
+  ) => {
     try {
-      const query = params?.page ? `?page=${params.page}` : ''
-      const response = await api.get<{ success: boolean; data: BasketHistoryResponse }>(
-        `/baskets/history${query}`
-      )
+      const params: Record<string, any> = { page, pageSize }
+      if (search && search.trim()) params.search = search.trim()
+      if (duration_type && duration_type !== 'ALL') params.duration_type = duration_type
+
+      const response = await api.get('/baskets/history/', { params })
       return response.data.data
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to fetch basket history')
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.error || 'Failed to fetch basket history.')
     }
   }
 )
 
-/**
- * Fetch single basket by ID
- */
-export const fetchBasketById = createAsyncThunk<Basket, string>(
-  'baskets/fetchBasketById',
-  async (basketId, { rejectWithValue }) => {
+// User join & commit quantity (or quantity=0 to leave)
+export const commitBasketQuantity = createAsyncThunk(
+  'baskets/commitBasketQuantity',
+  async (
+    { basketId, quantity }: { basketId: number | string; quantity: number },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await api.get<{ success: boolean; data: Basket }>(
-        `/baskets/${basketId}`
-      )
-      return response.data.data
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to fetch basket')
+      const response = await api.post(`/baskets/${basketId}/join/`, { quantity })
+      return response.data
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.error || 'Failed to commit quantity.')
     }
   }
 )
-
-/**
- * Join a basket
- */
-export const joinBasket = createAsyncThunk<
-  Basket,
-  { basketId: string; commitment: BasketCommitment }
->(
-  'baskets/joinBasket',
-  async ({ basketId, commitment }, { rejectWithValue }) => {
-    try {
-      const response = await api.post<{ success: boolean; data: Basket }>(
-        `/baskets/${basketId}/join`,
-        { commitment }
-      )
-      return response.data.data
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to join basket')
-    }
-  }
-)
-
-/**
- * Leave a basket
- */
-export const leaveBasket = createAsyncThunk<Basket, string>(
-  'baskets/leaveBasket',
-  async (basketId, { rejectWithValue }) => {
-    try {
-      const response = await api.post<{ success: boolean; data: Basket }>(
-        `/baskets/${basketId}/leave`
-      )
-      return response.data.data
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to leave basket')
-    }
-  }
-)
-
-/**
- * Update commitment in a basket
- */
-export const updateCommitment = createAsyncThunk<
-  Basket,
-  { basketId: string; commitment: BasketCommitment }
->(
-  'baskets/updateCommitment',
-  async ({ basketId, commitment }, { rejectWithValue }) => {
-    try {
-      const response = await api.put<{ success: boolean; data: Basket }>(
-        `/baskets/${basketId}/commitment`,
-        { commitment }
-      )
-      return response.data.data
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to update commitment')
-    }
-  }
-)
-
-/**
- * Create a new basket
- */
-export const createBasket = createAsyncThunk<
-  Basket,
-  {
-    productId: string
-    targetQuantity: number
-    endDate: string
-    minParticipants: number
-  }
->(
-  'baskets/createBasket',
-  async (basketData, { rejectWithValue }) => {
-    try {
-      const response = await api.post<{ success: boolean; data: Basket }>(
-        '/baskets',
-        basketData
-      )
-      return response.data.data
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to create basket')
-    }
-  }
-)
-
-// ==================== SLICE ====================
 
 const basketsSlice = createSlice({
   name: 'baskets',
   initialState,
-  reducers: {
-    clearBasketsError: (state) => {
-      state.error = null
-    },
-    clearSelectedBasket: (state) => {
-      state.selectedBasket = null
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
-    // ===== FETCH BASKETS =====
-    builder
-      .addCase(fetchBaskets.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(fetchBaskets.fulfilled, (state, action) => {
-        state.loading = false
-        state.activeBaskets = action.payload.activeBaskets
-        state.openBaskets = action.payload.openBaskets
-        state.completedBaskets = action.payload.completedBaskets
-        state.error = null
-      })
-      .addCase(fetchBaskets.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload as string
-      })
+    builder.addCase(fetchUserBaskets.pending, (state, action) => {
+      if (!action.meta.arg?.silent) state.loading = true
+      state.error = null
+    })
+    builder.addCase(fetchUserBaskets.fulfilled, (state, action) => {
+      state.loading = false
+      if (action.payload.tab === 'completed') {
+        state.userCompletedBaskets = action.payload.baskets || []
+        state.completedPagination = action.payload.pagination || state.completedPagination
+      } else if (action.payload.tab === 'active') {
+        state.userActiveBaskets = action.payload.baskets || []
+        state.activePagination = action.payload.pagination || state.activePagination
+      } else {
+        state.openBaskets = action.payload.baskets || []
+        state.openPagination = action.payload.pagination || state.openPagination
+      }
+    })
+    builder.addCase(fetchUserBaskets.rejected, (state, action) => {
+      state.loading = false
+      state.error = action.payload as string
+    })
 
-    // ===== FETCH BASKET HISTORY =====
-    builder
-      .addCase(fetchBasketHistory.pending, (state) => {
-        state.historyLoading = true
-        state.error = null
-      })
-      .addCase(fetchBasketHistory.fulfilled, (state, action) => {
-        state.historyLoading = false
-        state.basketHistory = action.payload.baskets
-        state.basketHistoryPagination = action.payload.pagination
-        state.error = null
-      })
-      .addCase(fetchBasketHistory.rejected, (state, action) => {
-        state.historyLoading = false
-        state.error = action.payload as string
-      })
+    // Platform history
+    builder.addCase(fetchPlatformBasketHistory.pending, (state, action) => {
+      if (!action.meta.arg?.silent) state.historyLoading = true
+      state.error = null
+    })
+    builder.addCase(fetchPlatformBasketHistory.fulfilled, (state, action) => {
+      state.historyLoading = false
+      state.platformHistoryBaskets = action.payload.baskets || []
+      state.historyPagination = action.payload.pagination || state.historyPagination
+    })
+    builder.addCase(fetchPlatformBasketHistory.rejected, (state, action) => {
+      state.historyLoading = false
+      state.error = action.payload as string
+    })
 
-    // ===== FETCH BASKET BY ID =====
-    builder
-      .addCase(fetchBasketById.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(fetchBasketById.fulfilled, (state, action) => {
-        state.loading = false
-        state.selectedBasket = action.payload
-        state.error = null
-      })
-      .addCase(fetchBasketById.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload as string
-      })
-
-    // ===== JOIN BASKET =====
-    builder
-      .addCase(joinBasket.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(joinBasket.fulfilled, (state, action) => {
-        state.loading = false
-        // Move basket from openBaskets to activeBaskets
-        const index = state.openBaskets.findIndex(b => b.id === action.payload.id)
-        if (index !== -1) {
-          state.openBaskets.splice(index, 1)
-          state.activeBaskets.push(action.payload)
-        } else {
-          // If it was somehow already in activeBaskets, update it
-          const activeIndex = state.activeBaskets.findIndex(b => b.id === action.payload.id)
-          if (activeIndex !== -1) {
-            state.activeBaskets[activeIndex] = action.payload
-          }
-        }
-        // Update selected basket if it's the same
-        if (state.selectedBasket?.id === action.payload.id) {
-          state.selectedBasket = action.payload
-        }
-        state.error = null
-      })
-      .addCase(joinBasket.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload as string
-      })
-
-    // ===== LEAVE BASKET =====
-    builder
-      .addCase(leaveBasket.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(leaveBasket.fulfilled, (state, action) => {
-        state.loading = false
-        // Move basket from activeBaskets to openBaskets
-        const index = state.activeBaskets.findIndex(b => b.id === action.payload.id)
-        if (index !== -1) {
-          state.activeBaskets.splice(index, 1)
-          state.openBaskets.push(action.payload)
-        } else {
-          // Update in open if it was somehow already there
-          const openIndex = state.openBaskets.findIndex(b => b.id === action.payload.id)
-          if (openIndex !== -1) {
-            state.openBaskets[openIndex] = action.payload
-          }
-        }
-        // Update selected basket if it's the same
-        if (state.selectedBasket?.id === action.payload.id) {
-          state.selectedBasket = action.payload
-        }
-        state.error = null
-      })
-      .addCase(leaveBasket.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload as string
-      })
-
-    // ===== UPDATE COMMITMENT =====
-    builder
-      .addCase(updateCommitment.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(updateCommitment.fulfilled, (state, action) => {
-        state.loading = false
-        // Update basket in activeBaskets
-        const index = state.activeBaskets.findIndex(b => b.id === action.payload.id)
-        if (index !== -1) {
-          state.activeBaskets[index] = action.payload
-        }
-        // Update selected basket if it's the same
-        if (state.selectedBasket?.id === action.payload.id) {
-          state.selectedBasket = action.payload
-        }
-        state.error = null
-      })
-      .addCase(updateCommitment.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload as string
-      })
-
-    // ===== CREATE BASKET =====
-    builder
-      .addCase(createBasket.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(createBasket.fulfilled, (state, action) => {
-        state.loading = false
-        state.openBaskets.unshift(action.payload) // Add to beginning of open baskets
-        state.error = null
-      })
-      .addCase(createBasket.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload as string
-      })
+    // Commit
+    builder.addCase(commitBasketQuantity.pending, (state) => {
+      state.committing = true
+    })
+    builder.addCase(commitBasketQuantity.fulfilled, (state) => {
+      state.committing = false
+    })
+    builder.addCase(commitBasketQuantity.rejected, (state, action) => {
+      state.committing = false
+      state.error = action.payload as string
+    })
   },
 })
 
-// ==================== ACTIONS ====================
-
-export const { clearBasketsError, clearSelectedBasket } = basketsSlice.actions
-
-// ==================== SELECTORS ====================
-
-export const selectActiveBaskets = (state: { baskets: BasketsState }) => state.baskets.activeBaskets
-export const selectOpenBaskets = (state: { baskets: BasketsState }) => state.baskets.openBaskets
-export const selectCompletedBaskets = (state: { baskets: BasketsState }) => state.baskets.completedBaskets
-export const selectBasketHistory = (state: { baskets: BasketsState }) => state.baskets.basketHistory
-export const selectBasketHistoryPagination = (state: { baskets: BasketsState }) => state.baskets.basketHistoryPagination
-export const selectSelectedBasket = (state: { baskets: BasketsState }) => state.baskets.selectedBasket
-export const selectBasketsLoading = (state: { baskets: BasketsState }) => state.baskets.loading
-export const selectHistoryLoading = (state: { baskets: BasketsState }) => state.baskets.historyLoading
-export const selectBasketsError = (state: { baskets: BasketsState }) => state.baskets.error
-
-// ==================== EXPORT ====================
-
 export default basketsSlice.reducer
+
+export const selectOpenBaskets = (state: RootState) => state.baskets.openBaskets
+export const selectOpenPagination = (state: RootState) => state.baskets.openPagination
+export const selectActiveUserBaskets = (state: RootState) => state.baskets.userActiveBaskets
+export const selectActivePagination = (state: RootState) => state.baskets.activePagination
+export const selectUserCompletedBaskets = (state: RootState) => state.baskets.userCompletedBaskets
+export const selectCompletedPagination = (state: RootState) => state.baskets.completedPagination
+export const selectPlatformHistoryBaskets = (state: RootState) => state.baskets.platformHistoryBaskets
+export const selectHistoryPagination = (state: RootState) => state.baskets.historyPagination
+export const selectBasketsLoading = (state: RootState) => state.baskets.loading
+export const selectBasketsHistoryLoading = (state: RootState) => state.baskets.historyLoading
+
+// Aliases for legacy selector names
+export const selectBasketHistory = selectPlatformHistoryBaskets
+export const selectBasketHistoryPagination = selectHistoryPagination
+export const selectActiveBaskets = selectActiveUserBaskets
+export const selectCompletedBaskets = selectUserCompletedBaskets

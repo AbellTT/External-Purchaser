@@ -208,4 +208,6 @@ export const selectProductsPricingPagination = (state: { adminProductsPricing: P
   totalItems: state.adminProductsPricing.totalItems,
 })
 
+export const fetchProductsPricing = refreshProductsPricing
+
 export default productsPricingSlice.reducer

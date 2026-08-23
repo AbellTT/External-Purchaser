@@ -2,8 +2,15 @@ import axios, { AxiosError } from 'axios'
 import type { InternalAxiosRequestConfig } from 'axios'
 import type { ApiError } from '@/types/api'
 
+const getAdminApiBaseUrl = (): string => {
+  if (import.meta.env.VITE_API_BASE_URL) return import.meta.env.VITE_API_BASE_URL
+  const hostname =
+    typeof window !== 'undefined' ? window.location.hostname : 'localhost'
+  return `http://${hostname}:8001/api`
+}
+
 export const adminApi = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api',
+  baseURL: getAdminApiBaseUrl(),
   timeout: 30000,
   withCredentials: true,
   headers: {

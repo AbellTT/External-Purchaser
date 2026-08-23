@@ -1,468 +1,272 @@
 import { useState, useEffect } from 'react'
-import { CalendarDays, TrendingUp, TrendingDown, Info } from 'lucide-react'
+import { CalendarDays, Sparkles, Info, ShieldCheck } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
-  setSelectedProduct,
-  setShowAllProducts,
-  selectProcurementData,
-  selectSelectedProduct,
-  selectShowAllProducts,
-  type MarketDataProduct,
-} from '@/store/slices/procurementCalendarSlice'
-import calendarMock from '@/data/calendar/procurementCalendarData.json'
-
-// ==================== SKELETON ====================
-
-function ProcurementCalendarSkeleton() {
-  return (
-    <DashboardLayout>
-      <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-5xl mx-auto space-y-6 animate-pulse">
-        <div className="space-y-2">
-          <div className="h-8 w-64 bg-muted rounded" />
-          <div className="h-4 w-96 bg-muted rounded" />
-        </div>
-        <div className="h-14 bg-muted rounded-lg" />
-        <div className="flex gap-2">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-8 w-24 bg-muted rounded-md" />
-          ))}
-        </div>
-        <Card className="border-border">
-          <CardContent className="p-6 space-y-4">
-            <div className="h-6 w-48 bg-muted rounded" />
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="h-28 bg-muted rounded-lg" />
-              <div className="h-28 bg-muted rounded-lg" />
-              <div className="h-28 bg-muted rounded-lg" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </DashboardLayout>
-  )
-}
-
-// Analyze seasonal patterns for each product
-function analyzeSeasonalPatterns(product: MarketDataProduct) {
-  const metrics = product.bi_monthly_metrics
-  
-  const pricesWithPeriod = metrics.map(m => ({
-    period: m.period,
-    avgPrice: (m.average_price_etb.min + m.average_price_etb.max) / 2,
-    minPrice: m.average_price_etb.min,
-    maxPrice: m.average_price_etb.max,
-    volatility: m.weekly_increase_etb.max + m.weekly_discount_etb.max
-  }))
-  
-  const highest = pricesWithPeriod.reduce((a, b) => a.avgPrice > b.avgPrice ? a : b)
-  const lowest = pricesWithPeriod.reduce((a, b) => a.avgPrice < b.avgPrice ? a : b)
-  const mostVolatile = pricesWithPeriod.reduce((a, b) => a.volatility > b.volatility ? a : b)
-  
-  const savingsPotential = ((highest.avgPrice - lowest.avgPrice) / highest.avgPrice * 100).toFixed(1)
-  
-  const seasonScores = pricesWithPeriod.map(p => ({
-    period: p.period,
-    avgPrice: p.avgPrice,
-    score: (1 - p.avgPrice / highest.avgPrice) * 0.7 + (1 - p.volatility / mostVolatile.volatility) * 0.3
-  })).sort((a, b) => b.score - a.score)
-  
-  const bestSeason = seasonScores[0]
-  const secondBestSeason = seasonScores[1]
-  const worstSeason = seasonScores[seasonScores.length - 1]
-  
-  return {
-    highest,
-    lowest,
-    mostVolatile,
-    bestSeason,
-    secondBestSeason,
-    worstSeason,
-    savingsPotential
-  }
-}
+  fetchProcurementCalendar,
+  selectCalendarProducts,
+  selectCalendarLoading,
+} from '@/store/slices/marketIntelligenceSlice'
+import { useOrgWebSocket } from '@/lib/useOrgWebSocket'
 
 export function ProcurementCalendarPage() {
+  useOrgWebSocket()
   const dispatch = useAppDispatch()
-  const calendarData = useAppSelector(selectProcurementData)
-  const selectedProduct = useAppSelector(selectSelectedProduct)
-  const showAllProducts = useAppSelector(selectShowAllProducts)
+  const allProducts = useAppSelector(selectCalendarProducts)
+  const loading = useAppSelector(selectCalendarLoading)
 
-  const [isFirstLoad, setIsFirstLoad] = useState(true)
+  // Filter products to ONLY include products/brands that have bi-monthly data or fallback guidance
+  const displayProducts = allProducts.filter((p: any) => p.hasCalendarData || p.hasBiMonthlyData)
+
+  const [selectedProductId, setSelectedProductId] = useState<string>('')
 
   useEffect(() => {
-    setIsFirstLoad(true)
-    // Seed Redux store with calendar data
-    dispatch({
-      type: 'procurementCalendar/fetchData/fulfilled',
-      payload: calendarMock.data
-    })
-    const timer = setTimeout(() => setIsFirstLoad(false), 600)
-    return () => clearTimeout(timer)
+    dispatch(fetchProcurementCalendar())
   }, [dispatch])
 
-  if (isFirstLoad) return <ProcurementCalendarSkeleton />
+  useEffect(() => {
+    if (displayProducts.length > 0 && (!selectedProductId || !displayProducts.some((p) => p.id === selectedProductId))) {
+      setSelectedProductId(displayProducts[0].id)
+    }
+  }, [displayProducts, selectedProductId])
 
-  const data = calendarData || calendarMock.data
-  const PRODUCTS_WITH_DATA = data.productsWithData
-  const ALL_PRODUCTS = data.allProducts
-  const ADMIN_RECOMMENDATIONS = data.adminRecommendations as Record<string, string>
-  const MOCK_SEASONAL_GUIDE = data.seasonalGuides as Record<string, { bestSeason: string; secondBestSeason: string; worstSeason: string; recommendation: string }>
+  const selectedProduct = displayProducts.find((p) => p.id === selectedProductId) || displayProducts[0]
 
-  const hasData = PRODUCTS_WITH_DATA.includes(selectedProduct)
-  const productData = hasData ? data.marketData.find(p => p.product === selectedProduct) : null
-  const analysis = productData ? analyzeSeasonalPatterns(productData) : null
+  if (loading && allProducts.length === 0) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center space-y-3">
+            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-sm font-semibold text-muted-foreground">Loading procurement calendar...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
-  const displayedProducts = showAllProducts ? ALL_PRODUCTS : ALL_PRODUCTS.slice(0, 4)
+  const rankings = selectedProduct?.seasonalRankings
+  const recommendation = selectedProduct?.platformRecommendation
+  const biMonthlyPeriods = selectedProduct?.biMonthlyPeriods || []
 
   return (
     <DashboardLayout>
-      <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-5xl mx-auto space-y-6">
-        {/* Header */}
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-4xl mx-auto">
+        {/* Header Bar */}
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
-            <CalendarDays className="w-6 h-6 text-primary" />
-            Purchasing Intelligence Calendar
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground flex items-center gap-2.5">
+            <CalendarDays className="w-8 h-8 text-primary" />
+            Procurement Calendar & Seasonal Guidance
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Seasonal trends and optimal procurement timing based on historical market patterns.
+          <p className="text-sm sm:text-base text-muted-foreground mt-1 font-medium">
+            Risk-adjusted purchasing recommendations and multi-year seasonal price breakdown.
           </p>
         </div>
 
-        {/* Notice */}
-        <Card className="border-info/30 bg-info-bg/20">
-          <CardContent className="p-4">
-            <div className="flex gap-3">
-              <Info className="w-5 h-5 text-info shrink-0 mt-0.5" />
-              <div className="text-xs text-muted-foreground space-y-1">
-                <p className="font-semibold text-info">Historical Trends, Not Price Predictions</p>
-                <p>
-                  This calendar shows seasonal patterns and trends based on past data. Price examples are from historical records 
-                  and should not be interpreted as current or future pricing. Market conditions, exchange rates, and supply chains 
-                  are volatile — actual prices may differ significantly. Use these insights to understand <strong className="text-foreground">when</strong> to buy, 
-                  not <strong className="text-foreground">what price to expect</strong>.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Product Selector */}
-        <div className="space-y-2">
-          <div className="flex flex-wrap gap-2">
-            {displayedProducts.map((product) => (
-              <Button
-                key={product}
-                size="sm"
-                variant={selectedProduct === product ? 'default' : 'outline'}
-                onClick={() => dispatch(setSelectedProduct(product))}
-                className="text-xs"
-              >
-                {product.replace('Siner Line ', '').replace('OSA ', '').replace('Box File ', '')}
-              </Button>
+        {/* Product & Brand Selector Bar */}
+        <div className="bg-card p-4 sm:p-5 rounded-xl border border-border flex flex-col sm:flex-row sm:items-center gap-3">
+          <label className="text-xs sm:text-sm font-mono font-bold text-muted-foreground uppercase tracking-wider">
+            Select Product & Brand:
+          </label>
+          <select
+            value={selectedProductId}
+            onChange={(e) => setSelectedProductId(e.target.value)}
+            className="px-4 py-2.5 bg-background border border-border rounded-lg text-sm sm:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary min-w-[280px]"
+          >
+            {displayProducts.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} {p.brandName ? `(${p.brandName})` : ''}
+              </option>
             ))}
-          </div>
-          {!showAllProducts && ALL_PRODUCTS.length > 4 && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => dispatch(setShowAllProducts(true))}
-              className="text-xs text-primary hover:text-primary"
-            >
-              + View {ALL_PRODUCTS.length - 4} More Products
-            </Button>
-          )}
-          {showAllProducts && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => dispatch(setShowAllProducts(false))}
-              className="text-xs text-muted-foreground"
-            >
-              Show Less
-            </Button>
-          )}
+          </select>
         </div>
 
-        {/* Products WITH bi-monthly data: Show seasonal buying guide */}
-        {hasData && analysis && productData && (
-          <>
-            {/* Key Insights Summary - Top 3 Ranked Seasons */}
-            <Card className="border-border bg-primary-subtle/30">
-              <CardHeader>
-                <CardTitle className="text-base">{selectedProduct} — Seasonal Buying Guide</CardTitle>
-                <CardDescription>Top-ranked procurement windows based on historical price trends</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid sm:grid-cols-3 gap-4">
-                  {/* #1 Best Season */}
-                  <div className="bg-card border-2 border-success rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-lg bg-success text-white flex items-center justify-center font-bold text-sm">
-                        #1
-                      </div>
-                      <p className="text-xs font-semibold text-success uppercase tracking-wide">Best Season</p>
-                    </div>
-                    <p className="text-xl font-bold text-success mb-1">{analysis.bestSeason.period}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Optimal buying window with lowest historical prices and best stability
-                    </p>
-                  </div>
-
-                  {/* #2 Second Best Season */}
-                  <div className="bg-card border border-primary rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
-                        #2
-                      </div>
-                      <p className="text-xs font-semibold text-primary uppercase tracking-wide">2nd Best Season</p>
-                    </div>
-                    <p className="text-xl font-bold text-primary mb-1">{analysis.secondBestSeason.period}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Alternative procurement window with favorable pricing
-                    </p>
-                  </div>
-
-                  {/* Worst Season to Avoid */}
-                  <div className="bg-card border border-error rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-lg bg-error text-white flex items-center justify-center font-bold text-sm">
-                        ⚠️
-                      </div>
-                      <p className="text-xs font-semibold text-error uppercase tracking-wide">Avoid Period</p>
-                    </div>
-                    <p className="text-xl font-bold text-error mb-1">{analysis.worstSeason.period}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Least favorable period with highest costs or volatility
-                    </p>
-                  </div>
-                </div>
-
-                {/* Price Variance Info */}
-                <div className="bg-card border border-border rounded-lg p-4">
-                  <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Historical Trend Summary</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Based on 2026 data, strategic timing between the best and worst periods has historically yielded up to{' '}
-                    <strong className="text-success">{analysis.savingsPotential}%</strong> cost difference. Organizations that consistently purchase during optimal windows 
-                    achieve significant savings over time. <strong className="text-foreground">Focus on the seasonal pattern, not specific prices.</strong>
+        {/* 1. Seasonal Buying Guide Card */}
+        {selectedProduct && (
+          <Card className="border-border bg-card shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg sm:text-xl font-bold flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                Seasonal Buying Guide — {selectedProduct.name} {selectedProduct.brandName ? `(${selectedProduct.brandName})` : ''}
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm text-muted-foreground font-medium">
+                {selectedProduct.calculationRationale || 'Dynamic risk-adjusted purchasing recommendations'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* 1st Best Season */}
+                <div className="p-4 bg-success-bg/30 border border-success/30 rounded-xl space-y-1">
+                  <span className="text-xs font-mono font-bold text-success uppercase tracking-wider block">
+                    🟢 1st Best Season to Buy
+                  </span>
+                  <p className="text-xl font-black text-foreground font-mono">
+                    {rankings?.firstBestSeason || 'Sept - Oct'}
                   </p>
+                  <p className="text-[11px] text-muted-foreground font-medium">Lowest risk-adjusted procurement cost window.</p>
                 </div>
 
-                {/* Admin Recommendation */}
-                {ADMIN_RECOMMENDATIONS[selectedProduct] && (
-                  <div className="bg-primary-subtle border border-primary/20 rounded-lg p-4">
-                    <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">💡 Platform Recommendation</p>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {ADMIN_RECOMMENDATIONS[selectedProduct]}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                {/* 2nd Best Season */}
+                <div className="p-4 bg-info-bg/30 border border-info/30 rounded-xl space-y-1">
+                  <span className="text-xs font-mono font-bold text-info uppercase tracking-wider block">
+                    🔵 2nd Best Season to Buy
+                  </span>
+                  <p className="text-xl font-black text-foreground font-mono">
+                    {rankings?.secondBestSeason || 'May - Jun'}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground font-medium">Favorable baseline prices with strong savings potential.</p>
+                </div>
 
-            {/* Seasonal Breakdown by Bi-Monthly Period */}
-            <div className="space-y-3">
-              {productData.bi_monthly_metrics.map((metric) => {
-                const avgPrice = (metric.average_price_etb.min + metric.average_price_etb.max) / 2
-                const priceRange = metric.average_price_etb.max - metric.average_price_etb.min
-                
-                const isBestSeason = metric.period === analysis.bestSeason.period
-                const isSecondBest = metric.period === analysis.secondBestSeason.period
-                const isWorst = metric.period === analysis.worstSeason.period
+                {/* Worst Season */}
+                <div className="p-4 bg-error-bg/30 border border-error/30 rounded-xl space-y-1">
+                  <span className="text-xs font-mono font-bold text-error uppercase tracking-wider block">
+                    🔴 Worst Season to Buy
+                  </span>
+                  <p className="text-xl font-black text-foreground font-mono">
+                    {rankings?.worstSeason || 'Jul - Aug'}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground font-medium">High market peak costs & severe surge risk.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 2. Platform Recommendation Section */}
+        {selectedProduct && recommendation && (
+          <Card className="border-primary/30 bg-primary-subtle/15 shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base sm:text-lg font-bold flex items-center gap-2 text-primary">
+                <ShieldCheck className="w-5 h-5" />
+                Platform Recommendation
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-xs sm:text-sm">
+              {recommendation.summary && (
+                <div className="p-3.5 bg-background border border-border rounded-lg text-foreground font-medium leading-relaxed">
+                  <strong className="text-primary font-bold">Summary:</strong> {recommendation.summary}
+                </div>
+              )}
+
+              {recommendation.buyingGuideNotes && (
+                <div className="p-3.5 bg-background/60 border border-border/80 rounded-lg text-muted-foreground leading-relaxed">
+                  <strong className="text-foreground font-semibold">Guidance Notes:</strong> {recommendation.buyingGuideNotes}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 3. Historical Bi-Monthly Breakdown (Single-Column Vertical Flow) */}
+        {selectedProduct && biMonthlyPeriods.some((p: any) => p.yearlyHistory && p.yearlyHistory.length > 0) && (
+          <div className="space-y-4 pt-2">
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                <Info className="w-5 h-5 text-primary" />
+                Historical Bi-Monthly Breakdown
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium mt-0.5">
+                Multi-year historical price data aggregated for every bi-monthly period across all recorded years.
+              </p>
+            </div>
+
+            {/* Vertical Flow of All 6 Bi-Monthly Periods */}
+            <div className="space-y-4">
+              {biMonthlyPeriods.map((periodItem: any) => {
+                const { period, classification, yearlyHistory } = periodItem
+
+                // Harmonious Theme-Consistent Styling
+                let cardBorderStyle = 'border border-border bg-card'
+                let badgeText = '⚪ Normal'
+                let badgeStyle = 'bg-surface-muted text-muted-foreground border-border'
+
+                if (classification === '1st Best') {
+                  cardBorderStyle = 'border-2 border-success/40 bg-card'
+                  badgeText = '🟢 1st Best Season'
+                  badgeStyle = 'bg-success-bg text-success border-success/30 font-bold'
+                } else if (classification === '2nd Best') {
+                  cardBorderStyle = 'border-2 border-info/40 bg-card'
+                  badgeText = '🔵 2nd Best Season'
+                  badgeStyle = 'bg-info-bg text-info border-info/30 font-bold'
+                } else if (classification === 'Worst') {
+                  cardBorderStyle = 'border-2 border-error/40 bg-card'
+                  badgeText = '🔴 Worst Season'
+                  badgeStyle = 'bg-error-bg text-error border-error/30 font-bold'
+                }
 
                 return (
-                  <Card 
-                    key={metric.period} 
-                    className={`border-border ${
-                      isBestSeason ? 'ring-2 ring-success/30 bg-success-bg/20' :
-                      isSecondBest ? 'ring-2 ring-primary/30 bg-primary-subtle/20' :
-                      isWorst ? 'ring-2 ring-error/30 bg-error-bg/10' : ''
-                    }`}
-                  >
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <div className="flex items-center gap-2">
-                            <p className="text-base font-bold text-foreground">{metric.period}</p>
-                            {isBestSeason && (
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-success text-white">
-                                #1 Best Season
-                              </span>
-                            )}
-                            {isSecondBest && (
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary text-white">
-                                #2 Good Season
-                              </span>
-                            )}
-                            {isWorst && (
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-error text-white">
-                                ⚠️ Avoid Period
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="bg-surface-muted/50 border border-border rounded-md p-3 text-xs text-muted-foreground">
-                          {isBestSeason && (
-                            <p>
-                              💰 <strong className="text-foreground">Top-ranked procurement window</strong> — Across all years, this period shows the lowest average prices 
-                              and best market stability compared to other bi-monthly periods. <strong className="text-success">~{analysis.savingsPotential}% lower</strong> than worst period.
-                            </p>
-                          )}
-                          {isSecondBest && !isBestSeason && (
-                            <p>
-                              ✅ <strong className="text-foreground">Strong alternative buying period</strong> — Multi-year trends show favorable pricing compared to peak periods. 
-                              Recommended when primary window is missed.
-                            </p>
-                          )}
-                          {isWorst && (
-                            <p>
-                              ⚠️ <strong className="text-foreground">Least favorable procurement window</strong> — Historical data shows this period typically has 
-                              the highest costs or greatest volatility. <strong className="text-error">~{analysis.savingsPotential}% higher</strong> than best period.
-                            </p>
-                          )}
-                          {!isBestSeason && !isSecondBest && !isWorst && (
-                            <p>
-                              📅 <strong className="text-foreground">Moderate procurement period</strong> — Multi-year averages show mid-range pricing. 
-                              Better opportunities exist in {analysis.bestSeason.period} or {analysis.secondBestSeason.period}.
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <p className="text-xs font-semibold text-foreground uppercase tracking-wide">Historical Data by Year</p>
-                          
-                          <div className="bg-surface-muted/30 rounded-md p-3 space-y-3">
-                            <div className="flex items-center justify-between">
-                              <p className="text-xs font-bold text-foreground">Year 2026 (Ethiopian Calendar 2017)</p>
-                              <p className="text-xs font-mono text-muted-foreground">
-                                Range: ETB {metric.average_price_etb.min} - {metric.average_price_etb.max}
-                              </p>
-                            </div>
-                            
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                              <div>
-                                <p className="text-muted-foreground mb-1">2026 Avg Price</p>
-                                <p className="font-bold text-foreground font-mono">~ETB {avgPrice.toFixed(0)}</p>
-                              </div>
-                              <div>
-                                <p className="text-muted-foreground mb-1">Price Variance</p>
-                                <p className="font-bold text-foreground font-mono">ETB {priceRange}</p>
-                              </div>
-                              <div>
-                                <p className="text-muted-foreground mb-1">Typical Weekly Rise</p>
-                                <div className="flex items-center gap-1">
-                                  <TrendingUp className="w-3 h-3 text-error" />
-                                  <p className="font-bold text-error font-mono">~ETB {metric.weekly_increase_etb.max}</p>
-                                </div>
-                              </div>
-                              <div>
-                                <p className="text-muted-foreground mb-1">Typical Weekly Drop</p>
-                                <div className="flex items-center gap-1">
-                                  <TrendingDown className="w-3 h-3 text-success" />
-                                  <p className="font-bold text-success font-mono">~ETB {metric.weekly_discount_etb.max}</p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="bg-surface-muted/10 border border-dashed border-border rounded-md p-3">
-                            <p className="text-[10px] text-muted-foreground text-center">
-                              Additional years can be added by administrators to show multi-year trends and averages
-                            </p>
-                          </div>
-                        </div>
+                  <Card key={period} className={`shadow-sm transition-all ${cardBorderStyle}`}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base sm:text-lg font-bold font-mono">{period}</CardTitle>
+                        <Badge variant="outline" className={`text-xs font-mono ${badgeStyle}`}>
+                          {badgeText}
+                        </Badge>
                       </div>
+                      <CardDescription className="text-xs text-muted-foreground">
+                        Multi-year price movement trends for {period}.
+                      </CardDescription>
+                    </CardHeader>
+
+                    <CardContent className="space-y-4">
+                      {yearlyHistory && yearlyHistory.length > 0 ? (
+                        <div className="space-y-3">
+                          <p className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-wider">
+                            Historical Data by Year
+                          </p>
+                          {/* Vertical Stack for Multi-Year Records */}
+                          <div className="flex flex-col space-y-3 w-full font-mono text-xs">
+                            {yearlyHistory.map((yItem: any) => (
+                              <div key={yItem.year} className="p-3.5 bg-surface-muted/50 border border-border/80 rounded-xl space-y-2 w-full">
+                                <div className="flex items-center justify-between pb-1 border-b border-border/60">
+                                  <span className="font-extrabold text-foreground text-sm">
+                                    {yItem.year} <span className="text-muted-foreground font-normal text-xs">(EC {yItem.ethiopianYear})</span>
+                                  </span>
+                                  <span className="text-[10px] text-muted-foreground font-bold">Recorded Year</span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 pt-1">
+                                  <div>
+                                    <span className="text-muted-foreground block text-[10px]">Price Range:</span>
+                                    <span className="font-bold text-primary">ETB {yItem.minPrice} – {yItem.maxPrice}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground block text-[10px]">Average Price:</span>
+                                    <span className="font-bold text-foreground">~ETB {yItem.avgPrice}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground block text-[10px]">Price Variance:</span>
+                                    <span className="font-bold text-warning">ETB {yItem.variance}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground block text-[10px]">Typical Weekly Rise:</span>
+                                    <span className="font-bold text-error">
+                                      ~ETB {yItem.minWeeklyIncrease} – {yItem.maxWeeklyIncrease}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground block text-[10px]">Typical Weekly Drop:</span>
+                                    <span className="font-bold text-success">
+                                      ~ETB {yItem.minWeeklyDiscount} – {yItem.maxWeeklyDiscount}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs font-mono text-muted-foreground italic p-2 bg-surface-muted/30 rounded-lg">
+                          No multi-year historical records entered for {period} yet.
+                        </p>
+                      )}
                     </CardContent>
                   </Card>
                 )
               })}
             </div>
-
-            <Card className="border-border bg-surface-muted/50">
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">
-                  <strong className="text-foreground">Data Source & Disclaimer:</strong> All trends and insights are based on 2026 historical 
-                  Merkato retailer pricing data (12+ months). Price values shown are examples from 2026 records to illustrate seasonal buying patterns — 
-                  they are NOT current prices or future predictions. Actual market prices are highly volatile and influenced by exchange rates, supply chain 
-                  disruptions, and demand fluctuations. <strong className="text-foreground">This page focuses on WHEN to buy based on seasonal trends, not WHAT price to expect.</strong> Check the Market Intelligence page for current real-time pricing.
-                </p>
-              </CardContent>
-            </Card>
-          </>
-        )}
-
-        {/* Products WITHOUT bi-monthly data: Show mock seasonal guide with admin recommendations */}
-        {!hasData && MOCK_SEASONAL_GUIDE[selectedProduct] && (
-          <>
-            <Card className="border-border bg-primary-subtle/30">
-              <CardHeader>
-                <CardTitle className="text-base">{selectedProduct} — Seasonal Buying Guide</CardTitle>
-                <CardDescription>Platform-recommended procurement windows based on market expertise</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid sm:grid-cols-3 gap-4">
-                  <div className="bg-card border-2 border-success rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-lg bg-success text-white flex items-center justify-center font-bold text-sm">
-                        #1
-                      </div>
-                      <p className="text-xs font-semibold text-success uppercase tracking-wide">Best Season</p>
-                    </div>
-                    <p className="text-xl font-bold text-success mb-1">{MOCK_SEASONAL_GUIDE[selectedProduct].bestSeason}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Optimal buying window recommended by platform administrators
-                    </p>
-                  </div>
-
-                  <div className="bg-card border border-primary rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
-                        #2
-                      </div>
-                      <p className="text-xs font-semibold text-primary uppercase tracking-wide">2nd Best Season</p>
-                    </div>
-                    <p className="text-xl font-bold text-primary mb-1">{MOCK_SEASONAL_GUIDE[selectedProduct].secondBestSeason}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Alternative procurement window with favorable conditions
-                    </p>
-                  </div>
-
-                  <div className="bg-card border border-error rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-lg bg-error text-white flex items-center justify-center font-bold text-sm">
-                        ⚠️
-                      </div>
-                      <p className="text-xs font-semibold text-error uppercase tracking-wide">Avoid Period</p>
-                    </div>
-                    <p className="text-xl font-bold text-error mb-1">{MOCK_SEASONAL_GUIDE[selectedProduct].worstSeason}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Least favorable period - avoid if possible
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-primary-subtle border border-primary/20 rounded-lg p-4">
-                  <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">💡 Platform Recommendation</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {MOCK_SEASONAL_GUIDE[selectedProduct].recommendation}
-                  </p>
-                </div>
-
-                <div className="bg-card border border-border rounded-lg p-4">
-                  <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">ℹ️ About This Product</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Historical bi-monthly price data is not currently available for this product. The seasonal buying guide shown above 
-                    is based on platform administrator recommendations derived from market expertise and procurement best practices. 
-                    For real-time pricing and availability, check the <strong className="text-foreground">Direct Purchase</strong> or{' '}
-                    <strong className="text-foreground">Basket System</strong> pages.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </>
+          </div>
         )}
       </div>
     </DashboardLayout>
