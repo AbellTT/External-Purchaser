@@ -14,7 +14,7 @@ class Command(BaseCommand):
         if not users:
             u, _ = User.objects.get_or_create(
                 email='buyer@babi.et',
-                defaults={'first_name': 'Abebe', 'last_name': 'Bikila'}
+                defaults={'role': 'PROCUREMENT_OFFICER'}
             )
             u.set_password('password123')
             u.save()
