@@ -1,4 +1,4 @@
-# Babi Procurement Platform
+# MBE Procurement Platform
 
 A B2B stationery procurement platform that enables organizations to combine purchasing power for bulk discounts on stationery products.
 
