@@ -39,9 +39,8 @@ babi/
 │   ├── config/       # Django settings and URL routing
 │   └── manage.py     # Django management script
 ├── frontend/         # React + Vite client
-│   ├── src/          # Application source (pages, components, store, lib)
-│   └── index.html    # Entry point
-└── notes/            # Documentation, architecture, setup guides, lessons
+    ├── src/          # Application source (pages, components, store, lib)
+    └── index.html    # Entry point
 ```
 
 ## Getting Started
@@ -61,7 +60,7 @@ pip install -r requirements.txt
 copy .env.example .env   # Configure database and secrets
 python manage.py migrate
 python manage.py createsuperuser
-python manage.py runserver
+python manage.py runserver 8001
 ```
 
 ### Frontend Setup
