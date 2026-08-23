@@ -172,10 +172,6 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# CORS Settings
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-
 # Email Configuration (for password reset, notifications)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Change in production
 EMAIL_HOST = config('EMAIL_HOST', default='')

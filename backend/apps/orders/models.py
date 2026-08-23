@@ -178,9 +178,9 @@ class OrderItem(models.Model):
         related_name='order_items'
     )
     
-    # If from basket, reference the basket product
-    basket_product = models.ForeignKey(
-        'baskets.BasketProduct',
+    # If from basket, reference the basket
+    basket = models.ForeignKey(
+        'baskets.Basket',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

@@ -4,311 +4,219 @@ from decimal import Decimal
 from django.utils import timezone
 
 
-class PriceHistory(models.Model):
+class BiMonthlyMarketData(models.Model):
     """
-    Historical pricing data for products.
-    This is crucial for the "2-year price history" and market intelligence features.
+    Bi-Monthly historical market pricing ranges for 6 periods per year:
+    - Sept - Oct
+    - Nov - Dec
+    - Jan - Feb
+    - Mar - Apr
+    - May - Jun
+    - Jul - Aug
     """
-    
-    class PriceType(models.TextChoices):
-        WHOLESALE = 'WHOLESALE', 'Wholesale Price'
-        RETAIL = 'RETAIL', 'Retail Price'
-        BASKET = 'BASKET', 'Basket Price'
-        DIRECT = 'DIRECT', 'Direct Purchase Price'
-        MARKET_SURVEY = 'MARKET_SURVEY', 'Market Survey Price'
-    
+    PERIOD_CHOICES = [
+        ('Sept - Oct', 'Sept - Oct'),
+        ('Nov - Dec', 'Nov - Dec'),
+        ('Jan - Feb', 'Jan - Feb'),
+        ('Mar - Apr', 'Mar - Apr'),
+        ('May - Jun', 'May - Jun'),
+        ('Jul - Aug', 'Jul - Aug'),
+    ]
+
     product = models.ForeignKey(
         'products.Product',
         on_delete=models.CASCADE,
-        related_name='price_history'
+        related_name='bi_monthly_data'
     )
-    
-    # Price Details
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.00'))]
-    )
-    price_type = models.CharField(
-        max_length=20,
-        choices=PriceType.choices
-    )
-    
-    # Source
-    supplier = models.ForeignKey(
-        'suppliers.Supplier',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='price_history'
-    )
-    basket = models.ForeignKey(
-        'baskets.Basket',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='price_history'
-    )
-    
-    # Date
-    effective_date = models.DateField(db_index=True)
-    recorded_at = models.DateTimeField(auto_now_add=True)
-    
-    # Additional Context
-    quantity = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Quantity at which this price was available"
-    )
-    notes = models.TextField(blank=True)
-    
-    # Tracking
-    recorded_by = models.ForeignKey(
-        'users.User',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='recorded_prices'
-    )
-    
-    class Meta:
-        db_table = 'price_history'
-        verbose_name = 'Price History'
-        verbose_name_plural = 'Price Histories'
-        ordering = ['-effective_date', '-recorded_at']
-        indexes = [
-            models.Index(fields=['product', 'effective_date']),
-            models.Index(fields=['product', 'price_type', 'effective_date']),
-        ]
-    
-    def __str__(self):
-        return f"{self.product.name} - ETB {self.price} on {self.effective_date}"
-
-
-class PriceAnalytics(models.Model):
-    """
-    Pre-computed price analytics for faster queries.
-    Generated periodically (daily/weekly) for dashboard performance.
-    """
-    
-    class Period(models.TextChoices):
-        WEEKLY = 'WEEKLY', 'Weekly'
-        MONTHLY = 'MONTHLY', 'Monthly'
-        QUARTERLY = 'QUARTERLY', 'Quarterly'
-        YEARLY = 'YEARLY', 'Yearly'
-    
-    product = models.ForeignKey(
-        'products.Product',
-        on_delete=models.CASCADE,
-        related_name='price_analytics'
-    )
-    
-    # Period
-    period_type = models.CharField(
-        max_length=20,
-        choices=Period.choices
-    )
-    period_start = models.DateField()
-    period_end = models.DateField()
-    
-    # Statistics
-    min_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.00'))]
-    )
-    max_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.00'))]
-    )
-    avg_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.00'))]
-    )
-    median_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(Decimal('0.00'))]
-    )
-    
-    # Price Movement
-    price_change = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        help_text="Change from previous period"
-    )
-    price_change_percent = models.DecimalField(
-        max_digits=6,
-        decimal_places=2,
-        help_text="Percentage change from previous period"
-    )
-    
-    # Volatility
-    price_volatility = models.DecimalField(
-        max_digits=6,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Standard deviation of prices in this period"
-    )
-    
-    # Data Points
-    data_points_count = models.IntegerField(default=0)
-    
-    # Timestamps
-    calculated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        db_table = 'price_analytics'
-        verbose_name = 'Price Analytics'
-        verbose_name_plural = 'Price Analytics'
-        unique_together = ['product', 'period_type', 'period_start']
-        ordering = ['-period_start']
-        indexes = [
-            models.Index(fields=['product', 'period_type', 'period_start']),
-        ]
-    
-    def __str__(self):
-        return f"{self.product.name} - {self.period_type} {self.period_start}"
-
-
-class PriceTrend(models.Model):
-    """
-    Identified price trends and seasonal patterns.
-    Used for the "Market Intelligence" feature.
-    """
-    
-    class TrendType(models.TextChoices):
-        SEASONAL_HIGH = 'SEASONAL_HIGH', 'Seasonal High'
-        SEASONAL_LOW = 'SEASONAL_LOW', 'Seasonal Low'
-        UPWARD_TREND = 'UPWARD_TREND', 'Upward Trend'
-        DOWNWARD_TREND = 'DOWNWARD_TREND', 'Downward Trend'
-        STABLE = 'STABLE', 'Stable'
-        VOLATILE = 'VOLATILE', 'Volatile'
-    
-    product = models.ForeignKey(
-        'products.Product',
-        on_delete=models.CASCADE,
-        related_name='price_trends'
-    )
-    
-    # Trend Details
-    trend_type = models.CharField(
-        max_length=20,
-        choices=TrendType.choices
-    )
-    
-    # Time Period
-    start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True)
-    
-    # Description
-    description = models.TextField(
-        help_text="Human-readable description of the trend"
-    )
-    confidence_score = models.DecimalField(
-        max_digits=4,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.00'))],
-        help_text="Confidence in this trend (0-100)"
-    )
-    
-    # Supporting Data
-    supporting_data = models.JSONField(
-        default=dict,
-        help_text="Additional data supporting this trend"
-    )
-    
-    # Timestamps
-    identified_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        db_table = 'price_trends'
-        verbose_name = 'Price Trend'
-        verbose_name_plural = 'Price Trends'
-        ordering = ['-start_date']
-    
-    def __str__(self):
-        return f"{self.product.name} - {self.get_trend_type_display()}"
-
-
-class MarketInsight(models.Model):
-    """
-    Market insights and recommendations for procurement officers.
-    Examples: "Prices typically rise before school year", "Best time to buy is..."
-    """
-    
-    class InsightType(models.TextChoices):
-        SEASONAL = 'SEASONAL', 'Seasonal Pattern'
-        BEST_TIME_TO_BUY = 'BEST_TIME_TO_BUY', 'Best Time to Buy'
-        PRICE_ALERT = 'PRICE_ALERT', 'Price Alert'
-        SAVINGS_OPPORTUNITY = 'SAVINGS_OPPORTUNITY', 'Savings Opportunity'
-        GENERAL = 'GENERAL', 'General Insight'
-    
-    product = models.ForeignKey(
-        'products.Product',
+    brand = models.ForeignKey(
+        'products.Brand',
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name='market_insights'
+        related_name='bi_monthly_data'
     )
-    category = models.ForeignKey(
-        'products.Category',
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name='market_insights'
+    year = models.IntegerField(db_index=True, help_text="Calendar year e.g. 2026")
+    period = models.CharField(max_length=20, choices=PERIOD_CHOICES)
+
+    # Average Price Range (min -> max)
+    min_average_price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))]
     )
-    
-    # Insight Details
-    insight_type = models.CharField(
-        max_length=30,
-        choices=InsightType.choices
+    max_average_price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))]
     )
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    
-    # Actionable Recommendation
-    recommendation = models.TextField(blank=True)
-    
-    # Relevance
-    is_active = models.BooleanField(default=True)
-    priority = models.IntegerField(
-        default=0,
-        help_text="Higher number = higher priority"
+
+    # Weekly Increase Range (min -> max)
+    min_weekly_increase = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        default=0.0, validators=[MinValueValidator(Decimal('0.00'))]
     )
-    
-    # Valid Period
-    valid_from = models.DateField(null=True, blank=True)
-    valid_until = models.DateField(null=True, blank=True)
-    
-    # Timestamps
+    max_weekly_increase = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        default=0.0, validators=[MinValueValidator(Decimal('0.00'))]
+    )
+
+    # Weekly Discount Range (min -> max)
+    min_weekly_discount = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        default=0.0, validators=[MinValueValidator(Decimal('0.00'))]
+    )
+    max_weekly_discount = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        default=0.0, validators=[MinValueValidator(Decimal('0.00'))]
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
-        db_table = 'market_insights'
-        verbose_name = 'Market Insight'
-        verbose_name_plural = 'Market Insights'
-        ordering = ['-priority', '-created_at']
-    
+        db_table = 'bi_monthly_market_data'
+        verbose_name = 'Bi-Monthly Market Data'
+        verbose_name_plural = 'Bi-Monthly Market Data'
+        unique_together = ['product', 'brand', 'year', 'period']
+        ordering = ['year', 'period']
+
     def __str__(self):
-        return self.title
-    
-    def is_currently_valid(self):
-        """Check if insight is currently valid."""
-        if not self.is_active:
-            return False
-        
-        today = timezone.now().date()
-        if self.valid_from and today < self.valid_from:
-            return False
-        if self.valid_until and today > self.valid_until:
-            return False
-        
-        return True
+        brand_name = self.brand.name if self.brand else 'All Brands'
+        return f"{self.product.name} ({brand_name}) - {self.year} {self.period}"
+
+
+class WeeklySpotPrice(models.Model):
+    """
+    Current month's weekly spot prices for a product and brand.
+    Directly synchronized with Brand.babi_platform_price (Direct Purchase Price).
+    """
+    product = models.ForeignKey(
+        'products.Product',
+        on_delete=models.CASCADE,
+        related_name='weekly_spot_prices'
+    )
+    brand = models.ForeignKey(
+        'products.Brand',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='weekly_spot_prices'
+    )
+    year = models.IntegerField(db_index=True)
+    month = models.IntegerField(db_index=True, help_text="Month number 1-12")
+    week_number = models.IntegerField(help_text="Week number 1 to 5")
+    week_label = models.CharField(max_length=20, help_text="e.g. Aug W1")
+
+    direct_purchase_price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        null=True, blank=True,
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
+    recorded_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'weekly_spot_prices'
+        verbose_name = 'Weekly Spot Price'
+        verbose_name_plural = 'Weekly Spot Prices'
+        unique_together = ['product', 'brand', 'year', 'month', 'week_number']
+        ordering = ['year', 'month', 'week_number']
+
+    def __str__(self):
+        brand_name = self.brand.name if self.brand else 'All Brands'
+        return f"{self.product.name} ({brand_name}) - {self.week_label}: ETB {self.direct_purchase_price}"
+
+
+class FinancialLossAnalysis(models.Model):
+    """
+    Financial loss analysis data for 500 companies comparison per product/brand.
+    """
+    product = models.ForeignKey(
+        'products.Product',
+        on_delete=models.CASCADE,
+        related_name='financial_loss_analyses'
+    )
+    brand = models.ForeignKey(
+        'products.Brand',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='financial_loss_analyses'
+    )
+
+    base_price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
+    peak_surge_price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
+    discounted_optimal_price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
+
+    single_company_loss = models.DecimalField(
+        max_digits=12, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
+    aggregate_500_companies_loss = models.DecimalField(
+        max_digits=14, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'financial_loss_analysis'
+        verbose_name = 'Financial Loss Analysis'
+        verbose_name_plural = 'Financial Loss Analyses'
+        unique_together = ['product', 'brand']
+
+    def __str__(self):
+        brand_name = self.brand.name if self.brand else 'All Brands'
+        return f"Loss Analysis: {self.product.name} ({brand_name}) - Annual Loss ETB {self.single_company_loss}"
+
+
+class ProcurementGuidance(models.Model):
+    """
+    Admin guidance & procurement calendar recommendations for a product/brand.
+    Can exist even if bi-monthly historical data is missing.
+    """
+    product = models.ForeignKey(
+        'products.Product',
+        on_delete=models.CASCADE,
+        related_name='procurement_guidances'
+    )
+    brand = models.ForeignKey(
+        'products.Brand',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='procurement_guidances'
+    )
+
+    first_best_season = models.CharField(max_length=50, default='Sept - Oct')
+    second_best_season = models.CharField(max_length=50, default='May - Jun')
+    third_best_season = models.CharField(max_length=50, default='Jan - Feb')
+
+    seasonal_buying_guide_notes = models.TextField(
+        blank=True,
+        help_text="Detailed guidance text for seasonal procurement"
+    )
+    recommendation_summary = models.TextField(
+        blank=True,
+        help_text="General recommendation text for procurement officers"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'procurement_guidance'
+        verbose_name = 'Procurement Guidance'
+        verbose_name_plural = 'Procurement Guidance'
+        unique_together = ['product', 'brand']
+
+    def __str__(self):
+        brand_name = self.brand.name if self.brand else 'All Brands'
+        return f"Procurement Guidance: {self.product.name} ({brand_name})"

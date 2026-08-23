@@ -5,9 +5,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from apps.organizations.dashboard_views import UserDashboardOverviewView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # Overview
+    path('api/dashboard/overview', UserDashboardOverviewView.as_view(), name='user-dashboard-overview'),
     
     # Authentication
     path('api/auth/', include('apps.users.urls')),

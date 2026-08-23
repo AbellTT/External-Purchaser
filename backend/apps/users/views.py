@@ -17,6 +17,8 @@ from rest_framework_simplejwt.exceptions import TokenError
 
 from .models import UserSession
 from .serializers import RegisterSerializer, UserSerializer
+from apps.notifications.models import Notification
+from apps.notifications.utils import send_user_notification
 
 
 logger = logging.getLogger(__name__)
@@ -122,6 +124,19 @@ class RegisterView(views.APIView):
 
                 # Register the user and organization.
                 user = serializer.save()
+
+                # Send welcome notification (no action_url needed)
+                send_user_notification(
+                    user=user,
+                    title='Welcome to MBE External Purchaser!',
+                    message=(
+                        'Your account has been created successfully. '
+                        'Your organization registration is now pending admin verification. '
+                        'Once approved, you will have full access to procurement baskets and direct purchases.'
+                    ),
+                    notification_type=Notification.NotificationType.ANNOUNCEMENT,
+                    action_url='',
+                )
 
                 # Registration automatically logs the user in.
                 # Registration always gets a 7-day session.

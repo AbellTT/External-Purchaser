@@ -1,6 +1,5 @@
 from django.db import IntegrityError, transaction
 from django.db.models import Q
-from django.utils import timezone
 from django.utils.text import slugify
 
 from rest_framework import status, views
@@ -21,22 +20,6 @@ def _unique_value(model, field, value):
         index += 1
     return candidate
 
-
-def _record_prices(brand, user):
-    """Keep the pricing app's historical market data in sync with live brand pricing."""
-    from apps.pricing.models import PriceHistory
-
-    today = timezone.now().date()
-    for price, price_type in (
-        (brand.regular_market_price, PriceHistory.PriceType.RETAIL),
-        (brand.merkato_retailer_price, PriceHistory.PriceType.WHOLESALE),
-        (brand.direct_purchase_price, PriceHistory.PriceType.DIRECT),
-    ):
-        PriceHistory.objects.create(
-            product=brand.product, price=price, price_type=price_type,
-            effective_date=today, recorded_by=user,
-            notes=f'Catalog update for {brand.name}',
-        )
 
 
 class ProductListView(views.APIView):
@@ -134,7 +117,6 @@ class ProductBrandListView(views.APIView):
             brand = serializer.save(product=product)
         except IntegrityError:
             return Response({'success': False, 'error': 'This brand already exists for the selected product.'}, status=status.HTTP_400_BAD_REQUEST)
-        _record_prices(brand, request.user)
         return Response({'success': True, 'data': BrandSerializer(brand).data}, status=status.HTTP_201_CREATED)
 
 
@@ -148,7 +130,6 @@ class BrandDetailView(views.APIView):
         serializer = BrandSerializer(brand, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        _record_prices(brand, request.user)
         return Response({'success': True, 'data': serializer.data})
 
     def delete(self, request, brand_id):

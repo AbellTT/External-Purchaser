@@ -13,6 +13,8 @@ from .serializers import (
 )
 from apps.products.models import Product, Brand
 from apps.organizations.models import Organization
+from apps.notifications.models import Notification
+from apps.notifications.utils import send_user_notification, broadcast_ws_event
 
 
 def _generate_order_number():
@@ -83,6 +85,12 @@ class OrderListView(views.APIView):
 
         user = request.user if request.user.is_authenticated else None
         user_org = getattr(user, 'organization', None) if user else None
+
+        if user_org and user_org.verification_status != 'VERIFIED':
+            return Response({
+                'success': False,
+                'error': 'Your organization registration is currently pending admin approval. Direct purchases require verified organization status.'
+            }, status=status.HTTP_403_FORBIDDEN)
 
         if not user_org and user:
             user_org, _ = Organization.objects.get_or_create(
@@ -158,6 +166,19 @@ class OrderListView(views.APIView):
         order.estimated_savings = savings_vs_merkato + savings_vs_regular
         order.save()
 
+        # Broadcast real-time order creation event to WebSocket clients
+        serialized_order = OrderSerializer(order).data
+        broadcast_ws_event({
+            'type': 'ORDER_CREATED',
+            'orderId': str(order.pk),
+            'orderNumber': order.order_number,
+            'userId': user.id if user else None,
+            'userEmail': user.email if user else '',
+            'total': float(order.total_amount),
+            'status': order.status,
+            'order': serialized_order,
+        })
+
         return Response({
             'success': True,
             'data': {
@@ -165,7 +186,7 @@ class OrderListView(views.APIView):
                 'orderNumber': order.order_number,
                 'total': float(order.total_amount),
                 'status': order.status,
-                'order': OrderSerializer(order).data,
+                'order': serialized_order,
             }
         }, status=status.HTTP_201_CREATED)
 
@@ -256,6 +277,46 @@ class OrderDetailView(views.APIView):
             notes=request.data.get('notes', f'Status updated to {new_status}')
         )
 
+        # Send notification to order owner on status changes
+        if order.placed_by and new_status != old_status:
+            STATUS_NOTIFICATION_MAP = {
+                'accepted': (
+                    Notification.NotificationType.ORDER_CONFIRMED,
+                    f'Order #{order.order_number} Accepted',
+                    f'Great news! Your order #{order.order_number} has been accepted and is now being processed on MBE External Purchaser.',
+                ),
+                'out-for-delivery': (
+                    Notification.NotificationType.ORDER_SHIPPED,
+                    f'Order #{order.order_number} Out for Delivery',
+                    f'Your order #{order.order_number} is now out for delivery. Please be ready to receive it.',
+                ),
+                'delivered': (
+                    Notification.NotificationType.ORDER_DELIVERED,
+                    f'Order #{order.order_number} Delivered',
+                    f'Your order #{order.order_number} has been successfully delivered. Thank you for using MBE External Purchaser!',
+                ),
+            }
+            if new_status in STATUS_NOTIFICATION_MAP:
+                n_type, n_title, n_message = STATUS_NOTIFICATION_MAP[new_status]
+                send_user_notification(
+                    user=order.placed_by,
+                    title=n_title,
+                    message=n_message,
+                    notification_type=n_type,
+                    action_url=f'/dashboard/orders',
+                    order=order,
+                )
+
+        # Broadcast real-time order status change event
+        broadcast_ws_event({
+            'type': 'ORDER_STATUS_CHANGED',
+            'orderId': str(order.pk),
+            'orderNumber': order.order_number,
+            'oldStatus': old_status,
+            'newStatus': new_status,
+            'userId': order.placed_by.id if order.placed_by else None,
+        })
+
         return Response({
             'success': True,
             'data': OrderSerializer(order).data
@@ -292,6 +353,16 @@ class OrderCancelView(views.APIView):
             changed_by=request.user if request.user.is_authenticated else None,
             notes='Order cancelled permanently'
         )
+
+        # Broadcast real-time order cancellation event
+        broadcast_ws_event({
+            'type': 'ORDER_STATUS_CHANGED',
+            'orderId': str(order.pk),
+            'orderNumber': order.order_number,
+            'oldStatus': old_status,
+            'newStatus': 'cancelled',
+            'userId': order.placed_by.id if order.placed_by else None,
+        })
 
         return Response({
             'success': True,
