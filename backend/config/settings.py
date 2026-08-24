@@ -145,6 +145,13 @@ DATABASES = {
     }
 }
 
+# Transaction-mode pooling (e.g. Supabase pooler port 6543 / PgBouncer transaction mode)
+# does not support server-side cursors — Django must be told to avoid them.
+# NOTE: run migrations over the session pooler or a direct connection; flip
+# DB_TRANSACTION_POOL=false temporarily when applying schema changes.
+if config('DB_TRANSACTION_POOL', default=False, cast=bool):
+    DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
