@@ -8,7 +8,6 @@ import {
   Tag,
   Building2,
   TrendingUp,
-  Truck,
   LogOut,
   Menu,
   X,
@@ -119,6 +118,7 @@ function AdminSidebarContent({ onClose }: { onClose?: () => void }) {
 
 interface AdminLayoutProps {
   children: ReactNode
+  activePage?: string
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {

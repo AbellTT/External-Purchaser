@@ -25,64 +25,6 @@ interface AdminState {
   error: string | null
 }
 
-const initialOrganizations: AdminOrganization[] = [
-  {
-    id: 'org_001',
-    name: 'Addis Ababa University (AAU)',
-    type: 'University',
-    email: 'AAU@edu.et',
-    phone: '0911223344',
-    tinNumber: '0123456789',
-    city: 'Addis Ababa',
-    subCity: 'Arada',
-    registeredDate: '2026-01-15',
-    verificationStatus: 'approved',
-    totalSpendingEtb: 450000,
-    totalOrdersCount: 14,
-  },
-  {
-    id: 'org_002',
-    name: 'Tabor Academy Primary School',
-    type: 'School',
-    email: 'tabor.info@school.et',
-    phone: '0922334455',
-    tinNumber: '0987654321',
-    city: 'Addis Ababa',
-    subCity: 'Bole',
-    registeredDate: '2026-07-20',
-    verificationStatus: 'pending',
-    totalSpendingEtb: 85000,
-    totalOrdersCount: 2,
-  },
-  {
-    id: 'org_003',
-    name: 'Save Children Ethiopia NGO',
-    type: 'NGO',
-    email: 'procurement@savechildren.org.et',
-    phone: '0933445566',
-    tinNumber: '0554433221',
-    city: 'Addis Ababa',
-    subCity: 'Kirkos',
-    registeredDate: '2026-08-01',
-    verificationStatus: 'pending',
-    totalSpendingEtb: 0,
-    totalOrdersCount: 0,
-  },
-  {
-    id: 'org_004',
-    name: 'Ministry of Education (MoE)',
-    type: 'Government Office',
-    email: 'procurement@moe.gov.et',
-    phone: '0944556677',
-    tinNumber: '0112233445',
-    city: 'Addis Ababa',
-    subCity: 'Arada',
-    registeredDate: '2026-02-10',
-    verificationStatus: 'approved',
-    totalSpendingEtb: 1250000,
-    totalOrdersCount: 28,
-  },
-]
 
 const initialSuppliers: AdminSupplier[] = [
   {
@@ -117,46 +59,6 @@ const initialSuppliers: AdminSupplier[] = [
     performanceRating: 4.9,
     negotiatedDiscountPercent: 22.0,
     totalFulfilledOrders: 65,
-  },
-]
-
-const initialOrders: Order[] = [
-  {
-    id: 'ord_adm_101',
-    orderNumber: 'ORD-2026-8812',
-    date: '2026-08-12',
-    status: 'pending',
-    items: [
-      { productName: 'Siner Line A4 Paper', brandName: 'Siner Line', quantity: 50, unit: 'ream', price: 650, subtotal: 32500 },
-      { productName: 'OSA HP Toner', brandName: 'OSA', quantity: 4, unit: 'cartridge', price: 2800, subtotal: 11200 },
-    ],
-    pricing: { itemsTotal: 43700, deliveryFee: 500, discount: 4500, total: 39700 },
-    delivery: { address: 'AASTU Campus, Tulu Dimtu, Addis Ababa', estimatedDate: '2026-08-15', actualDate: null },
-    savings: { vsMerkatoRetailer: { amount: 5200, percentage: 11.5 }, vsRegularStationaryMarket: { amount: 8900, percentage: 18.3 } },
-  },
-  {
-    id: 'ord_adm_102',
-    orderNumber: 'ORD-2026-8813',
-    date: '2026-08-11',
-    status: 'accepted',
-    items: [
-      { productName: 'Box File KENT', brandName: 'KENT', quantity: 120, unit: 'piece', price: 220, subtotal: 26400 },
-    ],
-    pricing: { itemsTotal: 26400, deliveryFee: 400, discount: 2400, total: 24400 },
-    delivery: { address: 'Bole Sub City, School Block B', estimatedDate: '2026-08-14', actualDate: null },
-    savings: { vsMerkatoRetailer: { amount: 3600, percentage: 12.8 }, vsRegularStationaryMarket: { amount: 6200, percentage: 20.2 } },
-  },
-  {
-    id: 'ord_adm_103',
-    orderNumber: 'ORD-2026-8814',
-    date: '2026-08-10',
-    status: 'out-for-delivery',
-    items: [
-      { productName: 'Marker', brandName: 'Pelikan', quantity: 200, unit: 'box', price: 180, subtotal: 36000 },
-    ],
-    pricing: { itemsTotal: 36000, deliveryFee: 300, discount: 4000, total: 32300 },
-    delivery: { address: 'Arada Sub City, MoE HQ', estimatedDate: '2026-08-13', actualDate: null },
-    savings: { vsMerkatoRetailer: { amount: 4800, percentage: 12.9 }, vsRegularStationaryMarket: { amount: 8100, percentage: 20.1 } },
   },
 ]
 

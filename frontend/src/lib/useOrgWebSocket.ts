@@ -22,8 +22,16 @@ export function useOrgWebSocket() {
   useEffect(() => {
     if (!activeUser) return
 
-    const host = window.location.hostname || 'localhost'
-    const wsUrl = `ws://${host}:8002`
+    // Capture non-null user identity for event filtering inside callbacks.
+    const activeUserId = activeUser.id
+    const activeUserEmail = activeUser.email
+
+    // Production: VITE_WS_BASE_URL (e.g. wss://<backend>.up.railway.app) -> <base>/ws
+    // Dev fallback: legacy standalone broadcast server on port 8002 (unchanged behaviour)
+    const envWsBase = (import.meta.env.VITE_WS_BASE_URL as string | undefined)?.trim()
+    const wsUrl = envWsBase
+      ? `${envWsBase.replace(/\/+$/, '')}/ws`
+      : `ws://${window.location.hostname || 'localhost'}:8002`
 
     let socket: WebSocket | null = null
     let reconnectTimeout: ReturnType<typeof setTimeout> | null = null
@@ -50,7 +58,7 @@ export function useOrgWebSocket() {
               lastProcessedEventRef.current = eventKey
 
               // Check if notification is for this user or global
-              if (!data.userId || String(data.userId) === String(currentUser.id) || data.userEmail === currentUser.email) {
+              if (!data.userId || String(data.userId) === String(activeUserId) || data.userEmail === activeUserEmail) {
                 console.log('[WebSocket] Real-time notification received:', data)
                 if (data.notification) {
                   dispatch(pushRealtimeNotification({
@@ -80,11 +88,11 @@ export function useOrgWebSocket() {
                 }
               }
             } else if (data.type === 'NOTIFICATION_READ') {
-              if (String(data.userId) === String(currentUser.id)) {
+              if (String(data.userId) === String(activeUserId)) {
                 dispatch(setUnreadCount(data.unreadCount))
               }
             } else if (data.type === 'NOTIFICATION_READ_ALL') {
-              if (String(data.userId) === String(currentUser.id)) {
+              if (String(data.userId) === String(activeUserId)) {
                 dispatch(setAllRead())
               }
             } else if (data.type === 'ORGANIZATION_STATUS_CHANGED') {

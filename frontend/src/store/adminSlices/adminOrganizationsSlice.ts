@@ -61,7 +61,6 @@ export const fetchAdminOrganizations = createAsyncThunk(
       status,
       search,
       page = 1,
-      silent = false,
     }: {
       status?: string
       search?: string

@@ -27,6 +27,12 @@ export interface UserMarketProduct {
     platformDirectPrice: number
   }
   weeklyHistory: { week: string; price: number | null }[]
+  currentMonthInfo?: {
+    isCurrentMonth: boolean
+    hasCurrentWeekPrice?: boolean
+    currentWeekNumber?: number
+    latestAvailableWeekNumber?: number | null
+  } | null
   biMonthlyDataByYear: Record<number, BiMonthlyPeriodData[]>
   hasBiMonthlyData: boolean
 }
@@ -53,6 +59,17 @@ export interface CalendarProduct {
     buyingGuideNotes: string
     recommendationSummary: string
   }
+  seasonalRankings?: {
+    firstBestSeason?: string
+    secondBestSeason?: string
+    worstSeason?: string
+  } | null
+  platformRecommendation?: {
+    summary?: string
+    buyingGuideNotes?: string
+  } | null
+  biMonthlyPeriods?: Array<Record<string, any>>
+  calculationRationale?: string | null
 }
 
 interface MarketIntelligenceState {
@@ -76,7 +93,7 @@ const initialState: MarketIntelligenceState = {
 // Fetch Market Intelligence User Data
 export const fetchMarketIntelligence = createAsyncThunk(
   'marketIntelligence/fetchMarketIntelligence',
-  async ({ silent = false }: { silent?: boolean } = {}, { rejectWithValue }) => {
+  async (_arg: { silent?: boolean } | undefined, { rejectWithValue }) => {
     try {
       const response = await api.get('/pricing/market-intelligence/')
       return response.data.data
@@ -89,7 +106,7 @@ export const fetchMarketIntelligence = createAsyncThunk(
 // Fetch Procurement Calendar User Data
 export const fetchProcurementCalendar = createAsyncThunk(
   'marketIntelligence/fetchProcurementCalendar',
-  async ({ silent = false }: { silent?: boolean } = {}, { rejectWithValue }) => {
+  async (_arg: { silent?: boolean } | undefined, { rejectWithValue }) => {
     try {
       const response = await api.get('/pricing/procurement-calendar/')
       return response.data.data

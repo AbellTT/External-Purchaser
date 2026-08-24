@@ -22,6 +22,8 @@ export interface User {
   address: Address
   role?: 'admin' | 'user'
   verificationStatus?: 'pending' | 'approved' | 'suspended'
+  is_staff?: boolean
+  is_superuser?: boolean
 }
 
 // ==================== SUPER ADMIN MANAGEMENT TYPES ====================
@@ -207,6 +209,13 @@ export interface DashboardOverview {
   basketParticipation: BasketParticipation
   avgDiscountRate: AvgDiscountRate
   priceAlerts: PriceAlert[]
+  completedVolume?: {
+    totalAmount?: number
+    totalUnits?: number
+  } | null
+  totalBasketSavings?: {
+    amount?: number
+  } | null
 }
 
 export interface DashboardOverviewResponse {
@@ -234,6 +243,7 @@ export interface Product {
   name: string
   category: string
   unit: string
+  unitOfMeasure?: string
   inStock: boolean
   brands: Brand[]
   merkatoRetailerPrice?: number
@@ -307,6 +317,7 @@ export interface OrderCustomer {
   name?: string
   organization?: string
   phone?: string
+  phoneNumber?: string
   tinNumber?: string
   address?: string
 }

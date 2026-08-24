@@ -89,7 +89,6 @@ export const fetchAdminBaskets = createAsyncThunk(
       duration_type,
       search,
       page = 1,
-      silent = false,
     }: {
       status?: string
       duration_type?: string

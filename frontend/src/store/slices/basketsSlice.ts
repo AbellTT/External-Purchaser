@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { api } from '@/lib/api'
 import type { RootState } from '@/store'
 
@@ -86,7 +86,6 @@ export const fetchUserBaskets = createAsyncThunk(
       pageSize = 6,
       search,
       duration_type,
-      silent = false,
     }: {
       tab?: 'active' | 'open' | 'completed'
       page?: number
@@ -119,7 +118,6 @@ export const fetchPlatformBasketHistory = createAsyncThunk(
       pageSize = 6,
       search,
       duration_type,
-      silent = false,
     }: {
       page?: number
       pageSize?: number
