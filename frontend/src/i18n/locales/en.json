@@ -242,58 +242,56 @@
     "contextNote": "Simulated on A4 paper (80gsm) at a retail reference price of ETB 1,000/ream. Actual savings are 5–12% depending on basket participation."
   },
   "problem": {
-    "problem": {
-      "label": "The Problem",
-      "title": "Why Traditional Procurement Costs More",
-      "intro": "Every intermediary between your organization and the supplier adds a margin. Most institutions unknowingly absorb 3–5 markup layers before receiving their stationery.",
-      "tabOld": "The Old Way",
-      "tabNew": "Our Platform",
-      "oldWay": {
-        "nodes": [
-          {
-            "label": "Your Institution",
-            "sub": "Needs A4 Paper (80gsm)"
-          },
-          {
-            "label": "Local Retailer / Stationery Shop",
-            "sub": "+15% retail markup"
-          },
-          {
-            "label": "Commission Agent / Broker",
-            "sub": "+10% middleman margin"
-          },
-          {
-            "label": "Merkato Wholesale Distributor",
-            "sub": "+8% distributor margin"
-          },
-          {
-            "label": "Importer / Paper Mill",
-            "sub": "Original Wholesale Cost"
-          }
-        ],
-        "delta": "Up to 35% cumulative markups"
-      },
-      "newWay": {
-        "nodes": [
-          {
-            "label": "Your Institution",
-            "sub": "+ participating organizations this cycle"
-          },
-          {
-            "label": "Group Purchasing Aggregation",
-            "sub": "Pools collective institutional volume",
-            "highlight": true
-          },
-          {
-            "label": "Vetted Wholesale Suppliers",
-            "sub": "Direct volume wholesale access"
-          }
-        ],
-        "delta": "Save up to 12% below retail reference"
-      },
-      "payActual": "What you actually pay",
-      "payEndUp": "What you end up paying"
-    }
+    "label": "The Problem",
+    "title": "Why Traditional Procurement Costs More",
+    "intro": "Every intermediary between your organization and the supplier adds a margin. Most institutions unknowingly absorb 3–5 markup layers before receiving their stationery.",
+    "tabOld": "The Old Way",
+    "tabNew": "Our Platform",
+    "oldWay": {
+      "nodes": [
+        {
+          "label": "Your Institution",
+          "sub": "Needs A4 Paper (80gsm)"
+        },
+        {
+          "label": "Local Retailer / Stationery Shop",
+          "sub": "+15% retail markup"
+        },
+        {
+          "label": "Commission Agent / Broker",
+          "sub": "+10% middleman margin"
+        },
+        {
+          "label": "Merkato Wholesale Distributor",
+          "sub": "+8% distributor margin"
+        },
+        {
+          "label": "Importer / Paper Mill",
+          "sub": "Original Wholesale Cost"
+        }
+      ],
+      "delta": "Up to 35% cumulative markups"
+    },
+    "newWay": {
+      "nodes": [
+        {
+          "label": "Your Institution",
+          "sub": "+ participating organizations this cycle"
+        },
+        {
+          "label": "Group Purchasing Aggregation",
+          "sub": "Pools collective institutional volume",
+          "highlight": true
+        },
+        {
+          "label": "Vetted Wholesale Suppliers",
+          "sub": "Direct volume wholesale access"
+        }
+      ],
+      "delta": "Save up to 12% below retail reference"
+    },
+    "payActual": "What you actually pay",
+    "payEndUp": "What you end up paying"
   },
   "savings": {
     "whyItMatters": "Why It Matters",
