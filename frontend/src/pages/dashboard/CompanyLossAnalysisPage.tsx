@@ -15,6 +15,21 @@ import {
 } from '@/store/slices/marketIntelligenceSlice'
 import { useOrgWebSocket } from '@/lib/useOrgWebSocket'
 
+// Format ETB amounts with an adaptive unit so small values never collapse to "0M"/"0K".
+// e.g. 12,500,000 -> "12.5M" | 850,000 -> "850K" | 940 -> "940"
+function formatEtbCompact(value: number): string {
+  const abs = Math.abs(value)
+  if (abs >= 1_000_000) {
+    const m = value / 1_000_000
+    return `${m % 1 === 0 ? m.toFixed(0) : m.toFixed(1)}M`
+  }
+  if (abs >= 1_000) {
+    const k = value / 1_000
+    return `${k % 1 === 0 ? k.toFixed(0) : k.toFixed(1)}K`
+  }
+  return value.toLocaleString()
+}
+
 export function CompanyLossAnalysisPage() {
   useOrgWebSocket()
   const dispatch = useAppDispatch()
@@ -39,7 +54,7 @@ export function CompanyLossAnalysisPage() {
 
   const chartData = lossBreakdown.map((item) => ({
     product: item.product,
-    totalLoss: Math.round(item.lossAmount / 1000000), // Convert to millions for chart readability
+    totalLoss: item.lossAmount, // raw ETB — axis/tooltip format adaptively via formatEtbCompact
   }))
 
   if (loading && !capitalLossAnalysis) {
@@ -88,7 +103,7 @@ export function CompanyLossAnalysisPage() {
                 <DollarSign className="w-6 h-6" />
               </div>
               <p className="text-xs text-muted-foreground font-mono mb-1 uppercase tracking-wide">Total Capital Wasted</p>
-              <p className="text-2xl sm:text-3xl font-bold text-error font-mono">ETB {(totalLoss / 1000000).toFixed(0)}M</p>
+              <p className="text-2xl sm:text-3xl font-bold text-error font-mono">ETB {formatEtbCompact(totalLoss)}</p>
               <p className="text-xs text-muted-foreground mt-1">annually across {organizationsCount} organizations</p>
             </CardContent>
           </Card>
@@ -110,7 +125,7 @@ export function CompanyLossAnalysisPage() {
                 <TrendingDown className="w-6 h-6" />
               </div>
               <p className="text-xs text-muted-foreground font-mono mb-1 uppercase tracking-wide">Avg. Loss Per Organization</p>
-              <p className="text-2xl sm:text-3xl font-bold text-foreground font-mono">ETB {(avgLossPerCompany / 1000).toFixed(0)}K</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground font-mono">ETB {formatEtbCompact(avgLossPerCompany)}</p>
               <p className="text-xs text-muted-foreground mt-1">annually per organization</p>
             </CardContent>
           </Card>
@@ -136,7 +151,7 @@ export function CompanyLossAnalysisPage() {
                     <DollarSign className="w-5 h-5" />
                   </div>
                   <p className="text-xs text-muted-foreground font-mono mb-1">Total Capital Wasted</p>
-                  <p className="text-xl sm:text-2xl font-bold text-error font-mono">ETB {(totalLoss / 1000000).toFixed(0)}M</p>
+                  <p className="text-xl sm:text-2xl font-bold text-error font-mono">ETB {formatEtbCompact(totalLoss)}</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">annually across {organizationsCount} organizations</p>
                 </CardContent>
               </Card>
@@ -158,7 +173,7 @@ export function CompanyLossAnalysisPage() {
                     <TrendingDown className="w-5 h-5" />
                   </div>
                   <p className="text-xs text-muted-foreground font-mono mb-1">Avg. Loss Per Company</p>
-                  <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">ETB {(avgLossPerCompany / 1000).toFixed(0)}K</p>
+                  <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">ETB {formatEtbCompact(avgLossPerCompany)}</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">annually per organization</p>
                 </CardContent>
               </Card>
@@ -180,8 +195,10 @@ export function CompanyLossAnalysisPage() {
                         height={60}
                       />
                       <YAxis
+                        tickFormatter={(val) => formatEtbCompact(Number(val))}
+                        width={70}
                         tick={{ fontSize: 10, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }}
-                        label={{ value: 'ETB (Millions)', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: 'var(--muted-foreground)' } }}
+                        label={{ value: 'ETB (adaptive scale)', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: 'var(--muted-foreground)' } }}
                       />
                       <Tooltip
                         contentStyle={{
@@ -191,7 +208,7 @@ export function CompanyLossAnalysisPage() {
                           fontSize: '12px',
                           fontFamily: 'IBM Plex Mono',
                         }}
-                        formatter={(val) => [`ETB ${val}M`, 'Total Loss']}
+                        formatter={(val) => [`ETB ${formatEtbCompact(Number(val))}`, 'Total Loss']}
                       />
                       <Bar dataKey="totalLoss" fill="var(--error)" radius={[6, 6, 0, 0]} />
                     </BarChart>
