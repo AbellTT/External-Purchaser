@@ -138,6 +138,9 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD', default=''),
         'HOST': config('DB_HOST', default='localhost'),
         'PORT': config('DB_PORT', default='5432'),
+        # Reuse DB connections instead of opening one per request.
+        # Prevents exhausting managed-Postgres pooler limits (e.g. Supabase session pool_size).
+        'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=60, cast=int),
         **_DATABASE_SSL_OPTIONS,
     }
 }
