@@ -80,8 +80,9 @@ def set_refresh_cookie(response, refresh_token, remember_me=False):
         refresh_token,
         max_age=max_age,
         httponly=True,
-        samesite='Lax',
-        secure=False,  # True in production with HTTPS
+        # Cross-site (Vercel → Railway) cookies require SameSite=None + Secure.
+        samesite='None' if settings.COOKIE_SECURE else 'Lax',
+        secure=settings.COOKIE_SECURE,
         path='/',
     )
 
@@ -96,8 +97,8 @@ def set_admin_refresh_cookie(response, refresh_token, remember_me=False):
         refresh_token,
         max_age=max_age,
         httponly=True,
-        samesite='Lax',
-        secure=False,
+        samesite='None' if settings.COOKIE_SECURE else 'Lax',
+        secure=settings.COOKIE_SECURE,
         path='/',
     )
 
