@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import {
   ShoppingBag,
   Users,
@@ -102,6 +103,11 @@ export function BasketSystemPage() {
 
   return (
     <DashboardLayout>
+      <PageMeta
+        title="Procurement Baskets"
+        description="Join collective procurement baskets and unlock bigger discounts as more organizations participate."
+        path="/dashboard/baskets"
+      />
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-6xl mx-auto space-y-6">
         {/* Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -213,9 +219,9 @@ export function BasketSystemPage() {
                       <CardContent className="space-y-4 pt-0">
                         {/* Progress Bar */}
                         <div className="space-y-2 bg-surface-muted/40 p-3.5 rounded-lg border border-border">
-                          <div className="flex justify-between items-center text-sm sm:text-base font-mono">
-                            <span className="text-muted-foreground flex items-center gap-1.5">
-                              <Users className="w-4 h-4 text-primary" />
+                          <div className="flex flex-wrap justify-between items-center gap-x-3 gap-y-1 text-sm sm:text-base font-mono">
+                            <span className="text-muted-foreground flex items-center gap-1.5 min-w-0 flex-wrap">
+                              <Users className="w-4 h-4 text-primary shrink-0" />
                               Pooled Volume: <strong className="text-foreground font-bold">{b.currentQuantity}</strong> / {b.targetQuantity} {b.unitOfMeasure || 'units'}
                             </span>
                             <span className="font-bold text-primary">{b.progressPercentage}%</span>
@@ -238,8 +244,8 @@ export function BasketSystemPage() {
                             </span>
                             <div className="flex flex-wrap gap-2">
                               {b.participatingOrganizations.slice(0, 4).map((orgName, idx) => (
-                                <Badge key={idx} variant="outline" className="bg-background border-border text-foreground text-xs sm:text-sm font-semibold py-1 px-3">
-                                  {orgName}
+                                <Badge key={idx} variant="outline" className="bg-background border-border text-foreground text-xs sm:text-sm font-semibold py-1 px-3 max-w-full">
+                                  <span className="truncate">{orgName}</span>
                                 </Badge>
                               ))}
                               {b.participatingOrganizations.length > 4 && (
@@ -365,8 +371,8 @@ export function BasketSystemPage() {
 
                       <CardContent className="space-y-4 pt-0">
                         {/* Committed quantity banner */}
-                        <div className="bg-primary/10 border border-primary/20 p-3.5 rounded-lg flex items-center justify-between font-mono text-sm sm:text-base text-primary font-bold">
-                          <span>Your Commitment: {myQty} {b.unitOfMeasure || 'units'}</span>
+                        <div className="bg-primary/10 border border-primary/20 p-3.5 rounded-lg flex flex-wrap items-center justify-between gap-x-3 gap-y-2 font-mono text-sm sm:text-base text-primary font-bold">
+                          <span className="break-words min-w-0">Your Commitment: {myQty} {b.unitOfMeasure || 'units'}</span>
                           <div className="flex items-center gap-1.5">
                             {!isEditing ? (
                               <>
@@ -423,9 +429,9 @@ export function BasketSystemPage() {
 
                         {/* Progress Bar */}
                         <div className="space-y-2 bg-surface-muted/40 p-3.5 rounded-lg border border-border">
-                          <div className="flex justify-between items-center text-sm sm:text-base font-mono">
-                            <span className="text-muted-foreground flex items-center gap-1.5">
-                              <Users className="w-4 h-4 text-primary" />
+                          <div className="flex flex-wrap justify-between items-center gap-x-3 gap-y-1 text-sm sm:text-base font-mono">
+                            <span className="text-muted-foreground flex items-center gap-1.5 min-w-0 flex-wrap">
+                              <Users className="w-4 h-4 text-primary shrink-0" />
                               Pooled Volume: <strong className="text-foreground font-bold">{b.currentQuantity}</strong> / {b.targetQuantity} {b.unitOfMeasure || 'units'}
                             </span>
                             <span className="font-bold text-primary">{b.progressPercentage}%</span>
@@ -448,8 +454,8 @@ export function BasketSystemPage() {
                             </span>
                             <div className="flex flex-wrap gap-2">
                               {b.participatingOrganizations.slice(0, 4).map((orgName, idx) => (
-                                <Badge key={idx} variant="outline" className="bg-background border-border text-foreground text-xs sm:text-sm font-semibold py-1 px-3">
-                                  {orgName}
+                                <Badge key={idx} variant="outline" className="bg-background border-border text-foreground text-xs sm:text-sm font-semibold py-1 px-3 max-w-full">
+                                  <span className="truncate">{orgName}</span>
                                 </Badge>
                               ))}
                               {b.participatingOrganizations.length > 4 && (

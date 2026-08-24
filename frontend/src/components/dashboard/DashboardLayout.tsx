@@ -173,6 +173,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     dispatch(fetchNotifications({ category: 'all', page: 1 }))
   }, [])
 
+  // Lock background scroll while the mobile drawer is open (UI only)
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [mobileOpen])
+
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Desktop Sidebar */}

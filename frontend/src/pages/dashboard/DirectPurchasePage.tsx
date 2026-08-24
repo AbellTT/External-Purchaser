@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -320,11 +321,16 @@ export function DirectPurchasePage() {
 
   return (
     <DashboardLayout>
+      <PageMeta
+        title="Direct Purchase"
+        description="Order stationery products immediately at competitive prices for urgent procurement needs."
+        path="/dashboard/direct-purchase"
+      />
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground flex items-center gap-3">
-            <ShoppingCart className="w-8 h-8 text-primary" />
+          <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground flex items-center gap-3">
+            <ShoppingCart className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
             Direct Purchase
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground mt-1 font-medium">
@@ -907,11 +913,11 @@ export function DirectPurchasePage() {
                         return (
                           <div
                             key={index}
-                            className="flex items-center gap-3 p-3 bg-surface-muted/60 rounded-lg border border-border"
+                            className="flex flex-wrap items-center gap-x-3 gap-y-2 p-3 bg-surface-muted/60 rounded-lg border border-border"
                           >
-                            <div className="flex-1 min-w-0">
-                              <p className="text-base sm:text-lg font-bold text-foreground">{item.productName}</p>
-                              <p className="text-xs sm:text-sm text-muted-foreground">Brand: <strong className="text-foreground">{item.brand}</strong></p>
+                            <div className="flex-1 min-w-[140px]">
+                              <p className="text-base sm:text-lg font-bold text-foreground truncate">{item.productName}</p>
+                              <p className="text-xs sm:text-sm text-muted-foreground truncate">Brand: <strong className="text-foreground">{item.brand}</strong></p>
                             </div>
                             <div className="flex items-center gap-2">
                               <Button
@@ -922,7 +928,7 @@ export function DirectPurchasePage() {
                               >
                                 <Minus className="w-3 h-3" />
                               </Button>
-                              <span className="text-sm font-mono font-semibold w-12 text-center">
+                              <span className="text-sm font-mono font-semibold min-w-12 text-center whitespace-nowrap">
                                 {item.quantity} {item.unit}
                               </span>
                               <Button
@@ -934,11 +940,11 @@ export function DirectPurchasePage() {
                                 <Plus className="w-3 h-3" />
                               </Button>
                             </div>
-                            <div className="text-right">
-                              <p className="text-sm font-bold text-primary font-mono">
+                            <div className="text-right ml-auto sm:ml-0">
+                              <p className="text-sm font-bold text-primary font-mono whitespace-nowrap">
                                 ETB {itemTotal.toLocaleString()}
                               </p>
-                              <p className="text-xs text-muted-foreground">@ETB {item.unitPrice.toLocaleString()}</p>
+                              <p className="text-xs text-muted-foreground whitespace-nowrap">@ETB {item.unitPrice.toLocaleString()}</p>
                             </div>
                             <Button
                               variant="ghost"
@@ -1030,17 +1036,17 @@ export function DirectPurchasePage() {
                       return (
                         <div
                           key={index}
-                          className="flex justify-between items-center p-3 bg-surface-muted/60 rounded-lg text-sm border border-border"
+                          className="flex justify-between items-center gap-3 p-3 bg-surface-muted/60 rounded-lg text-sm border border-border"
                         >
-                          <div>
-                            <p className="font-semibold text-foreground">
+                          <div className="min-w-0">
+                            <p className="font-semibold text-foreground truncate">
                               {item.productName} ({item.brand})
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {item.quantity} {item.unit}(s) × ETB {item.unitPrice.toLocaleString()}
                             </p>
                           </div>
-                          <p className="font-bold text-primary font-mono">
+                          <p className="font-bold text-primary font-mono shrink-0 whitespace-nowrap">
                             ETB {itemTotal.toLocaleString()}
                           </p>
                         </div>
@@ -1086,7 +1092,7 @@ export function DirectPurchasePage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 pt-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2">
                     <Button
                       variant="outline"
                       onClick={() => setStep('cart')}

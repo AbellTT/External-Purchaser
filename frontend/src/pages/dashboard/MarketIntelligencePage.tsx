@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import { Link } from 'react-router-dom'
 import { TrendingUp, AlertTriangle, Calendar, Clock, Info, ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -103,6 +104,11 @@ export function MarketIntelligencePage() {
 
   return (
     <DashboardLayout>
+      <PageMeta
+        title="Market Intelligence"
+        description="Track stationery price history, trends, and seasonal patterns to find the best time to buy."
+        path="/dashboard/market-intelligence"
+      />
       <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-6xl mx-auto">
         {/* Header Bar */}
         <div>
@@ -137,7 +143,7 @@ export function MarketIntelligencePage() {
           <select
             value={selectedProductId}
             onChange={(e) => setSelectedProductId(e.target.value)}
-            className="px-4 py-2.5 bg-background border border-border rounded-lg text-sm sm:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary min-w-[280px]"
+            className="w-full sm:w-auto sm:min-w-[280px] px-4 py-2.5 bg-background border border-border rounded-lg text-sm sm:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           >
             {displayProducts.map((p) => (
               <option key={p.id} value={p.id}>
@@ -181,7 +187,7 @@ export function MarketIntelligencePage() {
                   <p className="text-xs sm:text-sm font-mono font-bold text-primary uppercase tracking-wide">
                     {labelText} — {selectedProduct.name} {selectedProduct.brandName ? `(${selectedProduct.brandName})` : ''}
                   </p>
-                  <p className="text-3xl sm:text-4xl font-black text-primary font-mono mt-1">
+                  <p className="text-2xl sm:text-4xl font-black text-primary font-mono mt-1">
                     ETB {displayPrice ? Number(displayPrice).toLocaleString() : 'N/A'}
                   </p>
                   {!isCurrentWeek && (
@@ -299,7 +305,7 @@ export function MarketIntelligencePage() {
                           fontWeight: 600,
                           fontFamily: 'IBM Plex Mono',
                         }}
-                        formatter={(val: any, name: string) => [
+                        formatter={(val: any, name: any) => [
                           `ETB ${val}`,
                           name === 'minPrice' ? 'Min Price' : name === 'maxPrice' ? 'Max Price' : 'Avg Price',
                         ]}

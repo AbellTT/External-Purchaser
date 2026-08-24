@@ -1,17 +1,16 @@
 import { useEffect } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import { Link } from 'react-router-dom'
 import {
   TrendingUp,
   ShoppingBag,
   ShoppingCart,
-  Building2,
   DollarSign,
   PlusCircle,
   Clock,
   ArrowRight,
   ShieldCheck,
   CheckCircle2,
-  Tag,
   RefreshCw,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -25,7 +24,6 @@ import {
   selectAdminOrganizations,
   selectAdminOrders,
   selectAdminLoading,
-  approveOrganization,
 } from '@/store/slices/adminSlice'
 
 export function AdminDashboardHome() {
@@ -52,6 +50,11 @@ export function AdminDashboardHome() {
 
   return (
     <AdminLayout>
+      <PageMeta
+        title="Admin Dashboard"
+        description="Platform-wide overview of baskets, orders, organizations, and market data."
+        path="/admin"
+      />
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
         {/* Page Header Bar — Matching AdminOrganizationsPage */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

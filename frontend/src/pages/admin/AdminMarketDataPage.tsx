@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import {
   TrendingUp,
   Save,
@@ -23,7 +24,6 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
   fetchProducts,
   selectAllProducts,
-  selectProductsLoading,
 } from '@/store/slices/productsSlice'
 import { adminApi } from '@/lib/adminApi'
 
@@ -44,7 +44,6 @@ const MONTH_NAMES = [
 export function AdminMarketDataPage() {
   const dispatch = useAppDispatch()
   const products = useAppSelector(selectAllProducts)
-  const productsLoading = useAppSelector(selectProductsLoading)
 
   // Top Global Selection Controls (Product & Brand ONLY)
   const [selectedProductId, setSelectedProductId] = useState<string>('')
@@ -61,14 +60,14 @@ export function AdminMarketDataPage() {
   // -------------------------------------------------------------
   const [biMonthlyYear, setBiMonthlyYear] = useState<number>(currentYear)
   const [biMonthlyForm, setBiMonthlyForm] = useState<Record<string, any>>({})
-  const [loadingBiMonthly, setLoadingBiMonthly] = useState<boolean>(false)
+  const [, setLoadingBiMonthly] = useState<boolean>(false)
   const [savingBiMonthly, setSavingBiMonthly] = useState<boolean>(false)
 
   // -------------------------------------------------------------
   // ISOLATED SECTION 2 STATE: Current Month Weekly Spot Prices Entry
   // -------------------------------------------------------------
   const [weeklyForm, setWeeklyForm] = useState<Record<number, string>>({})
-  const [loadingWeekly, setLoadingWeekly] = useState<boolean>(false)
+  const [, setLoadingWeekly] = useState<boolean>(false)
   const [savingWeekly, setSavingWeekly] = useState<boolean>(false)
 
   // -------------------------------------------------------------
@@ -411,6 +410,11 @@ export function AdminMarketDataPage() {
 
   return (
     <AdminLayout activePage="market-data">
+      <PageMeta
+        title="Market Data"
+        description="Maintain market price history and analytics used across the platform."
+        path="/admin/market-data"
+      />
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
         {/* Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

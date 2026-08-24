@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import { Link } from 'react-router-dom'
 import {
   Bell,
@@ -139,6 +140,11 @@ export function NotificationsPage() {
 
   return (
     <DashboardLayout>
+      <PageMeta
+        title="Notifications"
+        description="Stay updated on order status, basket closings, price alerts, and deliveries."
+        path="/dashboard/notifications"
+      />
       {loading && notifications.length === 0 ? (
         <NotificationsSkeletonContent />
       ) : (

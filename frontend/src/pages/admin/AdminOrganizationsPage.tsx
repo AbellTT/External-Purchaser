@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import {
   Building2,
   Search,
@@ -8,9 +9,6 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  ShieldAlert,
-  Phone,
-  FileText,
   MapPin,
   AlertTriangle,
 } from 'lucide-react'
@@ -148,6 +146,11 @@ export function AdminOrganizationsPage() {
 
   return (
     <AdminLayout activePage="organizations">
+      <PageMeta
+        title="Organizations"
+        description="Manage registered organizations, their details, and verification status."
+        path="/admin/organizations"
+      />
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
         {/* Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

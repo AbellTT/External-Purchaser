@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import { toast } from 'sonner'
 import {
   Tag,
   Edit3,
   Save,
-  CheckCircle2,
   Plus,
   Search,
   ChevronLeft,
@@ -296,6 +296,11 @@ export function AdminProductsPricingPage() {
 
   return (
     <AdminLayout>
+      <PageMeta
+        title="Products & Pricing"
+        description="Manage the product catalog, brands, and platform pricing."
+        path="/admin/products"
+      />
       {!authInitialized || authLoading ? (
         <div className="max-w-7xl mx-auto space-y-5 sm:space-y-6">
           <ProductsPricingSkeleton />

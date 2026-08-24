@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import { User, Building2, Phone, FileText, MapPin, Save, PenLine, Sparkles, Lock, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -58,7 +59,7 @@ function AddressAutocomplete({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
 
-  const apiKey = (import.meta.env.VITE_GEOAPIFY_API_KEY as string) || 'b8f69c43e4e742839a3003ae982db017'
+  const apiKey = import.meta.env.VITE_GEOAPIFY_API_KEY as string
 
   // Keep query in sync if initialValue changes from outside
   useEffect(() => {
@@ -67,7 +68,7 @@ function AddressAutocomplete({
 
   const search = useCallback(
     async (text: string) => {
-      if (text.length < 3) {
+      if (text.length < 3 || !apiKey) {
         setResults([])
         setIsOpen(false)
         return
@@ -347,11 +348,16 @@ export function ProfilePage() {
 
   return (
     <DashboardLayout>
+      <PageMeta
+        title="Profile"
+        description="Manage your organization details, contact information, and account settings."
+        path="/dashboard/profile"
+      />
       <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-4xl mx-auto">
         {/* Page Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground flex items-center gap-2">
               <User className="w-6 h-6 text-primary" />
               Organization Profile
             </h1>
@@ -377,7 +383,7 @@ export function ProfilePage() {
                     <Building2 className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-base font-bold text-foreground">Verification Status</h3>
                       {currentUser?.verificationStatus === 'approved' && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-success/15 text-success border border-success/30">

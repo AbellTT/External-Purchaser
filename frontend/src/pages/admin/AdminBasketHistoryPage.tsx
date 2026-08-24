@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import { Link } from 'react-router-dom'
 import {
   History,
@@ -48,6 +49,11 @@ export function AdminBasketHistoryPage() {
 
   return (
     <AdminLayout>
+      <PageMeta
+        title="Basket History"
+        description="Review completed and cancelled procurement baskets."
+        path="/admin/baskets/history"
+      />
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { History, RotateCcw, Truck, CheckCircle2, Package, X, ChevronRight, Calendar, AlertCircle, ChevronLeft, XCircle, Loader2, RefreshCw } from 'lucide-react'
+import { PageMeta } from '@/components/PageMeta'
+import { History, RotateCcw, Truck, CheckCircle2, Package, X, ChevronRight, Calendar, ChevronLeft, XCircle, Loader2, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -137,6 +138,11 @@ export function OrderHistoryPage() {
 
   return (
     <DashboardLayout>
+      <PageMeta
+        title="Order History"
+        description="Track your past orders, delivery status, and total savings versus market prices."
+        path="/dashboard/orders"
+      />
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-5xl mx-auto space-y-6">
         {/* Header */}
         <div>
@@ -152,7 +158,7 @@ export function OrderHistoryPage() {
           <Card className="border-border shadow-sm">
             <CardContent className="p-4 sm:p-5">
               <p className="text-xs sm:text-sm font-mono font-medium text-muted-foreground">Total Spend (Delivered)</p>
-              <p className="text-2xl sm:text-xl font-bold text-foreground font-mono mt-1.5">
+              <p className="text-lg sm:text-xl font-bold text-foreground font-mono mt-1.5">
                 ETB {(summaryStats?.totalSpend || 0).toLocaleString()}
               </p>
             </CardContent>
@@ -228,31 +234,31 @@ export function OrderHistoryPage() {
                   onClick={() => setSelectedOrderId(o.id)}
                 >
                   <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${STATUS_STYLES[stKey] || STATUS_STYLES.pending}`}>
-                        <StatusIcon className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <p className="text-base sm:text-lg font-bold text-foreground font-mono">{o.orderNumber}</p>
-                          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${STATUS_STYLES[stKey] || STATUS_STYLES.pending}`}>
-                            {STATUS_LABELS[stKey] || o.status}
-                          </span>
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${STATUS_STYLES[stKey] || STATUS_STYLES.pending}`}>
+                          <StatusIcon className="w-5 h-5" />
                         </div>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          {itemCount === 1 && firstItem
-                            ? `${firstItem.brandName} ${firstItem.productName}`
-                            : `${itemCount} products`} · {o.date}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <div className="text-right">
-                          <p className="text-xs font-mono text-muted-foreground">Total</p>
-                          <p className="text-lg sm:text-xl font-bold text-foreground font-mono">ETB {o.pricing.total.toLocaleString()}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <p className="text-sm sm:text-lg font-bold text-foreground font-mono truncate">{o.orderNumber}</p>
+                            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${STATUS_STYLES[stKey] || STATUS_STYLES.pending}`}>
+                              {STATUS_LABELS[stKey] || o.status}
+                            </span>
+                          </div>
+                          <p className="text-xs sm:text-sm text-muted-foreground">
+                            {itemCount === 1 && firstItem
+                              ? `${firstItem.brandName} ${firstItem.productName}`
+                              : `${itemCount} products`} · {o.date}
+                          </p>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="text-right">
+                            <p className="text-xs font-mono text-muted-foreground">Total</p>
+                            <p className="text-base sm:text-xl font-bold text-foreground font-mono whitespace-nowrap">ETB {o.pricing.total.toLocaleString()}</p>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        </div>
                       </div>
-                    </div>
                   </CardContent>
                 </Card>
               )
@@ -329,16 +335,16 @@ export function OrderHistoryPage() {
                   <p className="text-sm font-semibold text-foreground">Order Items</p>
                   {selectedOrder.items.map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between p-3 bg-surface-muted rounded-lg border border-border">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-lg bg-primary-subtle text-primary flex items-center justify-center shrink-0">
                           <Package className="w-5 h-5" />
                         </div>
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">{item.brandName} {item.productName}</p>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{item.brandName} {item.productName}</p>
                           <p className="text-xs text-muted-foreground">{item.quantity} {item.unit}(s) × ETB {item.price}</p>
                         </div>
                       </div>
-                      <p className="text-sm font-bold text-foreground font-mono">ETB {item.subtotal.toLocaleString()}</p>
+                      <p className="text-sm font-bold text-foreground font-mono shrink-0 whitespace-nowrap">ETB {item.subtotal.toLocaleString()}</p>
                     </div>
                   ))}
                 </div>

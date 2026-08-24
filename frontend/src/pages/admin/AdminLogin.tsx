@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import { useNavigate } from 'react-router-dom'
 import { ShieldAlert, KeyRound, Mail, ArrowRight, Lock } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -45,6 +46,11 @@ export function AdminLogin() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
+      <PageMeta
+        title="Admin Sign In"
+        description="Administrator access to the MBE Extra Purchaser management console."
+        path="/admin/login"
+      />
       <div className="w-full max-w-md space-y-6">
         {/* Logo Header */}
         <div className="text-center space-y-2">

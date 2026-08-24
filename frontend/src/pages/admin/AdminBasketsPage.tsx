@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import {
   ShoppingBag,
   Plus,
@@ -10,14 +11,13 @@ import {
   Lock,
   XCircle,
   Users,
-  Calendar,
   Layers,
   Truck,
   AlertTriangle,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { adminApi } from '@/lib/adminApi'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AdminLayout } from '@/components/admin/AdminLayout'
@@ -85,7 +85,7 @@ export function AdminBasketsPage() {
   const [targetQuantity, setTargetQuantity] = useState('100')
   const [selectedProductId, setSelectedProductId] = useState('')
   const [selectedBrandId, setSelectedBrandId] = useState('')
-  const [publishImmediately, setPublishImmediately] = useState(true)
+  const [publishImmediately] = useState(true)
 
   // Fulfill/Close Modal State
   const [fulfillBasketId, setFulfillBasketId] = useState<number | null>(null)
@@ -161,7 +161,7 @@ export function AdminBasketsPage() {
   )
   const availableBrands = currentProduct?.brands || []
   const currentBrand = availableBrands.find(
-    (b) => String(b.id) === String(selectedBrandId)
+    (b: { id: string | number }) => String(b.id) === String(selectedBrandId)
   )
 
   const autoMerkatoPrice = currentBrand?.merkatoRetailerPrice ?? currentProduct?.merkatoRetailerPrice ?? 0
@@ -311,6 +311,11 @@ export function AdminBasketsPage() {
 
   return (
     <AdminLayout activePage="baskets">
+      <PageMeta
+        title="Manage Baskets"
+        description="Create, monitor, and close collective procurement baskets."
+        path="/admin/baskets"
+      />
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
         {/* Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

@@ -12,10 +12,16 @@ import { OrganizationsSection }     from '@/components/landing/OrganizationsSect
 import { FAQSection }                from '@/components/landing/FAQSection'
 import { FinalCTA }                  from '@/components/landing/FinalCTA'
 import { Footer }                    from '@/components/landing/Footer'
+import { PageMeta }                  from '@/components/PageMeta'
 
 export function Landing() {
   return (
     <div className="bg-background text-foreground font-sans">
+      <PageMeta
+        title="Collective Stationery Procurement"
+        description="Pool your organization's purchasing power with others to unlock wholesale pricing on stationery products."
+        path="/"
+      />
       <Navbar />
       <HeroSection />
       <TrustSection />

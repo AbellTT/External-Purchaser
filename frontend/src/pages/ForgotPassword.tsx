@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Loader2, ArrowLeft, CheckCircle2, KeyRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PageMeta } from '@/components/PageMeta'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
@@ -28,6 +29,11 @@ export function ForgotPassword() {
 
   return (
     <div className="min-h-screen bg-neutral flex flex-col items-center justify-center px-4 py-12">
+      <PageMeta
+        title="Reset Password"
+        description="Reset your MBE Extra Purchaser account password."
+        path="/forgot-password"
+      />
       {/* Brand Header */}
       <motion.div
         initial={{ opacity: 0, y: -15 }}

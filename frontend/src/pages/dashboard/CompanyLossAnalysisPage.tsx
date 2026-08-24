@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import { Link } from 'react-router-dom'
 import { AlertTriangle, TrendingDown, DollarSign, Building2, Package, Calendar, AlertCircle, ArrowLeft } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -56,6 +57,11 @@ export function CompanyLossAnalysisPage() {
 
   return (
     <DashboardLayout>
+      <PageMeta
+        title="Company Loss Analysis"
+        description="Identify overspending and potential capital loss across your organization's purchases."
+        path="/dashboard/company-loss-analysis"
+      />
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-5xl mx-auto space-y-6">
         {/* Back Link & Header */}
         <div>
@@ -65,7 +71,7 @@ export function CompanyLossAnalysisPage() {
           >
             <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Back to Market Intelligence
           </Link>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground flex items-center gap-2">
             <AlertTriangle className="w-6 h-6 text-error" />
             Capital Loss Analysis
           </h1>
@@ -82,7 +88,7 @@ export function CompanyLossAnalysisPage() {
                 <DollarSign className="w-6 h-6" />
               </div>
               <p className="text-xs text-muted-foreground font-mono mb-1 uppercase tracking-wide">Total Capital Wasted</p>
-              <p className="text-3xl font-bold text-error font-mono">ETB {(totalLoss / 1000000).toFixed(0)}M</p>
+              <p className="text-2xl sm:text-3xl font-bold text-error font-mono">ETB {(totalLoss / 1000000).toFixed(0)}M</p>
               <p className="text-xs text-muted-foreground mt-1">annually across {organizationsCount} organizations</p>
             </CardContent>
           </Card>
@@ -93,7 +99,7 @@ export function CompanyLossAnalysisPage() {
                 <Building2 className="w-6 h-6" />
               </div>
               <p className="text-xs text-muted-foreground font-mono mb-1 uppercase tracking-wide">Organizations Analyzed</p>
-              <p className="text-3xl font-bold text-foreground font-mono">{organizationsCount}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground font-mono">{organizationsCount}</p>
               <p className="text-xs text-muted-foreground mt-1">nationwide sample</p>
             </CardContent>
           </Card>
@@ -104,7 +110,7 @@ export function CompanyLossAnalysisPage() {
                 <TrendingDown className="w-6 h-6" />
               </div>
               <p className="text-xs text-muted-foreground font-mono mb-1 uppercase tracking-wide">Avg. Loss Per Organization</p>
-              <p className="text-3xl font-bold text-foreground font-mono">ETB {(avgLossPerCompany / 1000).toFixed(0)}K</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground font-mono">ETB {(avgLossPerCompany / 1000).toFixed(0)}K</p>
               <p className="text-xs text-muted-foreground mt-1">annually per organization</p>
             </CardContent>
           </Card>
@@ -130,7 +136,7 @@ export function CompanyLossAnalysisPage() {
                     <DollarSign className="w-5 h-5" />
                   </div>
                   <p className="text-xs text-muted-foreground font-mono mb-1">Total Capital Wasted</p>
-                  <p className="text-2xl font-bold text-error font-mono">ETB {(totalLoss / 1000000).toFixed(0)}M</p>
+                  <p className="text-xl sm:text-2xl font-bold text-error font-mono">ETB {(totalLoss / 1000000).toFixed(0)}M</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">annually across {organizationsCount} organizations</p>
                 </CardContent>
               </Card>
@@ -141,7 +147,7 @@ export function CompanyLossAnalysisPage() {
                     <Building2 className="w-5 h-5" />
                   </div>
                   <p className="text-xs text-muted-foreground font-mono mb-1">Organizations Analyzed</p>
-                  <p className="text-2xl font-bold text-foreground font-mono">{organizationsCount}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{organizationsCount}</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">companies nationwide</p>
                 </CardContent>
               </Card>
@@ -152,7 +158,7 @@ export function CompanyLossAnalysisPage() {
                     <TrendingDown className="w-5 h-5" />
                   </div>
                   <p className="text-xs text-muted-foreground font-mono mb-1">Avg. Loss Per Company</p>
-                  <p className="text-2xl font-bold text-foreground font-mono">ETB {(avgLossPerCompany / 1000).toFixed(0)}K</p>
+                  <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">ETB {(avgLossPerCompany / 1000).toFixed(0)}K</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">annually per organization</p>
                 </CardContent>
               </Card>
@@ -161,33 +167,37 @@ export function CompanyLossAnalysisPage() {
             {/* Product Loss Bar Chart */}
             <div>
               <p className="text-sm font-semibold text-foreground mb-3">Capital Lost by Product Category</p>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis
-                    dataKey="product"
-                    tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
-                    angle={-15}
-                    textAnchor="end"
-                    height={60}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 10, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }}
-                    label={{ value: 'ETB (Millions)', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: 'var(--muted-foreground)' } }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: 'var(--card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      fontFamily: 'IBM Plex Mono',
-                    }}
-                    formatter={(val) => [`ETB ${val}M`, 'Total Loss']}
-                  />
-                  <Bar dataKey="totalLoss" fill="var(--error)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="overflow-x-auto">
+                <div className="min-w-[480px]">
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis
+                        dataKey="product"
+                        tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                        angle={-15}
+                        textAnchor="end"
+                        height={60}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 10, fill: 'var(--muted-foreground)', fontFamily: 'IBM Plex Mono' }}
+                        label={{ value: 'ETB (Millions)', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: 'var(--muted-foreground)' } }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          background: 'var(--card)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontFamily: 'IBM Plex Mono',
+                        }}
+                        formatter={(val) => [`ETB ${val}M`, 'Total Loss']}
+                      />
+                      <Bar dataKey="totalLoss" fill="var(--error)" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             </div>
 
             {/* Explanation */}

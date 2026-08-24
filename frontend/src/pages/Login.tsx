@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { PageMeta } from '@/components/PageMeta'
 import { selectAuthLoading, selectAuthError, clearError, login, selectIsAuthenticated } from '@/store/slices/authSlice'
 
 export function Login() {
@@ -51,10 +52,10 @@ export function Login() {
     if (!validate()) return
 
     try {
-      const authData = await dispatch(login({ 
-        email: form.email, 
-        password: form.password, 
-        rememberMe: form.rememberMe 
+      await dispatch(login({
+        email: form.email,
+        password: form.password,
+        rememberMe: form.rememberMe
       })).unwrap()
 
       const from = (location.state as any)?.from || '/dashboard'
@@ -74,6 +75,11 @@ export function Login() {
 
   return (
     <div className="min-h-screen bg-neutral flex flex-col items-center justify-center px-4 py-12">
+      <PageMeta
+        title="Sign In"
+        description="Sign in to your MBE Extra Purchaser account to manage procurement baskets, orders, and savings."
+        path="/login"
+      />
       {/* Brand Header */}
       <motion.div
         initial={{ opacity: 0, y: -15 }}

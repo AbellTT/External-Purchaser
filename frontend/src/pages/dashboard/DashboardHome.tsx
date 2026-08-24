@@ -113,6 +113,7 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
+import { PageMeta } from '@/components/PageMeta'
 export function DashboardHome() {
   const dispatch = useAppDispatch()
   const overview = useAppSelector(selectDashboardOverview)
@@ -185,6 +186,11 @@ export function DashboardHome() {
 
   return (
     <DashboardLayout>
+      <PageMeta
+        title="Dashboard"
+        description="Your procurement overview — total savings, active orders, and basket participation."
+        path="/dashboard"
+      />
       <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-7xl mx-auto">
         {/* Page Header — Boosted Typography */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
@@ -535,18 +541,18 @@ function OrderDetailsModal({ order, onClose }: { order: ActiveOrder; onClose: ()
                 key={idx}
                 className="flex items-center justify-between p-3.5 bg-surface-muted/60 rounded-xl border border-border"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <div className="w-9 h-9 rounded-lg bg-primary-subtle text-primary flex items-center justify-center shrink-0 font-bold text-xs">
                     {idx + 1}
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{item.productName}</p>
-                    <p className="text-xs text-muted-foreground">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">{item.productName}</p>
+                    <p className="text-xs text-muted-foreground truncate">
                       Brand: <strong className="text-foreground">{item.brandName}</strong> · {item.quantity} {item.unit}(s) × ETB {item.price.toLocaleString()}
                     </p>
                   </div>
                 </div>
-                <p className="text-sm font-bold text-foreground font-mono">
+                <p className="text-sm font-bold text-foreground font-mono shrink-0 whitespace-nowrap">
                   ETB {item.subtotal.toLocaleString()}
                 </p>
               </div>
@@ -588,15 +594,15 @@ function OrderDetailsModal({ order, onClose }: { order: ActiveOrder; onClose: ()
                 Institutional Savings Achieved
               </div>
               <div className="grid grid-cols-2 gap-3 pt-0.5">
-                <div className="bg-card border border-border p-3 rounded-lg shadow-2xs">
+                <div className="bg-card border border-border p-3 rounded-lg shadow-2xs min-w-0">
                   <p className="text-[11px] font-medium text-muted-foreground">vs Merkato Retailers</p>
-                  <p className="text-sm font-bold text-success font-mono mt-0.5">
+                  <p className="text-sm font-bold text-success font-mono mt-0.5 break-all">
                     ETB {order.savings.vsMerkatoRetailer.amount.toLocaleString()} ({order.savings.vsMerkatoRetailer.percentage}%)
                   </p>
                 </div>
-                <div className="bg-card border border-border p-3 rounded-lg shadow-2xs">
+                <div className="bg-card border border-border p-3 rounded-lg shadow-2xs min-w-0">
                   <p className="text-[11px] font-medium text-muted-foreground">vs Regular Market</p>
-                  <p className="text-sm font-bold text-success font-mono mt-0.5">
+                  <p className="text-sm font-bold text-success font-mono mt-0.5 break-all">
                     ETB {order.savings.vsRegularStationaryMarket.amount.toLocaleString()} ({order.savings.vsRegularStationaryMarket.percentage}%)
                   </p>
                 </div>

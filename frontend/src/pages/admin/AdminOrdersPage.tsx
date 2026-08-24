@@ -1,18 +1,13 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ShoppingCart,
   Search,
   ChevronLeft,
   ChevronRight,
-  Printer,
-  FileText,
   X,
   User,
-  Phone,
-  FileCheck,
   MapPin,
   Layers,
-  CheckCircle2,
   RefreshCw,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -35,6 +30,7 @@ import {
   updateAdminOrderStatus,
 } from '@/store/adminSlices/adminOrdersSlice'
 import type { Order } from '@/types/api'
+import { PageMeta } from '@/components/PageMeta'
 
 function AdminOrdersSkeleton() {
   return (
@@ -104,45 +100,13 @@ export function AdminOrdersPage() {
     return num.includes(q) || buyer.includes(q) || org.includes(q)
   })
 
-  const getStatusBadge = (statusStr: string) => {
-    const s = statusStr.toLowerCase()
-    if (s === 'pending') {
-      return (
-        <Badge variant="outline" className="bg-[#2d2417] text-[#e3b341] border-[#d29922] text-xs">
-          Pending
-        </Badge>
-      )
-    }
-    if (s === 'accepted') {
-      return (
-        <Badge variant="outline" className="bg-[#12261e] text-[#3fb950] border-[#238636] text-xs">
-          Accepted
-        </Badge>
-      )
-    }
-    if (s === 'out-for-delivery' || s === 'out_for_delivery') {
-      return (
-        <Badge variant="outline" className="bg-[#1c1d36] text-[#a371f7] border-[#8957e5] text-xs">
-          Out for Delivery
-        </Badge>
-      )
-    }
-    if (s === 'delivered') {
-      return (
-        <Badge variant="outline" className="bg-[#12261e] text-[#3fb950] border-[#238636] text-xs">
-          Delivered
-        </Badge>
-      )
-    }
-    return (
-      <Badge variant="outline" className="bg-[#2d171a] text-[#f85149] border-[#f85149] text-xs">
-        {statusStr}
-      </Badge>
-    )
-  }
-
   return (
     <AdminLayout>
+      <PageMeta
+        title="Order Processing"
+        description="Process, fulfill, and track customer orders across the platform."
+        path="/admin/orders"
+      />
       {!authInitialized || authLoading ? (
         <div className="max-w-7xl mx-auto space-y-5 sm:space-y-6">
           <AdminOrdersSkeleton />

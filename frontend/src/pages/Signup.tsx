@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -96,11 +97,11 @@ function AddressAutocomplete({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
 
-  const apiKey = (import.meta.env.VITE_GEOAPIFY_API_KEY as string) || 'b8f69c43e4e742839a3003ae982db017'
+  const apiKey = import.meta.env.VITE_GEOAPIFY_API_KEY as string
 
   const search = useCallback(
     async (text: string) => {
-      if (text.length < 3) {
+      if (text.length < 3 || !apiKey) {
         setResults([])
         setIsOpen(false)
         return
@@ -366,6 +367,11 @@ export function Signup() {
 
   return (
     <div className="min-h-screen bg-neutral flex flex-col items-center justify-center px-4 py-12">
+      <PageMeta
+        title="Create Account"
+        description="Register your organization on MBE Extra Purchaser and start saving through collective stationery procurement."
+        path="/signup"
+      />
       {/* Brand Header */}
       <motion.div
         initial={{ opacity: 0, y: -15 }}

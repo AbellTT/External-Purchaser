@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import {
   History,
   Search,
@@ -64,6 +65,11 @@ export function BasketHistoryPage() {
 
   return (
     <DashboardLayout>
+      <PageMeta
+        title="Basket History"
+        description="Review completed procurement baskets and compare savings against market prices."
+        path="/dashboard/basket-history"
+      />
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -203,8 +209,8 @@ export function BasketHistoryPage() {
                         </span>
                         <div className="flex flex-wrap gap-2">
                           {b.participatingOrganizations.slice(0, 4).map((orgName, idx) => (
-                            <Badge key={idx} variant="outline" className="bg-background border-border text-foreground text-xs sm:text-sm font-semibold py-1 px-3">
-                              {orgName}
+                            <Badge key={idx} variant="outline" className="bg-background border-border text-foreground text-xs sm:text-sm font-semibold py-1 px-3 max-w-full">
+                              <span className="truncate">{orgName}</span>
                             </Badge>
                           ))}
                           {b.participatingOrganizations.length > 4 && (
@@ -283,7 +289,7 @@ export function BasketHistoryPage() {
               <ChevronLeft className="w-4 h-4" /> Previous
             </Button>
 
-            <span className="text-xs sm:text-sm text-muted-foreground font-mono">
+            <span className="text-xs sm:text-sm text-muted-foreground font-mono text-center px-1">
               Page {pagination.currentPage} of {pagination.totalPages} ({pagination.totalBaskets} historical records)
             </span>
 

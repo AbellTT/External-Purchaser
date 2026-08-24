@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { PageMeta } from '@/components/PageMeta'
 import { CalendarDays, Sparkles, Info, ShieldCheck } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -53,6 +54,11 @@ export function ProcurementCalendarPage() {
 
   return (
     <DashboardLayout>
+      <PageMeta
+        title="Procurement Calendar"
+        description="Bi-monthly pricing data and seasonal recommendations to plan your procurement cycles."
+        path="/dashboard/calendar"
+      />
       <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-4xl mx-auto">
         {/* Header Bar */}
         <div>
@@ -73,7 +79,7 @@ export function ProcurementCalendarPage() {
           <select
             value={selectedProductId}
             onChange={(e) => setSelectedProductId(e.target.value)}
-            className="px-4 py-2.5 bg-background border border-border rounded-lg text-sm sm:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary min-w-[280px]"
+            className="w-full sm:w-auto sm:min-w-[280px] px-4 py-2.5 bg-background border border-border rounded-lg text-sm sm:text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           >
             {displayProducts.map((p) => (
               <option key={p.id} value={p.id}>
