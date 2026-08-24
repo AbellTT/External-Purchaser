@@ -1,6 +1,3 @@
-import json
-import urllib.request
-import threading
 from rest_framework import views, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -19,23 +16,7 @@ from .serializers import (
 )
 from apps.notifications.models import Notification
 from apps.notifications.utils import send_user_notification
-
-
-def _send_notification(event_data):
-    try:
-        req = urllib.request.Request(
-            'http://127.0.0.1:8003/',
-            data=json.dumps(event_data).encode('utf-8'),
-            headers={'Content-Type': 'application/json'}
-        )
-        urllib.request.urlopen(req, timeout=1)
-    except Exception:
-        pass
-
-
-def _notify_websocket(event_data):
-    """Fire-and-forget async notification thread."""
-    threading.Thread(target=_send_notification, args=(event_data,), daemon=True).start()
+from apps.notifications.ws import broadcast_ws_event as _notify_websocket
 
 
 def _sync_brand_direct_price(brand, price):

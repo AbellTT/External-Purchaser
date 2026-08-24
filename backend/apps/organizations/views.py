@@ -1,7 +1,4 @@
-import json
-import threading
 import re
-import urllib.request
 import requests as http_requests
 from django.conf import settings
 from rest_framework import views, status
@@ -16,23 +13,7 @@ from .models import Organization
 from .serializers import OrganizationSerializer
 from apps.notifications.models import Notification
 from apps.notifications.utils import send_user_notification
-
-
-def _send_notification(event_data):
-    try:
-        req = urllib.request.Request(
-            'http://127.0.0.1:8003/',
-            data=json.dumps(event_data).encode('utf-8'),
-            headers={'Content-Type': 'application/json'}
-        )
-        urllib.request.urlopen(req, timeout=1)
-    except Exception:
-        pass
-
-
-def _notify_websocket(event_data):
-    """Fire-and-forget async notification thread."""
-    threading.Thread(target=_send_notification, args=(event_data,), daemon=True).start()
+from apps.notifications.ws import broadcast_ws_event as _notify_websocket
 
 
 class AdminOrganizationListView(views.APIView):

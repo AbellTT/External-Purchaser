@@ -6,3 +6,8 @@ django-cors-headers==4.3.1
 Pillow==10.2.0
 djangorestframework-simplejwt==5.3.1
 django-filter==23.5
+channels>=4,<5
+daphne>=4,<5
+uvicorn[standard]>=0.27
+whitenoise>=6.6,<7
+requests>=2.31

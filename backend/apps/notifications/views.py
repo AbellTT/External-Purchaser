@@ -1,6 +1,3 @@
-import threading
-import json
-import urllib.request
 from django.utils import timezone
 from rest_framework import views, status
 from rest_framework.response import Response
@@ -9,26 +6,9 @@ from django.contrib.auth import get_user_model
 
 from .models import Notification
 from .serializers import NotificationSerializer
+from .ws import broadcast_ws_event as _notify_ws
 
 User = get_user_model()
-
-
-def _send_ws_event(event_data):
-    """Async thread worker to notify HTTP broadcast server (port 8003)."""
-    try:
-        data = json.dumps(event_data).encode('utf-8')
-        req = urllib.request.Request(
-            'http://127.0.0.1:8003/',
-            data=data,
-            headers={'Content-Type': 'application/json'}
-        )
-        urllib.request.urlopen(req, timeout=2)
-    except Exception as e:
-        pass
-
-
-def _notify_ws(event_data):
-    threading.Thread(target=_send_ws_event, args=(event_data,), daemon=True).start()
 
 
 def send_user_notification(user, title, message, notification_type=Notification.NotificationType.ANNOUNCEMENT, action_url='', basket=None, order=None):
