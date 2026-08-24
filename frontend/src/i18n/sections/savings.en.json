@@ -1,0 +1,31 @@
+{
+  "whyItMatters": "Why It Matters",
+  "title": "Small Price Drops, Transformative Savings",
+  "subtitleBefore": "Using core stationery like",
+  "subtitleHighlight": "A4 Paper (80gsm)",
+  "subtitleAfter": "(ETB 1,000 retail reference), see how dynamic group purchasing lowers unit price and yields massive institutional savings.",
+  "typicalCase": "Typical Case",
+  "retailCostLabel": "Retail Cost:",
+  "basketCostLabel": "Group Basket Cost:",
+  "totalSavingsLabel": "Total Net Savings:",
+  "tiers": [
+    {
+      "label": "Small School",
+      "example": "Bekele Molla Primary School, Addis",
+      "volume": "250 Reams of A4 Paper",
+      "desc": "At ETB 1,000/ream retail, pooling paper demand saves ETB 100 per ream for small school budgets."
+    },
+    {
+      "label": "Medium Organization",
+      "example": "Hawassa City Administration",
+      "volume": "1,500 Reams of A4 Paper",
+      "desc": "Consolidating quarterly paper purchasing recovers significant capital that can fund office equipment."
+    },
+    {
+      "label": "Large Institution",
+      "example": "Addis Ababa University",
+      "volume": "12,000 Reams of A4 Paper",
+      "desc": "Multi-thousand ream volume unlocks maximum basket discounts, generating seven-figure annual savings."
+    }
+  ]
+}

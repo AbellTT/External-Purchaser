@@ -7,9 +7,9 @@
 
 @theme {
   /* ── Fonts ──────────────────────────────────────────────── */
-  --font-sans:    "IBM Plex Sans",  ui-sans-serif, system-ui, sans-serif;
-  --font-mono:    "IBM Plex Mono",  ui-monospace, "Cascadia Code", Consolas, monospace;
-  --font-display: "Space Grotesk",  ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    "IBM Plex Sans",  "Noto Sans Ethiopic", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "IBM Plex Mono",  "Noto Sans Ethiopic", ui-monospace, "Cascadia Code", Consolas, monospace;
+  --font-display: "Space Grotesk",  "Noto Sans Ethiopic", ui-sans-serif, system-ui, sans-serif;
 
   /* ── Radius (DESIGN.md rounded.*) ───────────────────────── */
   --radius-sm: 4px;

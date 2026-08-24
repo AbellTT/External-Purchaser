@@ -1,0 +1,379 @@
+{
+  "faq": {
+    "label": "FAQ",
+    "title": "Common Questions",
+    "items": [
+      {
+        "q": "How are basket prices calculated?",
+        "a": "Basket prices are dynamically determined through our connections with different wholesale suppliers across Merkato and major markets. As more institutions join a basket and total order volume grows, we negotiate lower unit prices with suppliers — passing the savings directly to every participating institution."
+      },
+      {
+        "q": "What happens if a basket does not reach its target?",
+        "a": "We keep all participants informed before a basket closes. For weekly baskets, notifications are sent 2 days before closing. For monthly baskets, notifications are sent 1 week before. For 6-month baskets, notifications are sent 2 weeks before close. If a target is not met, participants can fulfill orders directly or roll their volume into the next basket."
+      },
+      {
+        "q": "When and how are deliveries handled?",
+        "a": "All delivery logistics are confirmed and negotiated via a direct call with your procurement officer. As a guideline: Weekly baskets (starting Monday) are delivered on Saturday. Monthly baskets deliver during the 4th week of the cycle. 6-Month baskets deliver during the final month. Specific delivery dates are finalized on the call."
+      },
+      {
+        "q": "Can I order products directly without waiting for a basket?",
+        "a": "Yes. Our Direct Purchasing option allows institutions to place orders at negotiated wholesale rates without waiting for a basket cycle to complete. Delivery terms and scheduling for direct orders are arranged directly with our team over a phone call."
+      }
+    ],
+    "haveAnotherQuestion": "Have another question?",
+    "contactOurTeam": "Contact our team"
+  },
+  "features": {
+    "label": "Platform Features",
+    "title": "Everything Procurement Needs",
+    "subtitle": "Built for the operational realities of Ethiopian institutional procurement.",
+    "items": [
+      {
+        "title": "Collective Purchasing",
+        "desc": "Pool orders with multiple institutions to unlock wholesale volume pricing unavailable to single buyers."
+      },
+      {
+        "title": "Direct Purchasing",
+        "desc": "Need items immediately? Place direct orders at negotiated wholesale rates without waiting for a basket."
+      },
+      {
+        "title": "Monthly Price Intelligence",
+        "_reviewNote": true,
+        "desc": "Access 2 years of monthly market price data collected across our network of Merkato wholesale suppliers."
+      },
+      {
+        "title": "Market Updates",
+        "desc": "Regularly updated market intelligence so your procurement team stays informed on seasonal price shifts."
+      },
+      {
+        "title": "Procurement Dashboard",
+        "desc": "A unified view of active baskets, direct orders, and overall institutional spending."
+      },
+      {
+        "title": "Smart Notifications",
+        "desc": "Timely notifications for upcoming basket closings, price shifts, and target threshold updates."
+      },
+      {
+        "title": "Secure Organization Accounts",
+        "desc": "Secure access for institutional procurement officers using verified email and password credentials."
+      }
+    ]
+  },
+  "finalCta": {
+    "headingStart": "Ready to reduce your",
+    "headingEmphasis": "procurement costs?",
+    "ctaButton": "Register your organisation",
+    "note": "Free account · No credit card required"
+  },
+  "footer": {
+    "tagline": "Group procurement platform for Ethiopian institutions — connecting schools, universities, and organizations directly to wholesale prices.",
+    "location": "Addis Ababa, Ethiopia",
+    "platformAccess": "Platform Access",
+    "memberLogin": "Institutional Member Login →",
+    "contactUs": "Contact Us",
+    "contactDesc": "Have questions about dynamic basket pricing or registration? Send us a direct message.",
+    "sentTitle": "Message Sent Successfully!",
+    "sentDesc": "Thank you for reaching out. Our procurement team will get back to you shortly.",
+    "emailLabel": "Your Email",
+    "emailPlaceholder": "name@institution.edu.et",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Tell us about your institution's stationery requirements...",
+    "sending": "Sending...",
+    "sendMessage": "Send Message",
+    "toastSuccessTitle": "Message sent!",
+    "toastSuccessDesc": "Our team will get back to you within 24 hours.",
+    "toastErrorTitle": "Failed to send message",
+    "toastErrorDesc": "Please try again or email us directly.",
+    "copyright": "© {{year}} External Purchaser. All rights reserved.",
+    "builtFor": "Built for Ethiopian institutions."
+  },
+  "hero": {
+    "headline1": "Purchase Smarter.",
+    "headline2": "Save More Together.",
+    "subheadline": "Ethiopian institutions — schools, universities, NGOs, government offices, and companies — combine their purchasing power to unlock wholesale prices directly from Merkato suppliers. Two years of monthly price history, live basket tracking, and full procurement analytics.",
+    "getStarted": "Get Started",
+    "card1Product": "A4 Paper (80gsm)",
+    "card1Pool": "Active Pool • 45 orgs",
+    "card1VolumeLabel": "Volume Commitment",
+    "card2Discount": "5–20%",
+    "card2BelowRetail": "Below Retail Price",
+    "card3Count": "500+",
+    "card3Institutions": "Institutions",
+    "card4DeliveryVerified": "Delivery Verified",
+    "card5PriceDrop": "Price Drop",
+    "card5Items": "Pens & Markers"
+  },
+  "howItWorks": {
+    "label": "How It Works",
+    "title": "Four Steps to Smarter Procurement",
+    "steps": [
+      {
+        "n": "01",
+        "title": "Register Your Organization",
+        "desc": "Create an institutional account. Our team verifies your organization to unlock wholesale access."
+      },
+      {
+        "n": "02",
+        "title": "Choose Your Products",
+        "desc": "Browse our stationery catalog with current basket prices and historical data."
+      },
+      {
+        "n": "03",
+        "title": "Join a Basket",
+        "desc": "Pool demand with other institutions, or purchase directly at our wholesale rate."
+      },
+      {
+        "n": "04",
+        "title": "Receive Your Order",
+        "desc": "Track your order from confirmation to delivery. Receive detailed invoices showing savings."
+      }
+    ]
+  },
+  "marketIntel": {
+    "label": "Market Intelligence",
+    "title": "Know Before You Buy",
+    "intro": "Our platform continuously monitors stationery wholesale prices across Merkato. Members get 2 years of monthly market data so procurement officers can make confident, budget-backed decisions — never paying above true wholesale rates.",
+    "bannerTitle": "Full Price History Available After Registration",
+    "bannerDesc": "Register your organization to access 2 years of monthly Merkato price data, seasonal trend analysis, and procurement timing recommendations.",
+    "registerCta": "Register Free",
+    "insights": [
+      {
+        "title": "Peak Pricing: Jan & Sept",
+        "desc": "Academic semester cycles drive A4 paper demand up 10–15% above monthly baselines. Plan purchases early."
+      },
+      {
+        "title": "Optimal Window: May–July",
+        "desc": "Mid-year demand lulls result in the lowest historical paper rates. Seasonal baskets capture these lows."
+      },
+      {
+        "title": "Monthly Price Tracking",
+        "desc": "We monitor wholesale rates across our network of Merkato suppliers each month to update active basket pricing."
+      },
+      {
+        "title": "Buy With Confidence",
+        "desc": "Registered members access 2 years of monthly market intelligence data so you always know when to lock in rates."
+      }
+    ]
+  },
+  "navbar": {
+    "howItWorks": "How It Works",
+    "fourSteps": "4 Simple Steps",
+    "hoverOverview": "Quick overview",
+    "scrollToDetails": "Scroll to detailed view ↓",
+    "faq": "FAQ",
+    "login": "Login",
+    "getStarted": "Get Started",
+    "steps": [
+      {
+        "n": "01",
+        "title": "Register Organization",
+        "desc": "Create account & verify TIN for wholesale rates."
+      },
+      {
+        "n": "02",
+        "title": "Select Stationery",
+        "desc": "Browse catalog with 2 yrs price trends."
+      },
+      {
+        "n": "03",
+        "title": "Join Volume Pool",
+        "desc": "Combine demand with other institutions."
+      },
+      {
+        "n": "04",
+        "title": "Scheduled Delivery",
+        "desc": "Confirm terms via call & receive goods."
+      }
+    ]
+  },
+  "organizations": {
+    "whoWeServe": "Who We Serve",
+    "titleLine1": "For organizations",
+    "titleLine2": "going places.",
+    "description": "From small NGOs in regional towns to the largest government ministries in Addis Ababa — any institution with a recurring stationery budget benefits.",
+    "next": "Next",
+    "items": [
+      {
+        "title": "Schools",
+        "tag": "Education",
+        "desc": "Primary, secondary, and preparatory schools with regular stationery and classroom supply needs."
+      },
+      {
+        "title": "Banks & Financial",
+        "tag": "Finance",
+        "desc": "Regulated institutions with centralized procurement and multi-branch supply requirements."
+      },
+      {
+        "title": "Private Companies",
+        "tag": "Corporate",
+        "desc": "Corporate procurement teams consolidating annual office supply purchasing across branches."
+      },
+      {
+        "title": "Government Offices",
+        "tag": "Public Sector",
+        "desc": "Federal ministries, regional bureaus, and city administrations running formal procurement cycles."
+      }
+    ]
+  },
+  "pricing": {
+    "label": "Dynamic Pricing",
+    "title": "As More Join, Everyone Saves",
+    "intro": "The more institutions join a basket, the better the deal — for everyone. We consistently deliver between ",
+    "savingsRange": "5% and 12%",
+    "outro": " below retail reference prices based on collective volume.",
+    "curveLabel": "Collective Savings Curve",
+    "chartTitle": "Price vs. Participation",
+    "selected": "Selected:",
+    "orgsLabel": "{{orgs}} Institutions",
+    "sliderPrompt": "Move slider to test volume pricing:",
+    "discountReached": "{{discountPct}}% Discount Reached",
+    "legend1": "1 org",
+    "legend30": "30 orgs (ETB 900)",
+    "legend60": "60 orgs",
+    "retailRef1": "Retail",
+    "retailRef2": "Reference",
+    "groupPrice1": "Group",
+    "groupPrice2": "Price",
+    "directSavings1": "Direct",
+    "directSavings2": "Savings",
+    "perReam": "per ream",
+    "saveAmount": "Save ETB {{savingsEach}}",
+    "slashReam": "/ ream",
+    "contextNote": "Simulated on A4 paper (80gsm) at a retail reference price of ETB 1,000/ream. Actual savings are 5–12% depending on basket participation."
+  },
+  "problem": {
+    "problem": {
+      "label": "The Problem",
+      "title": "Why Traditional Procurement Costs More",
+      "intro": "Every intermediary between your organization and the supplier adds a margin. Most institutions unknowingly absorb 3–5 markup layers before receiving their stationery.",
+      "tabOld": "The Old Way",
+      "tabNew": "Our Platform",
+      "oldWay": {
+        "nodes": [
+          {
+            "label": "Your Institution",
+            "sub": "Needs A4 Paper (80gsm)"
+          },
+          {
+            "label": "Local Retailer / Stationery Shop",
+            "sub": "+15% retail markup"
+          },
+          {
+            "label": "Commission Agent / Broker",
+            "sub": "+10% middleman margin"
+          },
+          {
+            "label": "Merkato Wholesale Distributor",
+            "sub": "+8% distributor margin"
+          },
+          {
+            "label": "Importer / Paper Mill",
+            "sub": "Original Wholesale Cost"
+          }
+        ],
+        "delta": "Up to 35% cumulative markups"
+      },
+      "newWay": {
+        "nodes": [
+          {
+            "label": "Your Institution",
+            "sub": "+ participating organizations this cycle"
+          },
+          {
+            "label": "Group Purchasing Aggregation",
+            "sub": "Pools collective institutional volume",
+            "highlight": true
+          },
+          {
+            "label": "Vetted Wholesale Suppliers",
+            "sub": "Direct volume wholesale access"
+          }
+        ],
+        "delta": "Save up to 12% below retail reference"
+      },
+      "payActual": "What you actually pay",
+      "payEndUp": "What you end up paying"
+    }
+  },
+  "savings": {
+    "whyItMatters": "Why It Matters",
+    "title": "Small Price Drops, Transformative Savings",
+    "subtitleBefore": "Using core stationery like",
+    "subtitleHighlight": "A4 Paper (80gsm)",
+    "subtitleAfter": "(ETB 1,000 retail reference), see how dynamic group purchasing lowers unit price and yields massive institutional savings.",
+    "typicalCase": "Typical Case",
+    "retailCostLabel": "Retail Cost:",
+    "basketCostLabel": "Group Basket Cost:",
+    "totalSavingsLabel": "Total Net Savings:",
+    "tiers": [
+      {
+        "label": "Small School",
+        "example": "Bekele Molla Primary School, Addis",
+        "volume": "250 Reams of A4 Paper",
+        "desc": "At ETB 1,000/ream retail, pooling paper demand saves ETB 100 per ream for small school budgets."
+      },
+      {
+        "label": "Medium Organization",
+        "example": "Hawassa City Administration",
+        "volume": "1,500 Reams of A4 Paper",
+        "desc": "Consolidating quarterly paper purchasing recovers significant capital that can fund office equipment."
+      },
+      {
+        "label": "Large Institution",
+        "example": "Addis Ababa University",
+        "volume": "12,000 Reams of A4 Paper",
+        "desc": "Multi-thousand ream volume unlocks maximum basket discounts, generating seven-figure annual savings."
+      }
+    ]
+  },
+  "solution": {
+    "label": "The Solution",
+    "title": "A Smarter Way to Buy Stationery",
+    "intro": "Our basket purchasing system pools orders across Ethiopian institutions. As basket duration increases, more orders accumulate — higher collective volume directly drives down unit prices, unlocking savings between ",
+    "savingsRange": "5% and 20%",
+    "outro": ".",
+    "volumeUnlockPrefix": "Volume build unlocks up to",
+    "volumeUnlockSuffix": "off retail.",
+    "deliveryLabel": "Delivery:",
+    "baskets": [
+      {
+        "type": "Weekly Basket",
+        "for": "Schools & institutions needing fast replenishment",
+        "delivery": "Starts Monday, delivered Saturday (confirmed via call)",
+        "desc": "Shortest cycle for rapid restocks. Quick turnaround with solid collective savings."
+      },
+      {
+        "type": "Monthly Basket",
+        "for": "Universities, government offices & companies",
+        "delivery": "Delivered in the 4th week (confirmed via call)",
+        "desc": "Longer pooling window aggregates higher order volume, unlocking deeper wholesale discounts."
+      },
+      {
+        "type": "Six-Month Basket",
+        "for": "Large institutions planning annual procurement budgets",
+        "delivery": "Delivered in the final month (confirmed via call)",
+        "desc": "Maximum accumulation window. Massive volume pooling achieves the absolute lowest unit prices."
+      }
+    ]
+  },
+  "trust": {
+    "stats": [
+      {
+        "value": "500+",
+        "label": "Institutions Supplied"
+      },
+      {
+        "value": "14,000+",
+        "label": "Orders Fulfilled"
+      },
+      {
+        "value": "5 Years",
+        "label": "Supplier Experience"
+      },
+      {
+        "value": "5–20%",
+        "label": "Below Market Prices"
+      }
+    ]
+  }
+}

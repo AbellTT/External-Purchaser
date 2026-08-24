@@ -1,0 +1,26 @@
+{
+  "label": "Market Intelligence",
+  "title": "Know Before You Buy",
+  "intro": "Our platform continuously monitors stationery wholesale prices across Merkato. Members get 2 years of monthly market data so procurement officers can make confident, budget-backed decisions — never paying above true wholesale rates.",
+  "bannerTitle": "Full Price History Available After Registration",
+  "bannerDesc": "Register your organization to access 2 years of monthly Merkato price data, seasonal trend analysis, and procurement timing recommendations.",
+  "registerCta": "Register Free",
+  "insights": [
+    {
+      "title": "Peak Pricing: Jan & Sept",
+      "desc": "Academic semester cycles drive A4 paper demand up 10–15% above monthly baselines. Plan purchases early."
+    },
+    {
+      "title": "Optimal Window: May–July",
+      "desc": "Mid-year demand lulls result in the lowest historical paper rates. Seasonal baskets capture these lows."
+    },
+    {
+      "title": "Monthly Price Tracking",
+      "desc": "We monitor wholesale rates across our network of Merkato suppliers each month to update active basket pricing."
+    },
+    {
+      "title": "Buy With Confidence",
+      "desc": "Registered members access 2 years of monthly market intelligence data so you always know when to lock in rates."
+    }
+  ]
+}

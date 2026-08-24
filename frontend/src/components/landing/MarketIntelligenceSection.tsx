@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { TrendingDown, TrendingUp, Calendar, ShieldCheck } from 'lucide-react'
 
 const insights = [
@@ -6,44 +7,44 @@ const insights = [
     icon: TrendingUp,
     color: 'text-error',
     bg: 'bg-error-bg',
-    title: 'Peak Pricing: Jan & Sept',
-    desc: 'Academic semester cycles drive A4 paper demand up 10–15% above monthly baselines. Plan purchases early.',
+    title: 'marketIntel.insights.0.title',
+    desc: 'marketIntel.insights.0.desc',
   },
   {
     icon: TrendingDown,
     color: 'text-success',
     bg: 'bg-success-bg',
-    title: 'Optimal Window: May–July',
-    desc: 'Mid-year demand lulls result in the lowest historical paper rates. Seasonal baskets capture these lows.',
+    title: 'marketIntel.insights.1.title',
+    desc: 'marketIntel.insights.1.desc',
   },
   {
     icon: Calendar,
     color: 'text-info',
     bg: 'bg-info-bg',
-    title: 'Monthly Price Tracking',
-    desc: 'We monitor wholesale rates across our network of Merkato suppliers each month to update active basket pricing.',
+    title: 'marketIntel.insights.2.title',
+    desc: 'marketIntel.insights.2.desc',
   },
   {
     icon: ShieldCheck,
     color: 'text-primary',
     bg: 'bg-primary-subtle',
-    title: 'Buy With Confidence',
-    desc: 'Registered members access 2 years of monthly market intelligence data so you always know when to lock in rates.',
+    title: 'marketIntel.insights.3.title',
+    desc: 'marketIntel.insights.3.desc',
   },
 ]
 
 export function MarketIntelligenceSection() {
+  const { t } = useTranslation()
+
   return (
     <section className="section-pad bg-background">
       <div className="container-base">
         {/* Header */}
         <div className="max-w-2xl mb-14">
-          <p className="text-label text-primary mb-3">Market Intelligence</p>
-          <h2 className="text-h1 text-foreground">Know Before You Buy</h2>
+          <p className="text-label text-primary mb-3">{t('marketIntel.label')}</p>
+          <h2 className="text-h1 text-foreground">{t('marketIntel.title')}</h2>
           <p className="text-body-md text-muted-foreground mt-4">
-            Our platform continuously monitors stationery wholesale prices across Merkato.
-            Members get 2 years of monthly market data so procurement officers can make
-            confident, budget-backed decisions — never paying above true wholesale rates.
+            {t('marketIntel.intro')}
           </p>
         </div>
 
@@ -53,17 +54,16 @@ export function MarketIntelligenceSection() {
             <ShieldCheck className="w-6 h-6 text-primary-foreground" />
           </div>
           <div className="flex-1">
-            <p className="font-semibold text-foreground text-base mb-1">Full Price History Available After Registration</p>
+            <p className="font-semibold text-foreground text-base mb-1">{t('marketIntel.bannerTitle')}</p>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Register your organization to access 2 years of monthly Merkato price data, seasonal trend analysis,
-              and procurement timing recommendations.
+              {t('marketIntel.bannerDesc')}
             </p>
           </div>
           <Link
             to="/signup"
             className="shrink-0 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-hover transition-colors shadow-xs"
           >
-            Register Free
+            {t('marketIntel.registerCta')}
           </Link>
         </div>
 
@@ -74,8 +74,8 @@ export function MarketIntelligenceSection() {
               <div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center mb-4`}>
                 <Icon className={`w-5 h-5 ${color}`} />
               </div>
-              <h3 className="text-h3 text-foreground mb-2">{title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+              <h3 className="text-h3 text-foreground mb-2">{t(title)}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{t(desc)}</p>
             </div>
           ))}
         </div>
@@ -83,4 +83,3 @@ export function MarketIntelligenceSection() {
     </section>
   )
 }
-

@@ -1,0 +1,30 @@
+{
+  "label": "The Solution",
+  "title": "A Smarter Way to Buy Stationery",
+  "intro": "Our basket purchasing system pools orders across Ethiopian institutions. As basket duration increases, more orders accumulate — higher collective volume directly drives down unit prices, unlocking savings between ",
+  "savingsRange": "5% and 20%",
+  "outro": ".",
+  "volumeUnlockPrefix": "Volume build unlocks up to",
+  "volumeUnlockSuffix": "off retail.",
+  "deliveryLabel": "Delivery:",
+  "baskets": [
+    {
+      "type": "Weekly Basket",
+      "for": "Schools & institutions needing fast replenishment",
+      "delivery": "Starts Monday, delivered Saturday (confirmed via call)",
+      "desc": "Shortest cycle for rapid restocks. Quick turnaround with solid collective savings."
+    },
+    {
+      "type": "Monthly Basket",
+      "for": "Universities, government offices & companies",
+      "delivery": "Delivered in the 4th week (confirmed via call)",
+      "desc": "Longer pooling window aggregates higher order volume, unlocking deeper wholesale discounts."
+    },
+    {
+      "type": "Six-Month Basket",
+      "for": "Large institutions planning annual procurement budgets",
+      "delivery": "Delivered in the final month (confirmed via call)",
+      "desc": "Maximum accumulation window. Massive volume pooling achieves the absolute lowest unit prices."
+    }
+  ]
+}

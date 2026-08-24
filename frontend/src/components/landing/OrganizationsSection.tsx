@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { School, Landmark, Briefcase, Building } from 'lucide-react'
 import { ChevronRight } from 'lucide-react'
 import CardSwap, { Card } from '@/components/ui/card-swap'
@@ -7,35 +8,36 @@ import type { CardSwapHandle } from '@/components/ui/card-swap'
 const orgs = [
   {
     icon: School,
-    title: 'Schools',
-    desc: 'Primary, secondary, and preparatory schools with regular stationery and classroom supply needs.',
-    tag: 'Education',
+    title: 'organizations.items.0.title',
+    desc: 'organizations.items.0.desc',
+    tag: 'organizations.items.0.tag',
     variant: 'primary' as const,
   },
   {
     icon: Building,
-    title: 'Banks & Financial',
-    desc: 'Regulated institutions with centralized procurement and multi-branch supply requirements.',
-    tag: 'Finance',
+    title: 'organizations.items.1.title',
+    desc: 'organizations.items.1.desc',
+    tag: 'organizations.items.1.tag',
     variant: 'card' as const,
   },
   {
     icon: Briefcase,
-    title: 'Private Companies',
-    desc: 'Corporate procurement teams consolidating annual office supply purchasing across branches.',
-    tag: 'Corporate',
+    title: 'organizations.items.2.title',
+    desc: 'organizations.items.2.desc',
+    tag: 'organizations.items.2.tag',
     variant: 'primary' as const,
   },
   {
     icon: Landmark,
-    title: 'Government Offices',
-    desc: 'Federal ministries, regional bureaus, and city administrations running formal procurement cycles.',
-    tag: 'Public Sector',
+    title: 'organizations.items.3.title',
+    desc: 'organizations.items.3.desc',
+    tag: 'organizations.items.3.tag',
     variant: 'card' as const,
   },
 ]
 
 export function OrganizationsSection() {
+  const { t } = useTranslation()
   const swapRef = useRef<CardSwapHandle>(null)
   const [isMobile, setIsMobile] = useState(false)
 
@@ -57,15 +59,14 @@ export function OrganizationsSection() {
           {/* Left: Copy & button */}
           <div className="space-y-6 sm:space-y-8">
             <div>
-              <p className="text-label text-primary mb-4">Who We Serve</p>
+              <p className="text-label text-primary mb-4">{t('organizations.whoWeServe')}</p>
               <h2 className="text-h1 text-foreground leading-tight">
-                For organizations<br />going places.
+                {t('organizations.titleLine1')}<br />{t('organizations.titleLine2')}
               </h2>
             </div>
 
             <p className="text-body-md text-muted-foreground max-w-md">
-              From small NGOs in regional towns to the largest government ministries
-              in Addis Ababa — any institution with a recurring stationery budget benefits.
+              {t('organizations.description')}
             </p>
 
             {!isMobile && (
@@ -73,7 +74,7 @@ export function OrganizationsSection() {
                 onClick={() => swapRef.current?.swap()}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-hover transition-colors shadow-sm"
               >
-                Next
+                {t('organizations.next')}
                 <ChevronRight className="w-4 h-4" />
               </button>
             )}
@@ -114,17 +115,17 @@ export function OrganizationsSection() {
                             ? 'bg-white/15 text-white/80'
                             : 'bg-muted text-muted-foreground'
                         }`}>
-                          {tag}
+                          {t(tag)}
                         </span>
                       </div>
-                      <h3 className={`text-h3 mb-3 ${variant === 'primary' ? 'text-white' : 'text-foreground'}`}>
-                        {title}
-                      </h3>
-                      <p className={`text-sm leading-relaxed ${
-                        variant === 'primary' ? 'text-white/70' : 'text-muted-foreground'
-                      }`}>
-                        {desc}
-                      </p>
+                        <h3 className={`text-h3 mb-3 ${variant === 'primary' ? 'text-white' : 'text-foreground'}`}>
+                          {t(title)}
+                        </h3>
+                        <p className={`text-sm leading-relaxed ${
+                          variant === 'primary' ? 'text-white/70' : 'text-muted-foreground'
+                        }`}>
+                          {t(desc)}
+                        </p>
                     </div>
                   </Card>
                 ))}
@@ -157,19 +158,19 @@ export function OrganizationsSection() {
                       ? 'bg-white/15 text-white/80'
                       : 'bg-muted text-muted-foreground'
                   }`}>
-                    {tag}
+                    {t(tag)}
                   </span>
                 </div>
-                <h3 className={`text-sm font-display font-semibold mb-1.5 ${
-                  variant === 'primary' ? 'text-white' : 'text-foreground'
-                }`}>
-                  {title}
-                </h3>
-                <p className={`text-[10px] leading-relaxed ${
-                  variant === 'primary' ? 'text-white/70' : 'text-muted-foreground'
-                }`}>
-                  {desc}
-                </p>
+                  <h3 className={`text-sm font-display font-semibold mb-1.5 ${
+                    variant === 'primary' ? 'text-white' : 'text-foreground'
+                  }`}>
+                    {t(title)}
+                  </h3>
+                  <p className={`text-[10px] leading-relaxed ${
+                    variant === 'primary' ? 'text-white/70' : 'text-muted-foreground'
+                  }`}>
+                    {t(desc)}
+                  </p>
               </div>
             ))}
           </div>

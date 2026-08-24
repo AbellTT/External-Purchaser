@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import BlurText from '@/components/ui/blur-text'
 import { ArrowRight, ShoppingCart, TrendingDown, Users, PackageCheck, LineChart } from 'lucide-react'
@@ -8,6 +9,7 @@ import { ArrowRight, ShoppingCart, TrendingDown, Users, PackageCheck, LineChart 
    Floating Graphics — surrounding the center
 ────────────────────────────────────────────────────────────── */
 function HeroFloatingGraphics() {
+  const { t } = useTranslation()
   return (
     <div className="absolute inset-0 pointer-events-none hidden min-[1563px]:block overflow-hidden z-0">
       {/* Decorative Glows */}
@@ -26,13 +28,13 @@ function HeroFloatingGraphics() {
              <ShoppingCart className="text-primary w-6 h-6" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-foreground">A4 Paper (80gsm)</div>
+            <div className="text-sm font-semibold text-foreground"> {t('hero.card1Product')}</div>
             <div className="text-xs text-muted-foreground">Active Pool • 45 orgs</div>
           </div>
         </div>
         <div className="space-y-3">
            <div className="flex justify-between text-xs">
-             <span className="text-muted-foreground">Volume Commitment</span>
+             <span className="text-muted-foreground">{t('hero.card1VolumeLabel')}</span>
              <span className="font-semibold text-foreground">7,500 / 10,000</span>
            </div>
            <div className="w-full bg-muted rounded-full h-2.5">
@@ -53,7 +55,7 @@ function HeroFloatingGraphics() {
          </div>
          <div>
             <div className="text-2xl font-bold font-display leading-none mb-1">5–20%</div>
-            <div className="text-xs text-white/80 font-medium">Below Retail Price</div>
+            <div className="text-xs text-white/80 font-medium">{t('hero.card2BelowRetail')}</div>
          </div>
       </motion.div>
 
@@ -69,7 +71,7 @@ function HeroFloatingGraphics() {
          </div>
          <div>
             <div className="text-sm font-bold text-foreground">500+</div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Institutions</div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{t('hero.card3Institutions')}</div>
          </div>
       </motion.div>
 
@@ -83,7 +85,7 @@ function HeroFloatingGraphics() {
          <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center shrink-0">
             <PackageCheck className="w-3.5 h-3.5 text-green-700" />
          </div>
-         <span className="text-xs font-semibold text-foreground">Delivery Verified</span>
+         <span className="text-xs font-semibold text-foreground">{t('hero.card4DeliveryVerified')}</span>
       </motion.div>
       
       {/* Floating Card 5: Price Alert (Middle Right) */}
@@ -97,8 +99,8 @@ function HeroFloatingGraphics() {
             <LineChart className="w-5 h-5 text-orange-600" />
          </div>
          <div>
-            <div className="text-sm font-bold text-foreground">Price Drop</div>
-            <div className="text-xs text-muted-foreground">Pens & Markers</div>
+            <div className="text-sm font-bold text-foreground">{t('hero.card5PriceDrop')}</div>
+            <div className="text-xs text-muted-foreground">{t('hero.card5Items')}</div>
          </div>
       </motion.div>
     </div>
@@ -109,6 +111,7 @@ function HeroFloatingGraphics() {
    Hero Section — Center aligned
 ────────────────────────────────────────────────────────────── */
 export function HeroSection() {
+  const { t } = useTranslation()
   return (
     <section className="relative min-h-[90vh] bg-background pt-16 sm:pt-20 flex items-center justify-center overflow-hidden">
       <HeroFloatingGraphics />
@@ -120,12 +123,12 @@ export function HeroSection() {
           {/* Main Headline */}
           <div className="mb-6 sm:mb-10 flex flex-col items-center w-full">
             <BlurText
-              text="Purchase Smarter."
+              text={t('hero.headline1')}
               delay={50}
               className="text-[2.25rem] sm:text-[3.5rem] md:text-[4.5rem] lg:text-[5.5rem] font-display font-bold leading-[1.1] text-foreground flex justify-center tracking-tight text-center"
             />
             <BlurText
-              text="Save More Together."
+              text={t('hero.headline2')}
               delay={50}
               className="text-[2.25rem] sm:text-[3.5rem] md:text-[4.5rem] lg:text-[5.5rem] font-display font-bold leading-[1.1] text-primary flex justify-center tracking-tight text-center"
               animationFrom={{ filter: 'blur(12px)', opacity: 0, y: 40 }}
@@ -139,9 +142,7 @@ export function HeroSection() {
             transition={{ delay: 0.5, duration: 0.7, ease: 'easeOut' }}
             className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8 sm:mb-12 px-2"
           >
-            Ethiopian institutions — schools, universities, NGOs, government offices, and companies —
-            combine their purchasing power to unlock wholesale prices directly from Merkato suppliers.
-            Two years of monthly price history, live basket tracking, and full procurement analytics.
+            {t('hero.subheadline')}
           </motion.p>
 
           {/* CTAs */}
@@ -157,7 +158,7 @@ export function HeroSection() {
               className="w-full h-13 sm:h-14 text-base sm:text-lg font-bold gap-2 shadow-lg rounded-xl px-8"
             >
               <Link to="/signup">
-                Get Started
+                {t('hero.getStarted')}
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </Button>
@@ -168,4 +169,5 @@ export function HeroSection() {
     </section>
   )
 }
+
 

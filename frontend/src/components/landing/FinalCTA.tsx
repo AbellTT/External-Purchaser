@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 
@@ -55,6 +56,7 @@ function RightSwirl() {
 }
 
 export function FinalCTA() {
+  const { t } = useTranslation()
   return (
     <section className="bg-secondary border-t border-border py-16 sm:py-24 overflow-hidden">
       <div className="container-base">
@@ -68,8 +70,8 @@ export function FinalCTA() {
           {/* Centre content */}
           <div className="text-center max-w-3xl w-full">
             <h2 className="text-h2 text-foreground leading-tight px-2">
-              Ready to reduce your{' '}
-              <em className="not-italic text-primary">procurement costs?</em>
+              {t('finalCta.headingStart')}{' '}
+              <em className="not-italic text-primary">{t('finalCta.headingEmphasis')}</em>
             </h2>
 
             <div className="mt-8 flex justify-center">
@@ -79,14 +81,14 @@ export function FinalCTA() {
                 className="w-full sm:w-auto px-8 sm:px-10 h-13 text-sm sm:text-base font-semibold gap-2 rounded-full shadow-sm"
               >
                 <Link to="/signup">
-                  Register your organisation
+                  {t('finalCta.ctaButton')}
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </Button>
             </div>
 
             <p className="text-xs sm:text-sm text-muted-foreground mt-5">
-              Free account · No credit card required
+              {t('finalCta.note')}
             </p>
           </div>
 

@@ -1,0 +1,26 @@
+{
+  "label": "How It Works",
+  "title": "Four Steps to Smarter Procurement",
+  "steps": [
+    {
+      "n": "01",
+      "title": "Register Your Organization",
+      "desc": "Create an institutional account. Our team verifies your organization to unlock wholesale access."
+    },
+    {
+      "n": "02",
+      "title": "Choose Your Products",
+      "desc": "Browse our stationery catalog with current basket prices and historical data."
+    },
+    {
+      "n": "03",
+      "title": "Join a Basket",
+      "desc": "Pool demand with other institutions, or purchase directly at our wholesale rate."
+    },
+    {
+      "n": "04",
+      "title": "Receive Your Order",
+      "desc": "Track your order from confirmation to delivery. Receive detailed invoices showing savings."
+    }
+  ]
+}

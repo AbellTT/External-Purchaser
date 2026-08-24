@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   ShoppingBasket, Package, BarChart2, TrendingDown,
   LayoutDashboard, Bell, ShieldCheck
@@ -6,51 +7,53 @@ import {
 const features = [
   {
     icon: ShoppingBasket,
-    title: 'Collective Purchasing',
-    desc: 'Pool orders with multiple institutions to unlock wholesale volume pricing unavailable to single buyers.',
+    title: 'features.items.0.title',
+    desc: 'features.items.0.desc',
   },
   {
     icon: Package,
-    title: 'Direct Purchasing',
-    desc: 'Need items immediately? Place direct orders at negotiated wholesale rates without waiting for a basket.',
+    title: 'features.items.1.title',
+    desc: 'features.items.1.desc',
   },
   {
     icon: BarChart2,
-    title: 'Monthly Price Intelligence',
-    desc: 'Access 2 years of monthly market price data collected across our network of Merkato wholesale suppliers.',
+    title: 'features.items.2.title',
+    desc: 'features.items.2.desc',
   },
   {
     icon: TrendingDown,
-    title: 'Market Updates',
-    desc: 'Regularly updated market intelligence so your procurement team stays informed on seasonal price shifts.',
+    title: 'features.items.3.title',
+    desc: 'features.items.3.desc',
   },
   {
     icon: LayoutDashboard,
-    title: 'Procurement Dashboard',
-    desc: 'A unified view of active baskets, direct orders, and overall institutional spending.',
+    title: 'features.items.4.title',
+    desc: 'features.items.4.desc',
   },
   {
     icon: Bell,
-    title: 'Smart Notifications',
-    desc: 'Timely notifications for upcoming basket closings, price shifts, and target threshold updates.',
+    title: 'features.items.5.title',
+    desc: 'features.items.5.desc',
   },
   {
     icon: ShieldCheck,
-    title: 'Secure Organization Accounts',
-    desc: 'Secure access for institutional procurement officers using verified email and password credentials.',
+    title: 'features.items.6.title',
+    desc: 'features.items.6.desc',
   },
 ]
 
 export function FeaturesSection() {
+  const { t } = useTranslation()
+
   return (
     <section className="section-pad bg-background">
       <div className="container-base">
         {/* Header */}
         <div className="text-center max-w-xl mx-auto mb-14">
-          <p className="text-label text-primary mb-3">Platform Features</p>
-          <h2 className="text-h1 text-foreground">Everything Procurement Needs</h2>
+          <p className="text-label text-primary mb-3">{t('features.label')}</p>
+          <h2 className="text-h1 text-foreground">{t('features.title')}</h2>
           <p className="text-body-md text-muted-foreground mt-4">
-            Built for the operational realities of Ethiopian institutional procurement.
+            {t('features.subtitle')}
           </p>
         </div>
 
@@ -63,8 +66,8 @@ export function FeaturesSection() {
               <div className="w-10 h-10 rounded-lg bg-primary-subtle flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                 <Icon className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
               </div>
-              <h3 className="text-h3 text-foreground mb-2">{title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+              <h3 className="text-h3 text-foreground mb-2">{t(title)}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{t(desc)}</p>
             </div>
           ))}
         </div>

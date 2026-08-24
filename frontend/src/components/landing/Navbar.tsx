@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Menu, X, ShoppingBasket, ChevronDown, Building2, Package, Users, Truck } from 'lucide-react'
+import { LanguageToggle } from './LanguageToggle'
 
 const HOW_IT_WORKS_STEPS = [
-  { n: '01', title: 'Register Organization', desc: 'Create account & verify TIN for wholesale rates.', icon: Building2 },
-  { n: '02', title: 'Select Stationery', desc: 'Browse catalog with 2 yrs price trends.', icon: Package },
-  { n: '03', title: 'Join Volume Pool', desc: 'Combine demand with other institutions.', icon: Users },
-  { n: '04', title: 'Scheduled Delivery', desc: 'Confirm terms via call & receive goods.', icon: Truck },
+  { n: '01', title: 'navbar.steps.0.title', desc: 'navbar.steps.0.desc', icon: Building2 },
+  { n: '02', title: 'navbar.steps.1.title', desc: 'navbar.steps.1.desc', icon: Package },
+  { n: '03', title: 'navbar.steps.2.title', desc: 'navbar.steps.2.desc', icon: Users },
+  { n: '04', title: 'navbar.steps.3.title', desc: 'navbar.steps.3.desc', icon: Truck },
 ]
 
 export function Navbar() {
+  const { t } = useTranslation()
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [showHowDropdown, setShowHowDropdown] = useState(false)
@@ -65,7 +68,7 @@ export function Navbar() {
               onClick={() => scrollToSection('how-it-works')}
               className={navLinkClass}
             >
-              How It Works
+              {t('navbar.howItWorks')}
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showHowDropdown ? 'rotate-180 text-primary' : ''}`} />
             </button>
 
@@ -74,8 +77,8 @@ export function Navbar() {
               <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 w-80 z-50">
                 <div className="bg-card border border-border rounded-xl shadow-xl p-4 space-y-3">
                   <div className="flex items-center justify-between border-b border-border/60 pb-2">
-                    <span className="text-xs font-mono font-semibold text-primary uppercase">4 Simple Steps</span>
-                    <span className="text-[11px] text-muted-foreground">Hover overview</span>
+                    <span className="text-xs font-mono font-semibold text-primary uppercase">{t('navbar.fourSteps')}</span>
+                    <span className="text-[11px] text-muted-foreground">{t('navbar.hoverOverview')}</span>
                   </div>
                   <div className="space-y-2">
                     {HOW_IT_WORKS_STEPS.map(({ n, title, desc, icon: Icon }) => (
@@ -85,9 +88,9 @@ export function Navbar() {
                         </div>
                         <div>
                           <p className="text-xs font-semibold text-foreground flex items-center gap-1">
-                            <span className="text-primary font-mono text-[10px]">{n}.</span> {title}
+                            <span className="text-primary font-mono text-[10px]">{n}.</span> {t(title)}
                           </p>
-                          <p className="text-[11px] text-muted-foreground leading-tight">{desc}</p>
+                          <p className="text-[11px] text-muted-foreground leading-tight">{t(desc)}</p>
                         </div>
                       </div>
                     ))}
@@ -97,7 +100,7 @@ export function Navbar() {
                     onClick={() => scrollToSection('how-it-works')}
                     className="w-full text-center text-xs font-semibold text-primary hover:underline pt-1 block"
                   >
-                    Scroll to detailed view ↓
+                    {t('navbar.scrollToDetails')}
                   </button>
                 </div>
               </div>
@@ -109,20 +112,21 @@ export function Navbar() {
             onClick={() => scrollToSection('faq')}
             className={navLinkClass}
           >
-            FAQ
+            {t('navbar.faq')}
           </button>
         </div>
 
         {/* ── Right Actions ── */}
         <div className="hidden md:flex items-center gap-3">
+          <LanguageToggle />
           <Link
             to="/login"
             className="text-sm font-medium text-foreground hover:text-primary transition-colors px-2 py-1"
           >
-            Login
+            {t('navbar.login')}
           </Link>
           <Button size="sm" onClick={() => navigate('/signup')} className="font-semibold shadow-xs">
-            Get Started
+            {t('navbar.getStarted')}
           </Button>
         </div>
 
@@ -144,16 +148,17 @@ export function Navbar() {
             onClick={() => scrollToSection('how-it-works')}
             className="block w-full text-left py-2 text-sm font-medium text-foreground"
           >
-            How It Works
+            {t('navbar.howItWorks')}
           </button>
           <button
             type="button"
             onClick={() => scrollToSection('faq')}
             className="block w-full text-left py-2 text-sm font-medium text-foreground"
           >
-            FAQ
+            {t('navbar.faq')}
           </button>
-          <div className="pt-3 flex gap-3 border-t border-border">
+          <div className="pt-3 flex items-center gap-3 border-t border-border">
+            <LanguageToggle compact />
             <Button
               variant="outline"
               className="flex-1"
@@ -162,7 +167,7 @@ export function Navbar() {
                 navigate('/login')
               }}
             >
-              Login
+              {t('navbar.login')}
             </Button>
             <Button
               className="flex-1"
@@ -171,7 +176,7 @@ export function Navbar() {
                 navigate('/signup')
               }}
             >
-              Get Started
+              {t('navbar.getStarted')}
             </Button>
           </div>
         </div>

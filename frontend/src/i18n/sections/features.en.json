@@ -1,0 +1,36 @@
+{
+  "label": "Platform Features",
+  "title": "Everything Procurement Needs",
+  "subtitle": "Built for the operational realities of Ethiopian institutional procurement.",
+  "items": [
+    {
+      "title": "Collective Purchasing",
+      "desc": "Pool orders with multiple institutions to unlock wholesale volume pricing unavailable to single buyers."
+    },
+    {
+      "title": "Direct Purchasing",
+      "desc": "Need items immediately? Place direct orders at negotiated wholesale rates without waiting for a basket."
+    },
+    {
+      "title": "Monthly Price Intelligence",
+      "_reviewNote": true,
+      "desc": "Access 2 years of monthly market price data collected across our network of Merkato wholesale suppliers."
+    },
+    {
+      "title": "Market Updates",
+      "desc": "Regularly updated market intelligence so your procurement team stays informed on seasonal price shifts."
+    },
+    {
+      "title": "Procurement Dashboard",
+      "desc": "A unified view of active baskets, direct orders, and overall institutional spending."
+    },
+    {
+      "title": "Smart Notifications",
+      "desc": "Timely notifications for upcoming basket closings, price shifts, and target threshold updates."
+    },
+    {
+      "title": "Secure Organization Accounts",
+      "desc": "Secure access for institutional procurement officers using verified email and password credentials."
+    }
+  ]
+}

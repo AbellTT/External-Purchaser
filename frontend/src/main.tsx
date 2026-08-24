@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 import { store } from './store'
 import App from './App.tsx'
+import './i18n'
 import './index.css'
 
 if (import.meta.env.DEV) {

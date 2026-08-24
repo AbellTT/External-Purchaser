@@ -2,30 +2,31 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { CheckCircle, XCircle, ArrowDown } from 'lucide-react'
 
 /* ── Data ─────────────────────────────────────────────────── */
 const oldWay = {
   nodes: [
-    { label: 'Your Institution', sub: 'Needs A4 Paper (80gsm)' },
-    { label: 'Local Retailer / Stationery Shop', sub: '+15% retail markup' },
-    { label: 'Commission Agent / Broker', sub: '+10% middleman margin' },
-    { label: 'Merkato Wholesale Distributor', sub: '+8% distributor margin' },
-    { label: 'Importer / Paper Mill', sub: 'Original Wholesale Cost' },
+    { label: 'problem.oldWay.nodes.0.label', sub: 'problem.oldWay.nodes.0.sub' },
+    { label: 'problem.oldWay.nodes.1.label', sub: 'problem.oldWay.nodes.1.sub' },
+    { label: 'problem.oldWay.nodes.2.label', sub: 'problem.oldWay.nodes.2.sub' },
+    { label: 'problem.oldWay.nodes.3.label', sub: 'problem.oldWay.nodes.3.sub' },
+    { label: 'problem.oldWay.nodes.4.label', sub: 'problem.oldWay.nodes.4.sub' },
   ],
   price: 'ETB 1,000 / ream',
-  delta: 'Up to 35% cumulative markups',
+  delta: 'problem.oldWay.delta',
   positive: false,
 }
 
 const newWay = {
   nodes: [
-    { label: 'Your Institution', sub: '+ participating organizations this cycle' },
-    { label: 'Group Purchasing Aggregation', sub: 'Pools collective institutional volume', highlight: true },
-    { label: 'Vetted Wholesale Suppliers', sub: 'Direct volume wholesale access' },
+    { label: 'problem.newWay.nodes.0.label', sub: 'problem.newWay.nodes.0.sub' },
+    { label: 'problem.newWay.nodes.1.label', sub: 'problem.newWay.nodes.1.sub', highlight: true },
+    { label: 'problem.newWay.nodes.2.label', sub: 'problem.newWay.nodes.2.sub' },
   ],
   price: 'ETB 880–920 / ream',
-  delta: 'Save up to 12% below retail reference',
+  delta: 'problem.newWay.delta',
   positive: true,
 }
 
@@ -39,6 +40,7 @@ const variants = {
 
 /* ── Component ─────────────────────────────────────────────── */
 export function ProblemSection() {
+  const { t } = useTranslation()
   const [tab, setTab] = useState<Tab>('old')
   const [dir, setDir] = useState(1)
 
@@ -56,11 +58,10 @@ export function ProblemSection() {
 
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-14">
-          <p className="text-label text-primary mb-3">The Problem</p>
-          <h2 className="text-h1 text-foreground">Why Traditional Procurement Costs More</h2>
+          <p className="text-label text-primary mb-3">{t('problem.label')}</p>
+          <h2 className="text-h1 text-foreground">{t('problem.title')}</h2>
           <p className="text-body-md text-muted-foreground mt-4">
-            Every intermediary between your organization and the supplier adds a margin.
-            Most institutions unknowingly absorb 3–5 markup layers before receiving their stationery.
+            {t('problem.intro')}
           </p>
         </div>
 
@@ -78,7 +79,7 @@ export function ProblemSection() {
               {tab === 'old' && (
                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-error animate-pulse" />
               )}
-              The Old Way
+              {t('problem.tabOld')}
             </button>
             <button
               onClick={() => switchTo('new')}
@@ -88,7 +89,7 @@ export function ProblemSection() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Our Platform
+              {t('problem.tabNew')}
             </button>
           </div>
         </div>
@@ -131,10 +132,10 @@ export function ProblemSection() {
                       }`}>
                         <p className={`text-base font-bold ${
                           isHighlight ? 'text-primary-foreground' : 'text-foreground'
-                        }`}>{node.label}</p>
+                        }`}>{t(node.label)}</p>
                         <p className={`text-sm mt-0.5 ${
                           isHighlight ? 'text-primary-foreground/75' : 'text-muted-foreground'
-                        }`}>{node.sub}</p>
+                        }`}>{t(node.sub)}</p>
                       </div>
 
                       {/* Connector + margin badge */}
@@ -157,7 +158,7 @@ export function ProblemSection() {
               {/* Bottom price summary */}
               <div className={`mt-7 pt-6 border-t border-border rounded-b-xl text-center`}>
                 <p className="text-sm text-muted-foreground mb-1">
-                  {data.positive ? 'What you actually pay' : 'What you end up paying'}
+                  {data.positive ? t('problem.payActual') : t('problem.payEndUp')}
                 </p>
                 <p className={`text-3xl font-bold font-display mb-2 ${
                   data.positive ? 'text-primary' : 'text-error'
@@ -173,9 +174,8 @@ export function ProblemSection() {
                     ? <CheckCircle className="w-3.5 h-3.5" />
                     : <XCircle    className="w-3.5 h-3.5" />
                   }
-                  {data.delta}
-                </div>
-              </div>
+                  {t(data.delta)}
+                </div>              </div>
             </motion.div>
           </AnimatePresence>
         </div>

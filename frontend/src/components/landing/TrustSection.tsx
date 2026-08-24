@@ -1,11 +1,14 @@
-const stats = [
-  { value: '500+',   label: 'Institutions Supplied' },
-  { value: '14,000+', label: 'Orders Fulfilled' },
-  { value: '5 Years', label: 'Supplier Experience' },
-  { value: '5–20%',  label: 'Below Market Prices' },
-]
+import { useTranslation } from 'react-i18next'
 
 export function TrustSection() {
+  const { t } = useTranslation()
+  const stats = [
+    { value: '500+',   label: t('trust.stats.0.label') },
+    { value: '14,000+', label: t('trust.stats.1.label') },
+    { value: '5 Years', label: t('trust.stats.2.label') },
+    { value: '5–20%',  label: t('trust.stats.3.label') },
+  ]
+
   return (
     <section className="bg-primary py-14">
       <div className="container-base">

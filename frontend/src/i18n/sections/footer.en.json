@@ -1,0 +1,22 @@
+{
+  "tagline": "Group procurement platform for Ethiopian institutions — connecting schools, universities, and organizations directly to wholesale prices.",
+  "location": "Addis Ababa, Ethiopia",
+  "platformAccess": "Platform Access",
+  "memberLogin": "Institutional Member Login →",
+  "contactUs": "Contact Us",
+  "contactDesc": "Have questions about dynamic basket pricing or registration? Send us a direct message.",
+  "sentTitle": "Message Sent Successfully!",
+  "sentDesc": "Thank you for reaching out. Our procurement team will get back to you shortly.",
+  "emailLabel": "Your Email",
+  "emailPlaceholder": "name@institution.edu.et",
+  "messageLabel": "Message",
+  "messagePlaceholder": "Tell us about your institution's stationery requirements...",
+  "sending": "Sending...",
+  "sendMessage": "Send Message",
+  "toastSuccessTitle": "Message sent!",
+  "toastSuccessDesc": "Our team will get back to you within 24 hours.",
+  "toastErrorTitle": "Failed to send message",
+  "toastErrorDesc": "Please try again or email us directly.",
+  "copyright": "© {{year}} External Purchaser. All rights reserved.",
+  "builtFor": "Built for Ethiopian institutions."
+}

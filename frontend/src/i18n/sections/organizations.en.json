@@ -1,0 +1,29 @@
+{
+  "whoWeServe": "Who We Serve",
+  "titleLine1": "For organizations",
+  "titleLine2": "going places.",
+  "description": "From small NGOs in regional towns to the largest government ministries in Addis Ababa — any institution with a recurring stationery budget benefits.",
+  "next": "Next",
+  "items": [
+    {
+      "title": "Schools",
+      "tag": "Education",
+      "desc": "Primary, secondary, and preparatory schools with regular stationery and classroom supply needs."
+    },
+    {
+      "title": "Banks & Financial",
+      "tag": "Finance",
+      "desc": "Regulated institutions with centralized procurement and multi-branch supply requirements."
+    },
+    {
+      "title": "Private Companies",
+      "tag": "Corporate",
+      "desc": "Corporate procurement teams consolidating annual office supply purchasing across branches."
+    },
+    {
+      "title": "Government Offices",
+      "tag": "Public Sector",
+      "desc": "Federal ministries, regional bureaus, and city administrations running formal procurement cycles."
+    }
+  ]
+}

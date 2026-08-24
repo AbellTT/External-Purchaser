@@ -1,0 +1,23 @@
+{
+  "tagline": "ለኢትዮጵያ ተቋማት የቡድን ግዢ መድረክ — ትምህርት ቤቶችን፣ ዩኒቨርሲቲዎችን እና ድርጅቶችን በቀጥታ ከጅምላ ዋጋዎች ጋር ያገናኛል።",
+  "location": "አዲስ አበባ፣ ኢትዮጵያ",
+  "platformAccess": "የመድረክ መዳረማ",
+  "memberLogin": "የተቋም አባል መግቢያ →",
+  "contactUs": "ያግኙን",
+  "contactDesc": "ስለ ተለዋዋጭ የቅርጫት ዋጋ ወይም ምዝገባ ጥያቄ አለዎት? ቀጥታ መልእክት ይላኩልን።",
+  "sentTitle": "መልእክትዎ በተሳካ ሁኔታ ተልኳል!",
+  "_reviewNote": true,
+  "sentDesc": "ስለተጠየቁ እናመሰግናለን። የግዢ ቡድናችን በቅርቡ ይመልስልዎታል።",
+  "emailLabel": "ኢሜይልዎ",
+  "emailPlaceholder": "name@institution.edu.et",
+  "messageLabel": "መልእክት",
+  "messagePlaceholder": "ተቋምዎ ስለሚፈልጋቸው የጽሑፍ እቃት ፍላጎቶች ይንገሩን...",
+  "sending": "በመላክ ላይ...",
+  "sendMessage": "መልእክት ላክ",
+  "toastSuccessTitle": "መልእክት ተልኳል!",
+  "toastSuccessDesc": "ቡድናችን በ24 ሰዓት ውስጥ ይመልስልዎታል።",
+  "toastErrorTitle": "መልእክት መላክ አልተሳካም",
+  "toastErrorDesc": "እባክዎ እንደገና ይሞክሩ ወይም በቀጥታ በኢሜይል ያግኙን።",
+  "copyright": "© {{year}} External Purchaser። መብቱ በሕግ የተጠበቀ ነው።",
+  "builtFor": "ለኢትዮጵያ ተቋማት የተሰራ።"
+}

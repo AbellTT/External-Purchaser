@@ -1,0 +1,31 @@
+{
+  "howItWorks": "How It Works",
+  "fourSteps": "4 Simple Steps",
+  "hoverOverview": "Quick overview",
+  "scrollToDetails": "Scroll to detailed view ↓",
+  "faq": "FAQ",
+  "login": "Login",
+  "getStarted": "Get Started",
+  "steps": [
+    {
+      "n": "01",
+      "title": "Register Organization",
+      "desc": "Create account & verify TIN for wholesale rates."
+    },
+    {
+      "n": "02",
+      "title": "Select Stationery",
+      "desc": "Browse catalog with 2 yrs price trends."
+    },
+    {
+      "n": "03",
+      "title": "Join Volume Pool",
+      "desc": "Combine demand with other institutions."
+    },
+    {
+      "n": "04",
+      "title": "Scheduled Delivery",
+      "desc": "Confirm terms via call & receive goods."
+    }
+  ]
+}

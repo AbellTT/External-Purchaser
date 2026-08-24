@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ShoppingBasket, Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 
 export function Footer() {
+  const { t } = useTranslation()
   const year = new Date().getFullYear()
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
@@ -32,13 +34,13 @@ export function Footer() {
       setSent(true)
       setEmail('')
       setMessage('')
-      toast.success('Message sent!', {
-        description: "Our team will get back to you within 24 hours.",
+      toast.success(t('footer.toastSuccessTitle'), {
+        description: t('footer.toastSuccessDesc'),
       })
       setTimeout(() => setSent(false), 5000)
     } catch {
-      toast.error('Failed to send message', {
-        description: 'Please try again or email us directly.',
+      toast.error(t('footer.toastErrorTitle'), {
+        description: t('footer.toastErrorDesc'),
       })
     } finally {
       setIsSubmitting(false)
@@ -59,9 +61,9 @@ export function Footer() {
               <span className="font-display font-semibold text-lg">External Purchaser</span>
             </div>
 
-            <p className="text-sm text-primary-foreground/60 leading-relaxed max-w-sm">
-              Group procurement platform for Ethiopian institutions — connecting schools, universities, and organizations directly to wholesale prices.
-            </p>
+              <p className="text-sm text-primary-foreground/60 leading-relaxed max-w-sm">
+                {t('footer.tagline')}
+              </p>
 
             <div className="space-y-3 pt-2">
               <a href="mailto:hello@externalpurchaser.et" className="flex items-center gap-2.5 text-sm text-primary-foreground/60 hover:text-primary-foreground transition-colors">
@@ -74,42 +76,42 @@ export function Footer() {
               </a>
               <p className="flex items-center gap-2.5 text-sm text-primary-foreground/60">
                 <MapPin className="w-4 h-4 shrink-0 text-primary" />
-                Addis Ababa, Ethiopia
+                {t('footer.location')}
               </p>
             </div>
 
             <div className="pt-4 border-t border-white/10">
-              <p className="text-xs font-semibold uppercase tracking-wider text-primary-foreground/40 mb-3">Platform Access</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary-foreground/40 mb-3">{t('footer.platformAccess')}</p>
               <Link to="/login" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors underline underline-offset-4">
-                Institutional Member Login →
+                {t('footer.memberLogin')}
               </Link>
             </div>
           </div>
 
           {/* Contact Us Form Col */}
           <div className="lg:col-span-7 bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
-            <h3 className="text-lg font-bold text-primary-foreground mb-1">Contact Us</h3>
+            <h3 className="text-lg font-bold text-primary-foreground mb-1">{t('footer.contactUs')}</h3>
             <p className="text-xs text-primary-foreground/60 mb-6">
-              Have questions about dynamic basket pricing or registration? Send us a direct message.
+              {t('footer.contactDesc')}
             </p>
 
             {sent ? (
               <div className="bg-primary/20 border border-primary/30 rounded-xl p-6 text-center space-y-2">
                 <CheckCircle2 className="w-8 h-8 text-primary mx-auto" />
-                <p className="font-semibold text-primary-foreground text-sm">Message Sent Successfully!</p>
-                <p className="text-xs text-primary-foreground/60">Thank you for reaching out. Our procurement team will get back to you shortly.</p>
+                <p className="font-semibold text-primary-foreground text-sm">{t('footer.sentTitle')}</p>
+                <p className="text-xs text-primary-foreground/60">{t('footer.sentDesc')}</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="footer-email" className="block text-xs font-medium text-primary-foreground/70 mb-1.5">
-                    Your Email
+                    {t('footer.emailLabel')}
                   </label>
                   <input
                     id="footer-email"
                     type="email"
                     required
-                    placeholder="name@institution.edu.et"
+                    placeholder={t('footer.emailPlaceholder')}
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     className="w-full bg-white/10 border border-white/15 rounded-lg px-4 py-2.5 text-sm text-primary-foreground placeholder:text-primary-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -118,13 +120,13 @@ export function Footer() {
 
                 <div>
                   <label htmlFor="footer-msg" className="block text-xs font-medium text-primary-foreground/70 mb-1.5">
-                    Message
+                    {t('footer.messageLabel')}
                   </label>
                   <textarea
                     id="footer-msg"
                     required
                     rows={3}
-                    placeholder="Tell us about your institution's stationery requirements..."
+                    placeholder={t('footer.messagePlaceholder')}
                     value={message}
                     onChange={e => setMessage(e.target.value)}
                     className="w-full bg-white/10 border border-white/15 rounded-lg px-4 py-2.5 text-sm text-primary-foreground placeholder:text-primary-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
@@ -132,7 +134,7 @@ export function Footer() {
                 </div>
 
                 <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2 font-semibold text-sm">
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
+                  {isSubmitting ? t('footer.sending') : t('footer.sendMessage')}
                   <Send className="w-3.5 h-3.5" />
                 </Button>
               </form>
@@ -144,10 +146,10 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-14 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-primary-foreground/30">
-            © {year} External Purchaser. All rights reserved.
+            {t('footer.copyright', { year })}
           </p>
           <p className="text-xs text-primary-foreground/30">
-            Built for Ethiopian institutions.
+            {t('footer.builtFor')}
           </p>
         </div>
       </div>

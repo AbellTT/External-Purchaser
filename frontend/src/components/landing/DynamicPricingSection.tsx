@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Users, TrendingDown, Sparkles } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -11,6 +12,7 @@ function getDiscount(orgs: number): number {
 const RETAIL = 1000
 
 export function DynamicPricingSection() {
+  const { t } = useTranslation()
   const [orgs, setOrgs] = useState(30)
 
   const discountPct = getDiscount(orgs)
@@ -75,12 +77,12 @@ export function DynamicPricingSection() {
       <div className="container-base">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-          <p className="text-label text-primary-foreground/60 mb-3">Dynamic Pricing</p>
-          <h2 className="text-h1 text-primary-foreground">As More Join, Everyone Saves</h2>
+          <p className="text-label text-primary-foreground/60 mb-3">{t('pricing.label')}</p>
+          <h2 className="text-h1 text-primary-foreground">{t('pricing.title')}</h2>
           <p className="text-body-md text-primary-foreground/70 mt-4">
-            The more institutions join a basket, the better the deal — for everyone.
-            We consistently deliver between <strong className="text-primary-foreground">5% and 12%</strong> below
-            retail reference prices based on collective volume.
+            {t('pricing.intro')}
+            <strong className="text-primary-foreground">{t('pricing.savingsRange')}</strong>
+            {t('pricing.outro')}
           </p>
         </div>
 
@@ -92,15 +94,15 @@ export function DynamicPricingSection() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 sm:mb-6">
               <div>
                 <span className="text-xs font-semibold text-accent uppercase tracking-wider flex items-center gap-1.5 mb-1">
-                  <Sparkles className="w-3.5 h-3.5" /> Collective Savings Curve
+                  <Sparkles className="w-3.5 h-3.5" /> {t('pricing.curveLabel')}
                 </span>
-                <h3 className="text-sm sm:text-lg font-bold text-primary-foreground">Price vs. Participation</h3>
+                <h3 className="text-sm sm:text-lg font-bold text-primary-foreground">{t('pricing.chartTitle')}</h3>
               </div>
               {/* Selected institutions badge — smaller on mobile */}
               <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl border border-white/10 w-fit self-start sm:self-auto">
                 <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-foreground/70" />
-                <span className="text-xs text-primary-foreground/60">Selected:</span>
-                <span className="font-mono text-sm sm:text-base font-bold text-primary-foreground">{orgs} Institutions</span>
+                <span className="text-xs text-primary-foreground/60">{t('pricing.selected')}</span>
+                <span className="font-mono text-sm sm:text-base font-bold text-primary-foreground">{t('pricing.orgsLabel', { orgs })}</span>
               </div>
             </div>
 
@@ -193,8 +195,8 @@ export function DynamicPricingSection() {
             {/* Slider Controls */}
             <div className="space-y-2 mb-6 sm:mb-8">
               <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-1 text-xs font-semibold text-primary-foreground/80 mb-1">
-                <span>Move slider to test volume pricing:</span>
-                <span className="text-accent font-bold">{discountPct}% Discount Reached</span>
+                <span>{t('pricing.sliderPrompt')}</span>
+                <span className="text-accent font-bold">{t('pricing.discountReached', { discountPct })}</span>
               </div>
               <input
                 type="range"
@@ -209,9 +211,9 @@ export function DynamicPricingSection() {
               />
               {/* Slider legend — hide middle label on smallest screens */}
               <div className="flex justify-between text-[10px] sm:text-xs font-mono text-primary-foreground/40">
-                <span>1 org</span>
-                <span className="hidden sm:inline">30 orgs (ETB 900)</span>
-                <span>60 orgs</span>
+                <span>{t('pricing.legend1')}</span>
+                <span className="hidden sm:inline">{t('pricing.legend30')}</span>
+                <span>{t('pricing.legend60')}</span>
               </div>
             </div>
 
@@ -219,17 +221,17 @@ export function DynamicPricingSection() {
             <div className="grid grid-cols-3 gap-2 sm:gap-4">
               <div className="bg-white/10 rounded-xl p-3 sm:p-5 text-center border border-white/5">
                 <p className="text-[10px] sm:text-xs text-primary-foreground/50 mb-1 sm:mb-2 uppercase tracking-wider leading-tight">
-                  Retail<br className="sm:hidden" /> Reference
+                  {t('pricing.retailRef1')}<br className="sm:hidden" /> {t('pricing.retailRef2')}
                 </p>
                 <p className="font-mono text-primary-foreground/40 line-through text-sm sm:text-xl font-semibold">
                   ETB {RETAIL.toLocaleString()}
                 </p>
-                <p className="text-[10px] sm:text-xs text-primary-foreground/40 mt-1">per ream</p>
+                <p className="text-[10px] sm:text-xs text-primary-foreground/40 mt-1">{t('pricing.perReam')}</p>
               </div>
 
               <div className="bg-white/15 rounded-xl p-3 sm:p-5 text-center ring-2 ring-white/30 border border-white/20 shadow-lg">
                 <p className="text-[10px] sm:text-xs text-primary-foreground/70 mb-1 sm:mb-2 uppercase tracking-wider font-semibold leading-tight">
-                  Group<br className="sm:hidden" /> Price
+                  {t('pricing.groupPrice1')}<br className="sm:hidden" /> {t('pricing.groupPrice2')}
                 </p>
                 <motion.p
                   key={yourPrice}
@@ -239,12 +241,12 @@ export function DynamicPricingSection() {
                 >
                   ETB {yourPrice.toLocaleString()}
                 </motion.p>
-                <p className="text-[10px] sm:text-xs text-primary-foreground/60 mt-1">per ream</p>
+                <p className="text-[10px] sm:text-xs text-primary-foreground/60 mt-1">{t('pricing.perReam')}</p>
               </div>
 
               <div className="bg-white/10 rounded-xl p-3 sm:p-5 text-center border border-white/5">
                 <p className="text-[10px] sm:text-xs text-primary-foreground/50 mb-1 sm:mb-2 uppercase tracking-wider leading-tight">
-                  Direct<br className="sm:hidden" /> Savings
+                  {t('pricing.directSavings1')}<br className="sm:hidden" /> {t('pricing.directSavings2')}
                 </p>
                 <motion.div
                   key={discountPct}
@@ -256,7 +258,7 @@ export function DynamicPricingSection() {
                   <span className="font-mono text-accent text-sm sm:text-2xl font-bold">{discountPct}%</span>
                 </motion.div>
                 <p className="text-[10px] sm:text-xs text-primary-foreground/40 mt-1 leading-tight">
-                  Save ETB {savingsEach}<span className="hidden sm:inline"> / ream</span>
+                  {t('pricing.saveAmount', { savingsEach })}<span className="hidden sm:inline"> {t('pricing.slashReam')}</span>
                 </p>
               </div>
             </div>
@@ -264,8 +266,7 @@ export function DynamicPricingSection() {
 
           {/* Context note */}
           <p className="text-center text-[10px] sm:text-xs text-primary-foreground/40 px-2">
-            Simulated on A4 paper (80gsm) at a retail reference price of ETB 1,000/ream.
-            Actual savings are 5–12% depending on basket participation.
+            {t('pricing.contextNote')}
           </p>
         </div>
       </div>
