@@ -7,7 +7,7 @@ interface PageMetaProps {
 }
 
 const SITE_NAME = 'MBE Extra Purchaser'
-const BASE_URL = 'https://mbextrapurchaser.com'
+const BASE_URL = 'https://extrapurchaser.pro.et'
 
 export function PageMeta({ title, description, path }: PageMetaProps) {
   const fullTitle = `${title} — ${SITE_NAME}`

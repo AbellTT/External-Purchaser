@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://mbextrapurchaser.com/</loc>
+    <loc>https://extrapurchaser.pro.et/</loc>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://mbextrapurchaser.com/login</loc>
+    <loc>https://extrapurchaser.pro.et/login</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://mbextrapurchaser.com/signup</loc>
+    <loc>https://extrapurchaser.pro.et/signup</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://mbextrapurchaser.com/forgot-password</loc>
+    <loc>https://extrapurchaser.pro.et/forgot-password</loc>
     <priority>0.3</priority>
   </url>
 </urlset>

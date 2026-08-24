@@ -7,4 +7,4 @@ Disallow: /dashboard/
 Disallow: /admin/
 Disallow: /api/
 
-Sitemap: https://mbextrapurchaser.com/sitemap.xml
+Sitemap: https://extrapurchaser.pro.et/sitemap.xml
