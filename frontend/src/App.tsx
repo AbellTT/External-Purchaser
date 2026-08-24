@@ -31,6 +31,7 @@ import { AdminMarketDataPage } from '@/pages/admin/AdminMarketDataPage'
 import { AdminProtectedRoute } from '@/components/providers/AdminProtectedRoute'
 import { AdminBasketHistoryPage } from '@/pages/admin/AdminBasketHistoryPage'
 import { AdminTINVerificationPage } from '@/pages/admin/AdminTINVerificationPage'
+import { NotFoundPage } from '@/pages/NotFoundPage'
 
 
 function RootLayout() {
@@ -270,7 +271,7 @@ function App() {
 
           <Route
             path="*"
-            element={<Landing />}
+            element={<NotFoundPage />}
           />
 
         </Route>

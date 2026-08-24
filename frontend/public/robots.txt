@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /signup
+Allow: /forgot-password
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://mbextrapurchaser.com/sitemap.xml
